@@ -1,0 +1,8 @@
+The compiler must produce 32-bit object files (i386) and linking with GCC
+must use the -m32 flag:
+
+gcc32 -Wall -O -g -m32   -c -o main.o main.c
+gcc32 -Wall -O -g -m32   -c -o syslog.o syslog.c
+gcc32 -lsimcaq -m32 main.o syslog.o -o chemgps-sqp
+
+// Anders Lövgren, 2008-01-22

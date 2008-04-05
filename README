@@ -1,0 +1,32 @@
+*** ABOUT CHEMGPS-SQP2 ***
+
+** Programs:
+
+   cgpsclt: 
+      ChemGPS client. Sends prediction requests to cgpsd.
+
+   cgpsd: 
+      ChemGPS daemon. Answer prediction requests from cgpsclt.
+
+   cgpsstd: 
+      ChemGPS standalone program. Works without chemgpsd or cgpsclt. 
+      This program function as chemgps-sqp (the old standalone program), 
+      but uses libchemgps for its functionality.
+    
+** BUILD:
+
+   Configure and build (release version for 64-bit Linux):
+   
+     bash$> CC="gcc32" CFLAGS="-Wall -O2 -m32" ./configure
+     bash$> make
+     
+   Configure and build (develop version for 64-bit Linux):
+   
+     bash$> CC="gcc32" CFLAGS="-Wall -Werror -O -g -m32" \
+            CPPFLAGS="-I../../libchemgps/src" \
+	    LDFLAGS="-L../../libchemgps/src/.libs" ./configure
+     bash$> make
+     	     
+   See docs/README.compiler for build notes.
+		
+Anders, 2008-03-31

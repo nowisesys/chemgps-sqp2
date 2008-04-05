@@ -1,0 +1,27 @@
+Version 0.6.0 (2008-mm-dd):
+
+	* Split the code into two packages: applications (this package) and
+          a library part (libchemgps).
+	  
+*** Historical notes from chemgps-sqp (the standalone only version):
+
+Version 0.5.2 (2008-03-03):
+
+	* Modified code to reorder quantitative input data against the
+	  variable order in the project if input data contains a descriptor
+	  header. This also filters unused varibles from input data.
+	  
+	* Adding batch job mode. This mode suppress info messages from
+	  Simca-QP and warnings messages caused by batch queue command pipe.
+
+Version 0.5.1 (2008-02-19):
+
+	* Changed output to be less verbose (stripping result headers). The
+	  old behavour is restored by using the --verbose option.
+	  
+	* Adding XML format output option.
+	
+Version 0.5.0 (2008-02-18):
+
+	* First working version (result for TPS output verified).
+	
