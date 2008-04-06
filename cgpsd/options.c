@@ -43,17 +43,18 @@ static void usage(const char *prog, const char *section)
 {
 	printf("%s - daemon for making prediction using Umetrics Simca-QP library.\n", prog);
 	printf("\n");
-	printf("Usage: %s -p proj -r data [options...]\n", prog);
+	printf("Usage: %s -f proj [options...]\n", prog);
 	printf("Options:\n");
-	printf("  -u, --proj=path:    Load project file\n");
-	printf("  -s, --socket=path:    Listen on UNIX socket\n");
-	printf("  -b, --bind=adddr:   Bind to interface (address)\n");
-	printf("  -p, --port=num:     Listen on port\n");
-	printf("  -l, --logfile=path: Use path as simca lib log\n");
-	printf("  -d, --debug:        Enable debug output (allowed multiple times)\n");
-	printf("  -v, --verbose:      Be more verbose in output\n");
-	printf("  -h, --help:         This help\n");
-	printf("  -V, --version:      Print version info to stdout\n");
+	printf("  -f, --proj=path:      Load project file\n");
+	printf("  -u, --unix[=path]:    Listen on UNIX socket (socket path [%s])\n", CGPSD_DEFAULT_SOCK);
+	printf("  -t, --tcp[=addr]:     Listen on TCP socket (interface address [%s])\n", CGPSD_DEFAULT_ADDR);
+	printf("  -p, --port=num:       Listen on port [%d]\n", CGPSD_DEFAULT_PORT);
+	printf("  -l, --logfile=path:   Use path as simca lib log\n");
+	printf("  -i, --interactive:    Don't detach from controlling terminal\n");
+	printf("  -d, --debug:          Enable debug output (allowed multiple times)\n");
+	printf("  -v, --verbose:        Be more verbose in output\n");
+	printf("  -h, --help:           This help\n");
+	printf("  -V, --version:        Print version info to stdout\n");
 	printf("\n");
 	printf("This application is part of the ChemGPS project.\n");
 	printf("Send bug reports to %s\n", PACKAGE_BUGREPORT);
@@ -61,48 +62,54 @@ static void usage(const char *prog, const char *section)
 
 static void version(const char *prog)
 {
-	printf("%s - %s %s\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
+	printf("%s - package %s %s\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
+	printf("A daemon making prediction using Umetrics Simca-QP library.\n");
 	printf("\n");
-	printf("Daemon for making prediction using Umetrics Simca-QP library.\n");
+	printf(" * This program is distributed in the hope that it will be useful,\n");
+	printf(" * but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+	printf(" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n");
+	printf(" * GNU General Public License for more details.\n");
+	printf("\n");
+	printf("The %s software is copyright (C) 2007-2008 by Anders Lövgren and\n", PACKAGE_NAME);
+	printf("the Computing Department at Uppsala Biomedical Centre (BMC), Uppsala University.\n");
 	printf("This application is part of the ChemGPS project.\n");
 }
 
 void parse_options(int argc, char **argv, struct options *opts)
 {
 	static struct option options[] = {
-		{ "proj",    1, 0, 'u' },
-		{ "socket",  1, 0, 's' },
-		{ "bind",    1, 0, 'b' },
-		{ "port",    1, 0, 'p' },		
+		{ "proj",    1, 0, 'f' },
+		{ "unix",    2, 0, 'u' },
+		{ "tcp",     2, 0, 't' },
+		{ "port",    1, 0, 'p' },
 		{ "logfile", 1, 0, 'l' },
+		{ "interactive", 0, 0, 'i' },
 		{ "debug",   0, 0, 'd' },
 		{ "verbose", 0, 0, 'v' },
-		{ "help",    2, 0, 'h' },
+		{ "help",    0, 0, 'h' },
 		{ "version", 0, 0, 'V' }
 	};
 	int index, c;
 	struct stat st;
 
-	if(argc < 3) {
-		usage(opts->prog, NULL);
-		exit(1);
-	}
-	
-	while((c = getopt_long(argc, argv, "b:dhl:p:s:u:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "df:hil:p:t::u::vV", options, &index)) != -1) {
 		switch(c) {
-		case 'b':
-			opts->ipaddr = malloc(strlen(optarg) + 1);
-			if(!opts->ipaddr) {
-				die("failed alloc memory");
-			}
-			strcpy(opts->ipaddr, optarg);
-			break;
 		case 'd':
 			opts->debug++;
+			break;
+		case 'f':
+			opts->proj = malloc(strlen(optarg) + 1);
+			if(!opts->proj) {
+				die("failed alloc memory");
+			}
+			strcpy(opts->proj, optarg);
 			break;
 		case 'h':
 			usage(opts->prog, optarg);
 			exit(0);
+		case 'i':
+			opts->interactive = 1;
+			break;
 		case 'l':
 			opts->cgps->logfile = malloc(strlen(optarg) + 1);
 			if(!opts->cgps->logfile) {
@@ -116,19 +123,27 @@ void parse_options(int argc, char **argv, struct options *opts)
 				die("failed convert port number %s", optarg);
 			}
 			break;
-		case 's':
-			opts->unaddr = malloc(strlen(optarg) + 1);
-			if(!opts->unaddr) {
-				die("failed alloc memory");
+		case 't':
+			if(optarg) {
+				opts->ipaddr = malloc(strlen(optarg) + 1);
+				if(!opts->ipaddr) {
+					die("failed alloc memory");
+				}
+				strcpy(opts->ipaddr, optarg);
+			} else {
+				opts->ipaddr = CGPSD_DEFAULT_ADDR;
 			}
-			strcpy(opts->unaddr, optarg);
 			break;
 		case 'u':
-			opts->proj = malloc(strlen(optarg) + 1);
-			if(!opts->proj) {
-				die("failed alloc memory");
+			if(optarg) {
+				opts->unaddr = malloc(strlen(optarg) + 1);
+				if(!opts->unaddr) {
+					die("failed alloc memory");
+				}
+				strcpy(opts->unaddr, optarg);
+			} else {
+				opts->unaddr = CGPSD_DEFAULT_SOCK;
 			}
-			strcpy(opts->proj, optarg);
 			break;
 		case 'v':
 			opts->verbose++;
@@ -136,6 +151,8 @@ void parse_options(int argc, char **argv, struct options *opts)
 		case 'V':
 			version(opts->prog);
 			exit(0);
+		case '?':
+			exit(1);
 		}
 	}
 
@@ -143,7 +160,7 @@ void parse_options(int argc, char **argv, struct options *opts)
 	 * Check arguments and set defaults.
 	 */
 	if(!opts->proj) {
-		die("project file option (-p) is missing");
+		die("project file option (-f) is missing");
 	}
 	if(stat(opts->proj, &st) < 0) {
 		die("failed stat project file (model) %s", opts->proj);
@@ -180,7 +197,7 @@ void parse_options(int argc, char **argv, struct options *opts)
 			debug("  using unix socket = %s", opts->unaddr);
 		}
 		if(opts->ipaddr) {
-			debug("  bind to ipaddr %s on port %d", opts->ipaddr, opts->port);
+			debug("  bind to interface %s on port %d", opts->ipaddr, opts->port);
 		}
 		debug("  flags: debug = %s, verbose = %s", 
 		      (opts->debug   ? "yes" : "no"), 

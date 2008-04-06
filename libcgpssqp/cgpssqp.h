@@ -33,6 +33,10 @@
 #include <errno.h>
 #include <chemgps.h>
 
+#define CGPSD_DEFAULT_PORT 9401
+#define CGPSD_DEFAULT_SOCK "/var/run/cgpsd.sock"
+#define CGPSD_DEFAULT_ADDR "0.0.0.0"
+
 struct options
 {
 	/*
@@ -56,9 +60,12 @@ struct options
 	const char *output;   /* output file */
 	int numobs;           /* number of observations */
 	int daemon;           /* running as daemon */
+	int interactive;      /* don't detach from controlling terminal */
 	char *unaddr;         /* unix socket */
 	char *ipaddr;         /* ipv4/ipv6 addr */
 	uint16_t port;        /* port number */
+	int ipsock;           /* TCP socket */
+	int unsock;           /* Unix socket */
 };
 
 /*

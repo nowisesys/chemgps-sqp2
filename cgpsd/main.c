@@ -56,11 +56,15 @@ void exit_handler(void)
 			opts->proj = NULL;
 		}
 		if(opts->ipaddr) {
-			free(opts->ipaddr);
+			if(opts->ipaddr != CGPSD_DEFAULT_ADDR) {
+				free(opts->ipaddr);
+			}
 			opts->ipaddr = NULL;
 		}
 		if(opts->unaddr) {
-			free(opts->unaddr);
+			if(opts->unaddr != CGPSD_DEFAULT_SOCK) {
+				free(opts->unaddr);
+			}
 			opts->unaddr = NULL;
 		}
 		free(opts);
@@ -94,7 +98,13 @@ int main(int argc, char **argv)
 	if(init_socket(opts) < 0) {
 		die("failed initilize socket");
 	}
+	if(!opts->interactive) {
+		daemon(0, 0);
+	}
+	
+	loginfo("daemon ready (version %s)", PACKAGE_VERSION);	
 	service(opts);
+	loginfo("daemon shutting down...");
 	
 	return 0;	
 }
