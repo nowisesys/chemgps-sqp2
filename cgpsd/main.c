@@ -1,7 +1,7 @@
-/* Make Simca-QP predictions for the ChemGPS project.
- * 
- * Copyright (C) 2007-2008 Computing Department at BMC, Uppsala Biomedical
- * Centre, Uppsala University.
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
  * 
  * ----------------------------------------------------------------------
  * 
@@ -28,17 +28,73 @@
 # include "config.h"
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+#include <libgen.h>
 #include <chemgps.h>
+
+#include "cgpssqp.h"
+#include "cgpsd.h"
+
+struct options *opts;
+
+void exit_handler(void)
+{
+	if(opts) {
+		debug("cleaning up at exit...");
+		
+		if(opts->cgps) {
+			if(opts->cgps->logfile) {
+				free(opts->cgps->logfile);
+				opts->cgps->logfile = NULL;
+			}
+			free(opts->cgps);
+			opts->cgps = NULL;
+		}
+		if(opts->proj) {
+			free(opts->proj);
+			opts->proj = NULL;
+		}
+		if(opts->ipaddr) {
+			free(opts->ipaddr);
+			opts->ipaddr = NULL;
+		}
+		if(opts->unaddr) {
+			free(opts->unaddr);
+			opts->unaddr = NULL;
+		}
+		free(opts);
+		opts = NULL;
+	}
+}
 
 int main(int argc, char **argv)
 {
-	/*
-	 * Process argument options.
-	 */
+	opts = malloc(sizeof(struct options));
+	if(!opts) {
+		die("failed alloc memory");
+	}
+	memset(opts, 0, sizeof(struct options));
 	
-	/*
-	 * Make connection to daemon socket.
-	 */
+	opts->cgps = malloc(sizeof(struct cgps_options));
+	if(!opts->cgps) {
+		die("failed alloc memory");
+	}
+	memset(opts->cgps, 0, sizeof(struct cgps_options));
 	
-	return 0;
+	opts->prog = basename(argv[0]);
+	opts->parent = getpid();
+	
+	if(atexit(exit_handler) != 0) {
+		logerr("failed register main exit handler");
+	}
+	
+	parse_options(argc, argv, opts);
+	
+	if(init_socket(opts) < 0) {
+		die("failed initilize socket");
+	}
+	service(opts);
+	
+	return 0;	
 }
