@@ -31,6 +31,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <chemgps.h>
 
 #include "cgpssqp.h"
@@ -62,6 +65,12 @@ void exit_handler(void)
 			opts->ipaddr = NULL;
 		}
 		if(opts->unaddr) {
+			struct stat st;
+			if(stat(opts->unaddr, &st) == 0) {
+				if(unlink(opts->unaddr) < 0) {
+					logerr("failed unlink UNIX socket (%s)", opts->unaddr);
+				}
+			}
 			if(opts->unaddr != CGPSD_DEFAULT_SOCK) {
 				free(opts->unaddr);
 			}
