@@ -66,6 +66,7 @@ struct options
 	uint16_t port;        /* port number */
 	int ipsock;           /* TCP socket */
 	int unsock;           /* Unix socket */
+	int backlog;          /* Listen queue length */
 };
 
 /*

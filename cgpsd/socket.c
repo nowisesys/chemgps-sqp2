@@ -64,10 +64,10 @@ int init_socket(struct options *opts)
 		}
 		debug("bind TCP socket to %s port %d", opts->ipaddr, opts->port);
 		
-		if(listen(opts->ipsock, CGPSD_QUEUE_LENGTH) < 0) {
+		if(listen(opts->ipsock, opts->backlog) < 0) {
 			die("failed listen on TCP socket");
 		}
-		debug("successful listen on TCP socket (backlog: %d)", CGPSD_QUEUE_LENGTH);
+		debug("successful listen on TCP socket (backlog: %d)", opts->backlog);
 	}
 	if(opts->unaddr) {
 		struct sockaddr_un sockaddr;
@@ -87,10 +87,10 @@ int init_socket(struct options *opts)
 		}
 		debug("bind UNIX socket to %s", opts->unaddr);
 		
-		if(listen(opts->unsock, CGPSD_QUEUE_LENGTH) < 0) {
+		if(listen(opts->unsock, opts->backlog) < 0) {
 			die("failed listen on UNIX socket");
 		}
-		debug("successful listen on UNIX socket (backlog: %d)", CGPSD_QUEUE_LENGTH);
+		debug("successful listen on UNIX socket (backlog: %d)", opts->backlog);
 	}
 	return 0;
 }

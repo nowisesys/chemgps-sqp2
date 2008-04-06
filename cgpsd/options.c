@@ -38,6 +38,7 @@
 #include <chemgps.h>
 
 #include "cgpssqp.h"
+#include "cgpsd.h"
 
 static void usage(const char *prog, const char *section)
 {
@@ -49,6 +50,7 @@ static void usage(const char *prog, const char *section)
 	printf("  -u, --unix[=path]:    Listen on UNIX socket (socket path [%s])\n", CGPSD_DEFAULT_SOCK);
 	printf("  -t, --tcp[=addr]:     Listen on TCP socket (interface address [%s])\n", CGPSD_DEFAULT_ADDR);
 	printf("  -p, --port=num:       Listen on port [%d]\n", CGPSD_DEFAULT_PORT);
+	printf("  -b, --backlog=num:    Listen queue length [%d]\n", CGPSD_QUEUE_LENGTH);
 	printf("  -l, --logfile=path:   Use path as simca lib log\n");
 	printf("  -i, --interactive:    Don't detach from controlling terminal\n");
 	printf("  -d, --debug:          Enable debug output (allowed multiple times)\n");
@@ -82,6 +84,7 @@ void parse_options(int argc, char **argv, struct options *opts)
 		{ "unix",    2, 0, 'u' },
 		{ "tcp",     2, 0, 't' },
 		{ "port",    1, 0, 'p' },
+		{ "backlog", 1, 0, 'b' },
 		{ "logfile", 1, 0, 'l' },
 		{ "interactive", 0, 0, 'i' },
 		{ "debug",   0, 0, 'd' },
@@ -92,8 +95,11 @@ void parse_options(int argc, char **argv, struct options *opts)
 	int index, c;
 	struct stat st;
 
-	while((c = getopt_long(argc, argv, "df:hil:p:t:u:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "b:df:hil:p:t:u:vV", options, &index)) != -1) {
 		switch(c) {
+		case 'b':
+			opts->backlog = atoi(optarg);
+			break;
 		case 'd':
 			opts->debug++;
 			break;
@@ -184,6 +190,9 @@ void parse_options(int argc, char **argv, struct options *opts)
 	if(opts->ipaddr && !opts->port) {
 		opts->port = CGPSD_DEFAULT_PORT;
 	}			  
+	if(!opts->backlog) {
+		opts->backlog = CGPSD_QUEUE_LENGTH;
+	}
 	
 	/*
 	 * Dump options for debugging purpose.
@@ -201,9 +210,11 @@ void parse_options(int argc, char **argv, struct options *opts)
 		if(opts->ipaddr) {
 			debug("  bind to interface %s on port %d", opts->ipaddr, opts->port);
 		}
-		debug("  flags: debug = %s, verbose = %s", 
+		debug("  listen queue length = %d", opts->backlog);
+		debug("  flags: debug = %s, verbose = %s, interactive = %s", 
 		      (opts->debug   ? "yes" : "no"), 
-		      (opts->verbose ? "yes" : "no"));
+		      (opts->verbose ? "yes" : "no"),
+		      (opts->interactive ? "yes" : "no" ));
 		debug("---------------------------------------------");
 	}
 }
