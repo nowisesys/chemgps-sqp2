@@ -29,23 +29,36 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <stdint.h>
 #include <errno.h>
 #include <chemgps.h>
 
 struct options
 {
+	/*
+	 * Should match order in cgps_options struct:
+	 */
 	const char *prog;     /* log prefix */
 	int syslog;           /* use syslog */
 	int debug;            /* enable debug */
 	int verbose;          /* be more verbose */
 	int batch;            /* enable batch job mode */
-	
+	/*
+	 * Common members:
+	 */
 	const char *proj;     /* the project file (model) */	
+	pid_t parent;         /* our prosess ID */	
+	struct cgps_options *cgps;
+	/*
+	 * Client and server options:
+	 */
 	const char *data;     /* input data */
 	const char *output;   /* output file */
-	pid_t parent;         /* our prosess ID */	
 	int numobs;           /* number of observations */
-	struct cgps_options *cgps;
+	int daemon;           /* running as daemon */
+	char *unaddr;         /* unix socket */
+	char *ipaddr;         /* ipv4/ipv6 addr */
+	uint16_t port;        /* port number */
 };
 
 /*
