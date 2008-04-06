@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 		daemon(0, 0);
 	}
 	
-	loginfo("daemon ready (version %s)", PACKAGE_VERSION);	
+	loginfo("daemon starting up (version %s)", PACKAGE_VERSION);	
 	service(opts);
 	loginfo("daemon shutting down...");
 	
