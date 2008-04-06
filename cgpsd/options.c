@@ -92,7 +92,7 @@ void parse_options(int argc, char **argv, struct options *opts)
 	int index, c;
 	struct stat st;
 
-	while((c = getopt_long(argc, argv, "df:hil:p:t::u::vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "df:hil:p:t:u:vV", options, &index)) != -1) {
 		switch(c) {
 		case 'd':
 			opts->debug++;
@@ -124,24 +124,26 @@ void parse_options(int argc, char **argv, struct options *opts)
 			}
 			break;
 		case 't':
-			if(optarg) {
+			if(*optarg != '-') {
 				opts->ipaddr = malloc(strlen(optarg) + 1);
 				if(!opts->ipaddr) {
 					die("failed alloc memory");
 				}
 				strcpy(opts->ipaddr, optarg);
 			} else {
+				--optind;
 				opts->ipaddr = CGPSD_DEFAULT_ADDR;
 			}
 			break;
 		case 'u':
-			if(optarg) {
+			if(*optarg != '-') {
 				opts->unaddr = malloc(strlen(optarg) + 1);
 				if(!opts->unaddr) {
 					die("failed alloc memory");
 				}
 				strcpy(opts->unaddr, optarg);
 			} else {
+				--optind;
 				opts->unaddr = CGPSD_DEFAULT_SOCK;
 			}
 			break;
