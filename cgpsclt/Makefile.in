@@ -49,7 +49,8 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_cgpsclt_OBJECTS = cgpsclt-main.$(OBJEXT)
+am_cgpsclt_OBJECTS = cgpsclt-main.$(OBJEXT) cgpsclt-options.$(OBJEXT) \
+	cgpsclt-socket.$(OBJEXT)
 cgpsclt_OBJECTS = $(am_cgpsclt_OBJECTS)
 cgpsclt_DEPENDENCIES = ../libcgpssqp/libcgpssqp.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -138,7 +139,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-cgpsclt_SOURCES = main.c
+cgpsclt_SOURCES = main.c options.c socket.c cgpsclt.h
 cgpsclt_LDADD = -lchemgps ../libcgpssqp/libcgpssqp.a
 cgpsclt_CFLAGS = "-I../libcgpssqp"
 all: all-am
@@ -208,6 +209,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-options.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-socket.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -236,6 +239,34 @@ cgpsclt-main.obj: main.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='cgpsclt-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+
+cgpsclt-options.o: options.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-options.o -MD -MP -MF "$(DEPDIR)/cgpsclt-options.Tpo" -c -o cgpsclt-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsclt-options.Tpo" "$(DEPDIR)/cgpsclt-options.Po"; else rm -f "$(DEPDIR)/cgpsclt-options.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='options.c' object='cgpsclt-options.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+
+cgpsclt-options.obj: options.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-options.obj -MD -MP -MF "$(DEPDIR)/cgpsclt-options.Tpo" -c -o cgpsclt-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsclt-options.Tpo" "$(DEPDIR)/cgpsclt-options.Po"; else rm -f "$(DEPDIR)/cgpsclt-options.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='options.c' object='cgpsclt-options.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+
+cgpsclt-socket.o: socket.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-socket.o -MD -MP -MF "$(DEPDIR)/cgpsclt-socket.Tpo" -c -o cgpsclt-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsclt-socket.Tpo" "$(DEPDIR)/cgpsclt-socket.Po"; else rm -f "$(DEPDIR)/cgpsclt-socket.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='socket.c' object='cgpsclt-socket.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
+
+cgpsclt-socket.obj: socket.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-socket.obj -MD -MP -MF "$(DEPDIR)/cgpsclt-socket.Tpo" -c -o cgpsclt-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsclt-socket.Tpo" "$(DEPDIR)/cgpsclt-socket.Po"; else rm -f "$(DEPDIR)/cgpsclt-socket.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='socket.c' object='cgpsclt-socket.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)

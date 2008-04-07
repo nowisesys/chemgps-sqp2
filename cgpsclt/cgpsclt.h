@@ -24,62 +24,15 @@
  * ----------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#include <string.h>
-#include <libgen.h>
-#include <chemgps.h>
+#ifndef __CGPSCLT_H__
+#define __CGPSCLT_H__
 
 #include "cgpssqp.h"
-#include "cgpsclt.h"
 
-struct options *opts;
+#define CGPSCLT_RESOLVE_RETRIES 5
+#define CGPSCLT_RESOLVE_TIMEOUT 2
 
-void exit_handler(void)
-{
-	if(opts) {
-		debug("cleaning up at exit...");
-		
-		if(opts->proj) {
-			free(opts->proj);
-			opts->proj = NULL;
-		}
-		if(opts->ipaddr) {
-			if(opts->ipaddr != CGPSD_DEFAULT_ADDR) {
-				free(opts->ipaddr);
-			}
-			opts->ipaddr = NULL;
-		}
-		if(opts->unaddr) {
-			if(opts->unaddr != CGPSD_DEFAULT_SOCK) {
-				free(opts->unaddr);
-			}
-			opts->unaddr = NULL;
-		}
-		free(opts);
-		opts = NULL;
-	}
-}
+void init_socket(struct options *opts);
+void parse_options(int argc, char **argv, struct options *opts);
 
-int main(int argc, char **argv)
-{
-	opts = malloc(sizeof(struct options));
-	if(!opts) {
-		die("failed alloc memory");
-	}
-	memset(opts, 0, sizeof(struct options));
-
-	opts->prog = basename(argv[0]);
-	opts->parent = getpid();
-	
-	if(atexit(exit_handler) != 0) {
-		logerr("failed register main exit handler");
-	}
-	
-	parse_options(argc, argv, opts);
-	init_socket(opts);
-	
-	return 0;
-}
+#endif /* __CGPSCLT_H__ */
