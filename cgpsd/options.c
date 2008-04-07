@@ -42,7 +42,7 @@
 
 static void usage(const char *prog, const char *section)
 {
-	printf("%s - daemon for making prediction using Umetrics Simca-QP library.\n", prog);
+	printf("%s - daemon making prediction using Umetrics Simca-QP library.\n", prog);
 	printf("\n");
 	printf("Usage: %s -f proj [options...]\n", prog);
 	printf("Options:\n");
@@ -65,7 +65,7 @@ static void usage(const char *prog, const char *section)
 static void version(const char *prog)
 {
 	printf("%s - package %s %s\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
-	printf("A daemon making prediction using Umetrics Simca-QP library.\n");
+	printf("The daemon for making prediction using Umetrics Simca-QP library.\n");
 	printf("\n");
 	printf(" * This program is distributed in the hope that it will be useful,\n");
 	printf(" * but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
