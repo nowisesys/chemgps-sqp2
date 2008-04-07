@@ -1,6 +1,17 @@
 *** ABOUT CHEMGPS-SQP2 ***
 
-** Programs:
+** GENERAL:
+
+   The chemgps-sqp2 package contains a daemon, client and standalone program
+   for making predictions using Umetrics Simca-QP. The programs is based on
+   the libchemgps library (should be installed before trying to build this
+   package).
+   
+   The cgpsclt/cgpsd works together and provides a client/server solution.
+   Communication is done using local (UNIX socket) and networks (TCP socket)
+   connections.
+   
+** PROGRAMS:
 
    cgpsclt: 
       ChemGPS client. Sends prediction requests to cgpsd.
