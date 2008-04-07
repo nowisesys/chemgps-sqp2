@@ -67,7 +67,9 @@ struct options
 	int ipsock;           /* TCP socket */
 	int unsock;           /* UNIX socket */
 	int backlog;          /* listen queue length */
-	int done;             /* time to exit? */
+	int state;            /* daemon state */
+	struct sigaction *newact; /* new signal action */
+	struct sigaction *oldact; /* old signal action */	
 };
 
 /*

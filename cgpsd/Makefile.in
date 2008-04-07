@@ -51,7 +51,7 @@ sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(sbin_PROGRAMS)
 am_cgpsd_OBJECTS = cgpsd-main.$(OBJEXT) cgpsd-options.$(OBJEXT) \
 	cgpsd-server.$(OBJEXT) cgpsd-socket.$(OBJEXT) \
-	cgpsd-client.$(OBJEXT)
+	cgpsd-client.$(OBJEXT) cgpsd-signal.$(OBJEXT)
 cgpsd_OBJECTS = $(am_cgpsd_OBJECTS)
 cgpsd_DEPENDENCIES = ../libcgpssqp/libcgpssqp.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -140,7 +140,7 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-cgpsd_SOURCES = main.c options.c server.c socket.c cgpsd.h client.c
+cgpsd_SOURCES = main.c options.c server.c socket.c cgpsd.h client.c signal.c
 cgpsd_LDADD = -lchemgps ../libcgpssqp/libcgpssqp.a
 cgpsd_CFLAGS = "-I../libcgpssqp"
 all: all-am
@@ -213,6 +213,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-options.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-server.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-signal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-socket.Po@am__quote@
 
 .c.o:
@@ -298,6 +299,20 @@ cgpsd-client.obj: client.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='client.c' object='cgpsd-client.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -c -o cgpsd-client.obj `if test -f 'client.c'; then $(CYGPATH_W) 'client.c'; else $(CYGPATH_W) '$(srcdir)/client.c'; fi`
+
+cgpsd-signal.o: signal.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -MT cgpsd-signal.o -MD -MP -MF "$(DEPDIR)/cgpsd-signal.Tpo" -c -o cgpsd-signal.o `test -f 'signal.c' || echo '$(srcdir)/'`signal.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsd-signal.Tpo" "$(DEPDIR)/cgpsd-signal.Po"; else rm -f "$(DEPDIR)/cgpsd-signal.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='signal.c' object='cgpsd-signal.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -c -o cgpsd-signal.o `test -f 'signal.c' || echo '$(srcdir)/'`signal.c
+
+cgpsd-signal.obj: signal.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -MT cgpsd-signal.obj -MD -MP -MF "$(DEPDIR)/cgpsd-signal.Tpo" -c -o cgpsd-signal.obj `if test -f 'signal.c'; then $(CYGPATH_W) 'signal.c'; else $(CYGPATH_W) '$(srcdir)/signal.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsd-signal.Tpo" "$(DEPDIR)/cgpsd-signal.Po"; else rm -f "$(DEPDIR)/cgpsd-signal.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='signal.c' object='cgpsd-signal.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -c -o cgpsd-signal.obj `if test -f 'signal.c'; then $(CYGPATH_W) 'signal.c'; else $(CYGPATH_W) '$(srcdir)/signal.c'; fi`
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)

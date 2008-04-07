@@ -29,6 +29,14 @@
 
 #define CGPSD_QUEUE_LENGTH 50  /* max length for queue of pending connections */
 
+#define CGPSD_STATE_INITILIZING  0
+#define CGPSD_STATE_DAEMONIZED   1
+#define CGPSD_STATE_RUNNING      2
+#define CGPSD_STATE_CLOSING      4
+#define CGPSD_STATE_RELOAD       8
+
+#define cgpsd_done(state) (((state) & CGPSD_STATE_CLOSING))
+
 /*
  * Peer connection endpoint.
  */
@@ -42,5 +50,7 @@ void parse_options(int argc, char **argv, struct options *opts);
 void service(struct options *opts);
 void process_peer_request(void *peer);
 int init_socket(struct options *opts);
+void setup_signals(struct options *opts);
+void restore_signals(struct options *opts);
 
 #endif /* __CGPSD_H__ */
