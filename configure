@@ -3511,7 +3511,8 @@ done
 
 
 
-for ac_header in arpa/inet.h netinet/in.h stdint.h stdlib.h string.h sys/socket.h syslog.h unistd.h
+
+for ac_header in arpa/inet.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/socket.h syslog.h unistd.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -5206,7 +5207,8 @@ done
 
 
 
-for ac_func in atexit inet_ntoa memset select socket strcspn strerror strspn strtol
+
+for ac_func in atexit gethostbyname inet_ntoa memset select socket strcspn strerror strspn strtol
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $ac_func" >&5

@@ -16,7 +16,7 @@ AC_CHECK_LIB([chemgps], [cgps_project_load])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h netinet/in.h stdint.h stdlib.h string.h sys/socket.h syslog.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/socket.h syslog.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -30,7 +30,7 @@ AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_STAT
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([atexit inet_ntoa memset select socket strcspn strerror strspn strtol])
+AC_CHECK_FUNCS([atexit gethostbyname inet_ntoa memset select socket strcspn strerror strspn strtol])
 
 AC_CONFIG_FILES([Makefile
                  docs/Makefile
