@@ -41,7 +41,7 @@
 void service(struct options *opts)
 {
 	fd_set sockfds;  /* server socket file descriptors set */
-	int sockets = 0;
+	int maxsock = 0;
 	
 	if(opts->ipaddr) {
 		loginfo("listening on TCP socket %s port %d", opts->ipaddr, opts->port);
@@ -52,87 +52,90 @@ void service(struct options *opts)
 	
 	FD_ZERO(&sockfds);
 	if(opts->ipsock) {
-		debug("adding the TCP server socket to socket file descriptors set");
+		debug("adding TCP server socket to read ready set (fd = %d)", opts->ipsock);
 		FD_SET(opts->ipsock, &sockfds);
-		sockets++;
+		maxsock = opts->ipsock > maxsock ? opts->ipsock : maxsock;
 	}
 	if(opts->unsock) {
-		debug("adding the UNIX server socket to socket file descriptors set");
+		debug("adding UNIX server socket to read ready set (fd = %d)", opts->unsock);
 		FD_SET(opts->unsock, &sockfds);
-		sockets++;
+		maxsock = opts->unsock > maxsock ? opts->unsock : maxsock;
 	}
-	while(!opts->done) {
-		fd_set ready = sockfds;
-		int result, i;
+
+        setup_signals(opts);
+	
+	debug("enter running state");
+        opts->state |= CGPSD_STATE_RUNNING;
+	
+	while(1) {
+		fd_set readfds = sockfds;
+		int result, client = -1;
+
+		debug("waiting for client connections...");
+		result = select(maxsock + 1, &readfds, NULL, NULL, NULL);
 		
-		result = select(sockets, &ready, NULL, NULL, NULL);
+		if(cgpsd_done(opts->state)) {
+			break;
+		}
+		
 		if(result < 0) {
 			logerr("failed select");
-		} else if(!result) {
-			debug("timeout in select");
 		} else {
-			debug("select has returned");
-			
-			for(i = 0; i < result; ++i) {
-				if(FD_ISSET(i, &ready)) {
-					int client = -1;
-
-					debug("file descriptor %d is set", i);
-					if(i == opts->ipsock) {
-						struct sockaddr_in sockaddr;
-						socklen_t socklen = sizeof(struct sockaddr_in);
-						client = accept(opts->ipsock,
-								(struct sockaddr *)&sockaddr,
-								&socklen);
-						if(client < 0) {
-							logerr("failed accept TCP client connection");
-						} else {
-							loginfo("accepted TCP client connection from %s on port %d", 
-								inet_ntoa(sockaddr.sin_addr), 
-								ntohs(sockaddr.sin_port));
-						}
-					} else if(i == opts->unsock) {
-						struct sockaddr_un sockaddr;
-						socklen_t socklen = sizeof(struct sockaddr_un);
-						client = accept(opts->unsock,
-								(struct sockaddr *)&sockaddr,
-								&socklen);
-						if(client < 0) {
-							logerr("failed accept UNIX client connection");
-						} else {
-							struct ucred cred;
-							int credlen = sizeof(struct ucred);
-							
-							if(getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cred, &credlen) < 0) {
-								logerr("failed get credentials of UNIX socket peer");
-							} else {
-								struct passwd *pwent = getpwuid(cred.uid);
-								
-								debug("UNIX socket peer: pid = %d, uid = %d, gid = %d\n",
-								      cred.pid, cred.uid, cred.gid);
-								loginfo("accepted UNIX client connection from %s (uid: %d, pid: %d)", 
-									pwent->pw_name, cred.uid, cred.pid);
-							}
-						}
-					} else {
-						logerr("unexpected socket %d in ready set", i);
-					}
+			debug("select returned with result = %d");
+			if(FD_ISSET(opts->ipsock, &readfds)) {
+				struct sockaddr_in sockaddr;
+				socklen_t socklen = sizeof(struct sockaddr_in);
+				client = accept(opts->ipsock,
+						(struct sockaddr *)&sockaddr,
+						&socklen);
+				if(client < 0) {
+					logerr("failed accept TCP client connection");
+				} else {
+					loginfo("accepted TCP client connection from %s on port %d", 
+						inet_ntoa(sockaddr.sin_addr), 
+						ntohs(sockaddr.sin_port));
+				}
+			}
+			if(FD_ISSET(opts->unsock, &readfds)) {
+				struct sockaddr_un sockaddr;
+				socklen_t socklen = sizeof(struct sockaddr_un);
+				client = accept(opts->unsock,
+						(struct sockaddr *)&sockaddr,
+						&socklen);
+				if(client < 0) {
+					logerr("failed accept UNIX client connection");
+				} else {
+					struct ucred cred;
+					int credlen = sizeof(struct ucred);
 					
-					if(client != -1) {
-						struct client *peer = malloc(sizeof(struct client));
-						if(!peer) {
-						logerr("failed alloc memory");
-							continue;
-						}
+					if(getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cred, &credlen) < 0) {
+						logerr("failed get credentials of UNIX socket peer");
+					} else {
+						struct passwd *pwent = getpwuid(cred.uid);
 						
-						peer->opts = opts;
-						peer->sock = client;
-						
-						process_peer_request(peer);
+						debug("UNIX socket peer: pid = %d, uid = %d, gid = %d",
+						      cred.pid, cred.uid, cred.gid);
+						loginfo("accepted UNIX client connection from %s (uid: %d, pid: %d)", 
+							pwent->pw_name, cred.uid, cred.pid);
 					}
 				}
+			}
+			
+			if(client != -1) {
+				struct client *peer = malloc(sizeof(struct client));
+				if(!peer) {
+					logerr("failed alloc memory");
+					continue;
+				}
+				
+				peer->opts = opts;
+				peer->sock = client;
+				
+				process_peer_request(peer);
 			}
 		}
 	}
 	debug("the done flag is set, exiting service()");
+
+        restore_signals(opts);
 }
