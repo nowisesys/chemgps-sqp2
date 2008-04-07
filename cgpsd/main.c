@@ -76,6 +76,9 @@ void exit_handler(void)
 			}
 			opts->unaddr = NULL;
 		}
+		if(opts->state & CGPSD_STATE_DAEMONIZED) {
+			closelog();
+		}		
 		free(opts);
 		opts = NULL;
 	}
@@ -108,7 +111,13 @@ int main(int argc, char **argv)
 		die("failed initilize socket");
 	}
 	if(!opts->interactive) {
-		daemon(0, 0);
+		if(daemon(0, 0) < 0) {
+			die("failed become daemon");
+		}
+		else {
+			opts->state |= CGPSD_STATE_DAEMONIZED;
+			openlog(opts->prog, LOG_PID, LOG_DAEMON);
+		}
 	}
 	
 	loginfo("daemon starting up (version %s)", PACKAGE_VERSION);	
