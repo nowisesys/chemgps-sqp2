@@ -80,7 +80,7 @@ int init_socket(struct options *opts)
 		
 		memset(&sockaddr, 0, sizeof(struct sockaddr_un));
 		sockaddr.sun_family = AF_UNIX;
-		strcpy(sockaddr.sun_path, opts->unaddr);
+		strncpy(sockaddr.sun_path, opts->unaddr, sizeof(sockaddr.sun_path));
 		if(bind(opts->unsock, (const struct sockaddr *)&sockaddr,
 			sizeof(struct sockaddr_un)) < 0) {
 			die("failed bind UNIX socket");
