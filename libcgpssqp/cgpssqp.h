@@ -65,8 +65,9 @@ struct options
 	char *ipaddr;         /* ipv4/ipv6 addr */
 	uint16_t port;        /* port number */
 	int ipsock;           /* TCP socket */
-	int unsock;           /* Unix socket */
-	int backlog;          /* Listen queue length */
+	int unsock;           /* UNIX socket */
+	int backlog;          /* listen queue length */
+	int done;             /* time to exit? */
 };
 
 /*
