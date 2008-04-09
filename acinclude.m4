@@ -32,3 +32,18 @@ AC_DEFUN([CGPS_ENABLE_FOREIGN_CLIENT],
   ], [foreign=false])
   AM_CONDITIONAL(FOREIGN_CLIENT, test "x$foreign" = "xtrue")
 ])
+
+dnl
+dnl Should the utilities be built?
+dnl
+AC_DEFUN([CGPS_ENABLE_UTILS],
+[
+  AC_ARG_ENABLE([utils], [  --enable-utils          Build utility applications from the utils directory],
+  [ case "${enableval}" in
+      yes) utils=true ;;
+      no)  utils=false ;;
+      *) AC_MSG_ERROR(bad value ${enableval} for --enable-utils) ;;
+    esac
+  ], [utils=false])
+  AM_CONDITIONAL(BUILD_UTILS, test "x$utils" = "xtrue")
+])

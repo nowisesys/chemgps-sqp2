@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB CPP EGREP LIBOBJS POW_LIB FOREIGN_CLIENT_TRUE FOREIGN_CLIENT_FALSE LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB CPP EGREP LIBOBJS POW_LIB BUILD_UTILS_TRUE BUILD_UTILS_FALSE FOREIGN_CLIENT_TRUE FOREIGN_CLIENT_FALSE LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -852,6 +852,7 @@ Optional Features:
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
   --disable-debug         Turn off debugging
+  --enable-utils          Build utility applications from the utils directory
   --enable-foreign        Build client without dependencies of libchemgps
 
 Some influential environment variables:
@@ -5338,6 +5339,32 @@ _ACEOF
   fi
 
 
+  # Check whether --enable-utils or --disable-utils was given.
+if test "${enable_utils+set}" = set; then
+  enableval="$enable_utils"
+   case "${enableval}" in
+      yes) utils=true ;;
+      no)  utils=false ;;
+      *) { { echo "$as_me:$LINENO: error: bad value ${enableval} for --enable-utils" >&5
+echo "$as_me: error: bad value ${enableval} for --enable-utils" >&2;}
+   { (exit 1); exit 1; }; } ;;
+    esac
+
+else
+  utils=false
+fi;
+
+
+if test "x$utils" = "xtrue"; then
+  BUILD_UTILS_TRUE=
+  BUILD_UTILS_FALSE='#'
+else
+  BUILD_UTILS_TRUE='#'
+  BUILD_UTILS_FALSE=
+fi
+
+
+
   # Check whether --enable-foreign or --disable-foreign was given.
 if test "${enable_foreign+set}" = set; then
   enableval="$enable_foreign"
@@ -5364,7 +5391,7 @@ fi
 
 
 
-                                                            ac_config_files="$ac_config_files Makefile docs/Makefile libcgpssqp/Makefile cgpsclt/Makefile cgpsd/Makefile cgpsstd/Makefile"
+                                                                                ac_config_files="$ac_config_files Makefile libcgpssqp/Makefile cgpsclt/Makefile cgpsd/Makefile cgpsstd/Makefile docs/Makefile utils/Makefile utils/stress/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5468,6 +5495,13 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${BUILD_UTILS_TRUE}" && test -z "${BUILD_UTILS_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"BUILD_UTILS\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"BUILD_UTILS\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -5923,11 +5957,13 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-  "docs/Makefile" ) CONFIG_FILES="$CONFIG_FILES docs/Makefile" ;;
   "libcgpssqp/Makefile" ) CONFIG_FILES="$CONFIG_FILES libcgpssqp/Makefile" ;;
   "cgpsclt/Makefile" ) CONFIG_FILES="$CONFIG_FILES cgpsclt/Makefile" ;;
   "cgpsd/Makefile" ) CONFIG_FILES="$CONFIG_FILES cgpsd/Makefile" ;;
   "cgpsstd/Makefile" ) CONFIG_FILES="$CONFIG_FILES cgpsstd/Makefile" ;;
+  "docs/Makefile" ) CONFIG_FILES="$CONFIG_FILES docs/Makefile" ;;
+  "utils/Makefile" ) CONFIG_FILES="$CONFIG_FILES utils/Makefile" ;;
+  "utils/stress/Makefile" ) CONFIG_FILES="$CONFIG_FILES utils/stress/Makefile" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
   "config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
@@ -6059,6 +6095,8 @@ s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@POW_LIB@,$POW_LIB,;t t
+s,@BUILD_UTILS_TRUE@,$BUILD_UTILS_TRUE,;t t
+s,@BUILD_UTILS_FALSE@,$BUILD_UTILS_FALSE,;t t
 s,@FOREIGN_CLIENT_TRUE@,$FOREIGN_CLIENT_TRUE,;t t
 s,@FOREIGN_CLIENT_FALSE@,$FOREIGN_CLIENT_FALSE,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
