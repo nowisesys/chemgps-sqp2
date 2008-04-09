@@ -32,6 +32,9 @@ AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strerror strspn strtol])
 
+CGPS_DISABLE_DEBUG
+CGPS_ENABLE_FOREIGN_CLIENT
+
 AC_CONFIG_FILES([Makefile
                  docs/Makefile
 		 libcgpssqp/Makefile

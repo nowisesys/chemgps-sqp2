@@ -106,6 +106,9 @@
    slash. */
 #undef LSTAT_FOLLOWS_SLASHED_SYMLINK
 
+/* Define to 1 to disable debug */
+#undef NDEBUG
+
 /* Name of package */
 #undef PACKAGE
 

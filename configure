@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB CPP EGREP LIBOBJS POW_LIB LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB CPP EGREP LIBOBJS POW_LIB FOREIGN_CLIENT_TRUE FOREIGN_CLIENT_FALSE LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -851,6 +851,8 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
+  --disable-debug         Turn off debugging
+  --enable-foreign        Build client without dependencies of libchemgps
 
 Some influential environment variables:
   CC          C compiler command
@@ -5312,6 +5314,56 @@ fi
 done
 
 
+
+  # Check whether --enable-debug or --disable-debug was given.
+if test "${enable_debug+set}" = set; then
+  enableval="$enable_debug"
+   case "${enableval}" in
+      yes) ndebug=true ;;
+      no)  ndebug=false ;;
+      *) { { echo "$as_me:$LINENO: error: bad value ${enableval} for --disable-debug" >&5
+echo "$as_me: error: bad value ${enableval} for --disable-debug" >&2;}
+   { (exit 1); exit 1; }; } ;;
+    esac
+
+else
+  ndebug=true
+fi;
+  if test "x$ndebug" = "xfalse"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define NDEBUG 1
+_ACEOF
+
+  fi
+
+
+  # Check whether --enable-foreign or --disable-foreign was given.
+if test "${enable_foreign+set}" = set; then
+  enableval="$enable_foreign"
+   case "${enableval}" in
+      yes) foreign=true ;;
+      no)  foreign=false ;;
+      *) { { echo "$as_me:$LINENO: error: bad value ${enableval} for --enable-foreign" >&5
+echo "$as_me: error: bad value ${enableval} for --enable-foreign" >&2;}
+   { (exit 1); exit 1; }; } ;;
+    esac
+
+else
+  foreign=false
+fi;
+
+
+if test "x$foreign" = "xtrue"; then
+  FOREIGN_CLIENT_TRUE=
+  FOREIGN_CLIENT_FALSE='#'
+else
+  FOREIGN_CLIENT_TRUE='#'
+  FOREIGN_CLIENT_FALSE=
+fi
+
+
+
                                                             ac_config_files="$ac_config_files Makefile docs/Makefile libcgpssqp/Makefile cgpsclt/Makefile cgpsd/Makefile cgpsstd/Makefile"
 
 cat >confcache <<\_ACEOF
@@ -5416,6 +5468,13 @@ if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"am__fastdepCC\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"am__fastdepCC\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${FOREIGN_CLIENT_TRUE}" && test -z "${FOREIGN_CLIENT_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"FOREIGN_CLIENT\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"FOREIGN_CLIENT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -6000,6 +6059,8 @@ s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@POW_LIB@,$POW_LIB,;t t
+s,@FOREIGN_CLIENT_TRUE@,$FOREIGN_CLIENT_TRUE,;t t
+s,@FOREIGN_CLIENT_FALSE@,$FOREIGN_CLIENT_FALSE,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
 

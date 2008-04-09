@@ -37,10 +37,13 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = cgpsclt$(EXEEXT)
+@FOREIGN_CLIENT_TRUE@am__append_1 = result.c
+@FOREIGN_CLIENT_FALSE@am__append_2 = -lchemgps
 subdir = cgpsclt
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -49,10 +52,16 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
+am__cgpsclt_SOURCES_DIST = main.c options.c socket.c cgpsclt.h \
+	request.c result.c
+@FOREIGN_CLIENT_TRUE@am__objects_1 = cgpsclt-result.$(OBJEXT)
 am_cgpsclt_OBJECTS = cgpsclt-main.$(OBJEXT) cgpsclt-options.$(OBJEXT) \
-	cgpsclt-socket.$(OBJEXT) cgpsclt-request.$(OBJEXT)
+	cgpsclt-socket.$(OBJEXT) cgpsclt-request.$(OBJEXT) \
+	$(am__objects_1)
 cgpsclt_OBJECTS = $(am_cgpsclt_OBJECTS)
-cgpsclt_DEPENDENCIES = ../libcgpssqp/libcgpssqp.a
+am__DEPENDENCIES_1 =
+cgpsclt_DEPENDENCIES = ../libcgpssqp/libcgpssqp.a \
+	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -61,7 +70,7 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(cgpsclt_SOURCES)
-DIST_SOURCES = $(cgpsclt_SOURCES)
+DIST_SOURCES = $(am__cgpsclt_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -86,6 +95,8 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+FOREIGN_CLIENT_FALSE = @FOREIGN_CLIENT_FALSE@
+FOREIGN_CLIENT_TRUE = @FOREIGN_CLIENT_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -139,9 +150,10 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-cgpsclt_SOURCES = main.c options.c socket.c cgpsclt.h request.c
-cgpsclt_LDADD = -lchemgps ../libcgpssqp/libcgpssqp.a
-cgpsclt_CFLAGS = "-I../libcgpssqp"
+cgpsclt_SOURCES = main.c options.c socket.c cgpsclt.h request.c \
+	$(am__append_1)
+cgpsclt_LDADD = ../libcgpssqp/libcgpssqp.a $(am__append_2)
+cgpsclt_CFLAGS = -I../libcgpssqp
 all: all-am
 
 .SUFFIXES:
@@ -211,6 +223,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-options.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-result.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-socket.Po@am__quote@
 
 .c.o:
@@ -282,6 +295,20 @@ cgpsclt-request.obj: request.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='request.c' object='cgpsclt-request.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-request.obj `if test -f 'request.c'; then $(CYGPATH_W) 'request.c'; else $(CYGPATH_W) '$(srcdir)/request.c'; fi`
+
+cgpsclt-result.o: result.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-result.o -MD -MP -MF "$(DEPDIR)/cgpsclt-result.Tpo" -c -o cgpsclt-result.o `test -f 'result.c' || echo '$(srcdir)/'`result.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsclt-result.Tpo" "$(DEPDIR)/cgpsclt-result.Po"; else rm -f "$(DEPDIR)/cgpsclt-result.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='result.c' object='cgpsclt-result.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-result.o `test -f 'result.c' || echo '$(srcdir)/'`result.c
+
+cgpsclt-result.obj: result.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-result.obj -MD -MP -MF "$(DEPDIR)/cgpsclt-result.Tpo" -c -o cgpsclt-result.obj `if test -f 'result.c'; then $(CYGPATH_W) 'result.c'; else $(CYGPATH_W) '$(srcdir)/result.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsclt-result.Tpo" "$(DEPDIR)/cgpsclt-result.Po"; else rm -f "$(DEPDIR)/cgpsclt-result.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='result.c' object='cgpsclt-result.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-result.obj `if test -f 'result.c'; then $(CYGPATH_W) 'result.c'; else $(CYGPATH_W) '$(srcdir)/result.c'; fi`
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
