@@ -1,0 +1,91 @@
+.TH CGPSD "8" "April 2008" "Uppsala Biomedical Centre (BMC)" "Linux System Administration"
+.\" Format as -*- sh -*-
+.\"
+.\"     Copyright (c) 2007-2008 Anders Lövgren and the Computing Department,
+.\"     Uppsala Biomedical Centre, Uppsala University.
+.\"
+.\"     This program is free software; you can redistribute it and/or modify
+.\"     it under the terms of the GNU General Public License as published by
+.\"     the Free Software Foundation; either version 2 of the License, or
+.\"     (at your option) any later version.
+.\"
+.\"     This program is distributed in the hope that it will be useful,
+.\"     but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"     GNU General Public License for more details.
+.\"
+.\"     You should have received a copy of the GNU General Public License
+.\"     along with this program; if not, write to the Free Software
+.\"     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"
+.SH NAME
+cgpsd \- prediction daemon
+
+.SH SYNOPSIS
+.B cgpsd
+\fI-f proj \fR[\fIoptions\fR...]
+
+.SH DESCRIPTION
+The 
+.B cgpsd 
+daemon loads the project at startup and then enter the service mode where it accepts prediction request from the 
+.B cgpsclt
+application or any other client that follows the CGPSP protocol. The daemon listens for client request on one or more server sockets (see the \-u and \-t option).
+
+.SH OPTIONS
+.TP
+\fB\-f\fR, \fB\-\-proj\fR=\fIpath\fR:
+Load project file
+.TP
+\fB\-u\fR, \fB\-\-unix\fR[=\fIpath\fR]:
+Listen on UNIX socket (socket path [/var/run/cgpsd.sock])
+.TP
+\fB\-t\fR, \fB\-\-tcp\fR[=\fIaddr\fR]:
+Listen on TCP socket (interface address [0.0.0.0])
+.TP
+\fB\-p\fR, \fB\-\-port\fR=\fInum\fR:
+Listen on port [9401]
+.TP
+\fB\-b\fR, \fB\-\-backlog\fR=\fInum\fR:
+Listen queue length [50]
+.TP
+\fB\-l\fR, \fB\-\-logfile\fR=\fIpath\fR:
+Use path as simca lib log
+.TP
+\fB\-i\fR, \fB\-\-interactive\fR:
+Don't detach from controlling terminal
+.TP
+\fB\-d\fR, \fB\-\-debug\fR:
+Enable debug output (allowed multiple times)
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR:
+Be more verbose in output
+.TP
+\fB\-h\fR, \fB\-\-help\fR:
+This help
+.TP
+\fB\-V\fR, \fB\-\-version\fR:
+Print version info to stdout
+
+.SH NOTES
+This daemon is part of the chemgps-sqp2 package developed for the ChemGPS project.
+
+.SH BUGS
+Probably, if you find one, send them to anders.lovgren@bmc.uu.se
+
+.SH AUTHOR
+Anders Lövgren <anders.lovgren@bmc.uu.se>
+
+.SH COPYRIGHT
+Copyright (C) 2007-2008 Anders Lövgren and the Computing Department, Uppsala Biomedical Centre, Uppsala University.
+
+.SH LICENSE
+The 
+.B cgpsd
+daemon is released under the GNU General Public License.
+
+.SH SEE ALSO
+.BR cgpsclt (1),
+.BR cgpsstd (1)
+.BR libchemgps (3),

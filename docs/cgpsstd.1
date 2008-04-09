@@ -1,0 +1,102 @@
+.TH CGPSSTD "1" "April 2008" "Uppsala Biomedical Centre (BMC)" "User Commands"
+.\" Format as -*- sh -*-
+.\"
+.\"     Copyright (c) 2007-2008 Anders Lövgren and the Computing Department,
+.\"     Uppsala Biomedical Centre, Uppsala University.
+.\"
+.\"     This program is free software; you can redistribute it and/or modify
+.\"     it under the terms of the GNU General Public License as published by
+.\"     the Free Software Foundation; either version 2 of the License, or
+.\"     (at your option) any later version.
+.\"
+.\"     This program is distributed in the hope that it will be useful,
+.\"     but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"     GNU General Public License for more details.
+.\"
+.\"     You should have received a copy of the GNU General Public License
+.\"     along with this program; if not, write to the Free Software
+.\"     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"
+.SH NAME
+cgpsstd \- standalone prediction application.
+
+.SH SYNOPSIS
+.B cgpsstd
+\fI-p proj -r data \fR[\fIoptions\fR...]
+
+.SH DESCRIPTION
+The
+.B cgpsstd 
+makes prediction local without sending predictions to the 
+.B cgpsd 
+server daemon. It acts as a wrapper for the libchemgps library that is used for making the predictions. Even though working, it should be more considered as a feature test for libchemgps than a real solution.
+.PP
+If you are setting up a real environment for making predictions using libchemgps (and Umetrics Simca-QP library), then use the
+.B cgpsd
+daemon and the
+.B cgpsclt
+client to implement a high-performance client/server solution.
+
+.SH OPTIONS
+.TP
+\fB\-p\fR, \fB\-\-proj\fR=\fIpath\fR:
+Load project file
+.TP
+\fB\-i\fR, \fB\-\-data\fR=\fIpath\fR:
+Raw data input file (default=stdin)
+.TP
+\fB\-o\fR, \fB\-\-output\fR=\fIpath\fR:
+Write result to output file (default=stdout)
+.HP
+\fB\-l\fR, \fB\-\-logfile\fR=\fIpath\fR: Use path as simca lib log
+.TP
+\fB\-r\fR, \fB\-\-result\fR=\fIstr\fR:
+Colon separated list of results to show (see \fB\-h\fR result)
+.TP
+\fB\-n\fR, \fB\-\-numobs\fR=\fInum\fR:
+Number of observations in input data (see \fB\-i\fR option) (default=1)
+.TP
+\fB\-s\fR, \fB\-\-syslog\fR:
+Use syslog(3) for application logging
+.TP
+\fB\-f\fR, \fB\-\-format\fR=\fIstr\fR:
+Set ouput format (either plain or xml)
+.TP
+\fB\-b\fR, \fB\-\-batch\fR:
+Enable batch job mode (suppress some messages)
+.TP
+\fB\-d\fR, \fB\-\-debug\fR:
+Enable debug output (allowed multiple times)
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR:
+Be more verbose in output
+.TP
+\fB\-h\fR, \fB\-\-help\fR:
+This help
+.TP
+\fB\-V\fR, \fB\-\-version\fR:
+Print version info to stdout
+
+.SH NOTES
+This application is part of the chemgps-sqp2 package developed for the ChemGPS project.
+
+.SH BUGS
+Probably, if you find one, send them to anders.lovgren@bmc.uu.se
+
+.SH AUTHOR
+Anders Lövgren <anders.lovgren@bmc.uu.se>
+
+.SH COPYRIGHT
+Copyright (C) 2007-2008 Anders Lövgren and the Computing Department, Uppsala Biomedical Centre, Uppsala University.
+
+.SH LICENSE
+The 
+.B cgpsstd
+application is released under the GNU General Public License.
+
+.SH SEE ALSO
+.BR cgpsd (8),
+.BR cgpsclt (1)
+.BR libchemgps (3),
