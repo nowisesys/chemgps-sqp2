@@ -1,3 +1,10 @@
+Version 0.6.1 (2008-04-09):
+
+	* Added configure option for disable debug output and enable
+	  building the client without dependencies of libchemgps (and libsimcaq).
+	  
+	* Manual pages for cgpsclt(1), cgpsstd(1) and cgpsd(8) has been added.
+
 Version 0.6.0 (2008-04-09):
 
 	* Split the code into two packages: applications (this package) and

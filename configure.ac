@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT([chemgps-sqp2], 0.6.0, anders.lovgren@bmc.uu.se)
-AM_INIT_AUTOMAKE([chemgps-sqp2], 0.6.0)
+AC_INIT([chemgps-sqp2], 0.6.1, anders.lovgren@bmc.uu.se)
+AM_INIT_AUTOMAKE([chemgps-sqp2], 0.6.1)
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
