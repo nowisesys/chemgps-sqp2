@@ -33,11 +33,9 @@
      
    Configure and build (develop version for 64-bit Linux):
    
-     bash$> CC="gcc32" CFLAGS="-Wall -Werror -O -g -m32" \
-            CPPFLAGS="-I../../libchemgps/src" \
-	    LDFLAGS="-L../../libchemgps/src/.libs" ./configure
+     bash$> CC="gcc32" CFLAGS="-Wall -Werror -O -g -m32" ./configure
      bash$> make
-     	     
+     
    See docs/README.compiler for build notes.
 		
 Anders, 2008-03-31

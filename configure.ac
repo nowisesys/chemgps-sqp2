@@ -7,12 +7,14 @@ AM_INIT_AUTOMAKE([chemgps-sqp2], 0.6.1)
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
+CGPS_CHECK_LIBCHEMGPS
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_RANLIB
 
 # Checks for libraries.
-AC_CHECK_LIB([chemgps], [cgps_project_load])
+## AC_CHECK_LIB([chemgps], [cgps_project_load])
 
 # Checks for header files.
 AC_HEADER_STDC

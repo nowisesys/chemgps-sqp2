@@ -1,4 +1,7 @@
 sbin_PROGRAMS = cgpsd
 cgpsd_SOURCES = main.c options.c server.c socket.c cgpsd.h client.c signal.c
-cgpsd_LDADD = -lchemgps ../libcgpssqp/libcgpssqp.a
-cgpsd_CFLAGS = "-I../libcgpssqp"
+
+cgpsd_CFLAGS  = -I../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR)
+
+cgpsd_LDFLAGS = -L$(top_srcdir)/$(LIBCHEMGPS_LIBDIR)
+cgpsd_LDADD   = ../libcgpssqp/libcgpssqp.a -lchemgps

@@ -61,7 +61,8 @@ AR = ar
 ARFLAGS = cru
 libcgpssqp_a_AR = $(AR) $(ARFLAGS)
 libcgpssqp_a_LIBADD =
-am_libcgpssqp_a_OBJECTS = libcgpssqp.$(OBJEXT) data.$(OBJEXT)
+am_libcgpssqp_a_OBJECTS = libcgpssqp_a-libcgpssqp.$(OBJEXT) \
+	libcgpssqp_a-data.$(OBJEXT)
 libcgpssqp_a_OBJECTS = $(am_libcgpssqp_a_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -106,6 +107,8 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
+LIBCHEMGPS_INCDIR = @LIBCHEMGPS_INCDIR@
+LIBCHEMGPS_LIBDIR = @LIBCHEMGPS_LIBDIR@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -156,6 +159,7 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 lib_LIBRARIES = libcgpssqp.a
 libcgpssqp_a_SOURCES = libcgpssqp.c cgpssqp.h data.c
+libcgpssqp_a_CFLAGS = -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR)
 noinst_LIBRARIES = libcgpssqp.a
 noinst_HEADERS = cgpssqp.h
 all: all-am
@@ -234,8 +238,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/data.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcgpssqp.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcgpssqp_a-data.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcgpssqp_a-libcgpssqp.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -250,6 +254,34 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+libcgpssqp_a-libcgpssqp.o: libcgpssqp.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcgpssqp_a_CFLAGS) $(CFLAGS) -MT libcgpssqp_a-libcgpssqp.o -MD -MP -MF "$(DEPDIR)/libcgpssqp_a-libcgpssqp.Tpo" -c -o libcgpssqp_a-libcgpssqp.o `test -f 'libcgpssqp.c' || echo '$(srcdir)/'`libcgpssqp.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libcgpssqp_a-libcgpssqp.Tpo" "$(DEPDIR)/libcgpssqp_a-libcgpssqp.Po"; else rm -f "$(DEPDIR)/libcgpssqp_a-libcgpssqp.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='libcgpssqp.c' object='libcgpssqp_a-libcgpssqp.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcgpssqp_a_CFLAGS) $(CFLAGS) -c -o libcgpssqp_a-libcgpssqp.o `test -f 'libcgpssqp.c' || echo '$(srcdir)/'`libcgpssqp.c
+
+libcgpssqp_a-libcgpssqp.obj: libcgpssqp.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcgpssqp_a_CFLAGS) $(CFLAGS) -MT libcgpssqp_a-libcgpssqp.obj -MD -MP -MF "$(DEPDIR)/libcgpssqp_a-libcgpssqp.Tpo" -c -o libcgpssqp_a-libcgpssqp.obj `if test -f 'libcgpssqp.c'; then $(CYGPATH_W) 'libcgpssqp.c'; else $(CYGPATH_W) '$(srcdir)/libcgpssqp.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libcgpssqp_a-libcgpssqp.Tpo" "$(DEPDIR)/libcgpssqp_a-libcgpssqp.Po"; else rm -f "$(DEPDIR)/libcgpssqp_a-libcgpssqp.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='libcgpssqp.c' object='libcgpssqp_a-libcgpssqp.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcgpssqp_a_CFLAGS) $(CFLAGS) -c -o libcgpssqp_a-libcgpssqp.obj `if test -f 'libcgpssqp.c'; then $(CYGPATH_W) 'libcgpssqp.c'; else $(CYGPATH_W) '$(srcdir)/libcgpssqp.c'; fi`
+
+libcgpssqp_a-data.o: data.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcgpssqp_a_CFLAGS) $(CFLAGS) -MT libcgpssqp_a-data.o -MD -MP -MF "$(DEPDIR)/libcgpssqp_a-data.Tpo" -c -o libcgpssqp_a-data.o `test -f 'data.c' || echo '$(srcdir)/'`data.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libcgpssqp_a-data.Tpo" "$(DEPDIR)/libcgpssqp_a-data.Po"; else rm -f "$(DEPDIR)/libcgpssqp_a-data.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='data.c' object='libcgpssqp_a-data.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcgpssqp_a_CFLAGS) $(CFLAGS) -c -o libcgpssqp_a-data.o `test -f 'data.c' || echo '$(srcdir)/'`data.c
+
+libcgpssqp_a-data.obj: data.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcgpssqp_a_CFLAGS) $(CFLAGS) -MT libcgpssqp_a-data.obj -MD -MP -MF "$(DEPDIR)/libcgpssqp_a-data.Tpo" -c -o libcgpssqp_a-data.obj `if test -f 'data.c'; then $(CYGPATH_W) 'data.c'; else $(CYGPATH_W) '$(srcdir)/data.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libcgpssqp_a-data.Tpo" "$(DEPDIR)/libcgpssqp_a-data.Po"; else rm -f "$(DEPDIR)/libcgpssqp_a-data.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='data.c' object='libcgpssqp_a-data.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libcgpssqp_a_CFLAGS) $(CFLAGS) -c -o libcgpssqp_a-data.obj `if test -f 'data.c'; then $(CYGPATH_W) 'data.c'; else $(CYGPATH_W) '$(srcdir)/data.c'; fi`
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)

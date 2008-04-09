@@ -311,7 +311,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB CPP EGREP LIBOBJS POW_LIB BUILD_UTILS_TRUE BUILD_UTILS_FALSE FOREIGN_CLIENT_TRUE FOREIGN_CLIENT_FALSE LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar LIBCHEMGPS_LIBDIR LIBCHEMGPS_INCDIR CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE RANLIB ac_ct_RANLIB CPP EGREP LIBOBJS POW_LIB BUILD_UTILS_TRUE BUILD_UTILS_FALSE FOREIGN_CLIENT_TRUE FOREIGN_CLIENT_FALSE LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -854,6 +854,11 @@ Optional Features:
   --disable-debug         Turn off debugging
   --enable-utils          Build utility applications from the utils directory
   --enable-foreign        Build client without dependencies of libchemgps
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-libchemgps=path        Set path to non-standard location of libchemgps
 
 Some influential environment variables:
   CC          C compiler command
@@ -1752,6 +1757,69 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 
           ac_config_headers="$ac_config_headers config.h"
+
+
+
+  echo "$as_me:$LINENO: checking libchemgps" >&5
+echo $ECHO_N "checking libchemgps... $ECHO_C" >&6
+  # Locations to check for libchemgps library and header:
+  chemgps_lib_test=""
+  chemgps_inc_test=""
+
+  # Result of test:
+  chemgps_lib_found=""
+  chemgps_inc_found=""
+
+  # Favor user preferences (--with-libchemgps):
+
+# Check whether --with-libchemgps or --without-libchemgps was given.
+if test "${with_libchemgps+set}" = set; then
+  withval="$with_libchemgps"
+
+    chemgps_lib_test=${withval}
+    chemgps_inc_test=${withval}
+
+fi;
+
+  # Append result from pkgconfig:
+  pkgconfig="`which pkg-config`"
+  if test "x$pkgconfig" != ""; then
+    $pkgconfig --exists libchemgps
+    if test "$?" == "0"; then
+      chemgps_lib_test="${chemgps_lib_test} $($pkgconfig --variable=libdir libchemgps)"
+      chemgps_inc_test="${chemgps_inc_test} $($pkgconfig --variable=includedir libchemgps)"
+    fi
+  fi
+
+  # Append some standard locations:
+  chemgps_lib_test="${chemgps_lib_test} /usr/local/lib /usr/local/chemgps /usr/lib/chemgps ../libchemgps/src/.libs ../../libchemgps/src/.libs"
+  chemgps_inc_test="${chemgps_inc_test} /usr/local/include /usr/local/chemgps /usr/lib/chemgps ../libchemgps/src ../../libchemgps/src"
+
+  for inc in ${chemgps_inc_test}; do
+    if test -e "$inc/chemgps.h"; then
+      chemgps_inc_found=$inc
+      break
+    fi
+  done
+  for lib in ${chemgps_lib_test}; do
+    if test -e "$lib/libchemgps.la"; then
+      chemgps_lib_found=$lib
+      break
+    fi
+  done
+
+  if test "x$chemgps_lib_found" != "x" -a "x$chemgps_inc_found" != "x"; then
+    echo "$as_me:$LINENO: result: found, libs=${chemgps_lib_found}, include=${chemgps_inc_found}" >&5
+echo "${ECHO_T}found, libs=${chemgps_lib_found}, include=${chemgps_inc_found}" >&6
+  else
+    { { echo "$as_me:$LINENO: error: libchemgps not found" >&5
+echo "$as_me: error: libchemgps not found" >&2;}
+   { (exit 1); exit 1; }; }
+  fi
+  LIBCHEMGPS_LIBDIR=${chemgps_lib_found}
+
+  LIBCHEMGPS_INCDIR=${chemgps_inc_found}
+
 
 
 # Checks for programs.
@@ -2941,83 +3009,10 @@ fi
 
 
 # Checks for libraries.
-
-
-echo "$as_me:$LINENO: checking for cgps_project_load in -lchemgps" >&5
-echo $ECHO_N "checking for cgps_project_load in -lchemgps... $ECHO_C" >&6
-if test "${ac_cv_lib_chemgps_cgps_project_load+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lchemgps  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char cgps_project_load ();
-int
-main ()
-{
-cgps_project_load ();
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-	 { ac_try='test -z "$ac_c_werror_flag"
-			 || test ! -s conftest.err'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; } &&
-	 { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_lib_chemgps_cgps_project_load=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_cv_lib_chemgps_cgps_project_load=no
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_chemgps_cgps_project_load" >&5
-echo "${ECHO_T}$ac_cv_lib_chemgps_cgps_project_load" >&6
-if test $ac_cv_lib_chemgps_cgps_project_load = yes; then
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBCHEMGPS 1
-_ACEOF
-
-  LIBS="-lchemgps $LIBS"
-
-fi
-
+## AC_CHECK_LIB([chemgps], [cgps_project_load])
 
 # Checks for header files.
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -6073,6 +6068,8 @@ s,@am__leading_dot@,$am__leading_dot,;t t
 s,@AMTAR@,$AMTAR,;t t
 s,@am__tar@,$am__tar,;t t
 s,@am__untar@,$am__untar,;t t
+s,@LIBCHEMGPS_LIBDIR@,$LIBCHEMGPS_LIBDIR,;t t
+s,@LIBCHEMGPS_INCDIR@,$LIBCHEMGPS_INCDIR,;t t
 s,@CC@,$CC,;t t
 s,@CFLAGS@,$CFLAGS,;t t
 s,@LDFLAGS@,$LDFLAGS,;t t
