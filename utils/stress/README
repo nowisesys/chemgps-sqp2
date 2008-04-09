@@ -1,0 +1,5 @@
+As the name suggests, this is a tool for making stress test of the server
+(the cgpsd daemon). It loads the server with *lots* if prediction request
+and measure the response time.
+
+Anders Lövgren, 2008-04-09
