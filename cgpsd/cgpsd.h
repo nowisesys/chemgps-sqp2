@@ -37,18 +37,9 @@
 
 #define cgpsd_done(state) (((state) & CGPSD_STATE_CLOSING))
 
-/*
- * Peer connection endpoint.
- */
-struct client
-{
-	const struct options *opts;
-	int sock;
-};
-
 void parse_options(int argc, char **argv, struct options *opts);
 void service(struct options *opts);
-void process_peer_request(void *peer);
+int process_request(void *peer);
 int init_socket(struct options *opts);
 void setup_signals(struct options *opts);
 void restore_signals(struct options *opts);

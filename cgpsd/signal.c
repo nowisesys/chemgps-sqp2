@@ -1,5 +1,9 @@
-/* ppqueue - multi threaded job queue.
- * Copyright (C) 2007 Anders Lövgren
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
+ * 
+ * ----------------------------------------------------------------------
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,16 +18,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * ----------------------------------------------------------------------
+ *  Contact: Anders Lövgren <anders.lovgren@bmc.uu.se>
+ * ----------------------------------------------------------------------
  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
-#include <stdlib.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
 #include <signal.h>
 #include <errno.h>
-#include <string.h>
 
 #include "cgpssqp.h"
 #include "cgpsd.h"

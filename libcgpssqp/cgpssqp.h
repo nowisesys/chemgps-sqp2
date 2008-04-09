@@ -1,7 +1,8 @@
-/* libcgpssqp - utility library for chemgps-sqp2
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
  * 
- * Copyright (C) 2007-2008 Computing Department at BMC,
- * Uppala Biomedical Centre, Uppsala University
  * ----------------------------------------------------------------------
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -26,16 +27,43 @@
 #ifndef __CGPSSQP_H__
 #define __CGPSSQP_H__
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <syslog.h>
-#include <stdint.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_SYSLOG_H
+# include <syslog.h>
+#endif
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
 #include <errno.h>
 #include <chemgps.h>
 
 #define CGPSD_DEFAULT_PORT 9401
 #define CGPSD_DEFAULT_SOCK "/var/run/cgpsd.sock"
 #define CGPSD_DEFAULT_ADDR "0.0.0.0"
+
+enum CGPS_APPLICATION { CGPS_APP_UNKNOWN, CGPS_STANDALONE, CGPS_DAEMON, CGPS_CLIENT };
+
+#define CGPSP_PROTO_VERSION "1.0"
+#define CGPSP_PROTO_CR      0x13
+#define CGPSP_PROTO_LF      0x10
+#define CGPSP_PROTO_NEWLINE htons(CGPSP_PROTO_CR << 8 | CGPSP_PROTO_LF)
+
+/*
+ * Values for request_type
+ */
+enum CGPSP_PROTO_VALUES {
+	CGPSP_PROTO_GREETING,    /* client/server handshake */
+	CGPSP_PROTO_PREDICT,     /* server set result */
+	CGPSP_PROTO_FORMAT,      /* server set format */
+	CGPSP_PROTO_LOAD,        /* client load data */
+	CGPSP_PROTO_RESULT,      /* client read result */
+	CGPSP_PROTO_LAST	
+};
 
 struct options
 {
@@ -70,6 +98,28 @@ struct options
 	int state;            /* daemon state */
 	struct sigaction *newact; /* new signal action */
 	struct sigaction *oldact; /* old signal action */	
+};
+
+/*
+ * Peer connection endpoint.
+ */
+struct client
+{
+	const struct cgps_project *proj;
+	const struct options *opts;
+	int sock;             /* client socket */
+	int type;             /* application type */
+	FILE *ss;             /* socket stream */
+};
+
+/*
+ * A 'name: value' request option.
+ */
+struct request_option
+{
+	char *option;
+	char *value;
+	int symbol;
 };
 
 /*
@@ -166,6 +216,16 @@ int cgps_get_predict_mask(const char *results);
  * Callbacks for libchemgps.
  */
 void cgps_syslog(void *opts, int status, int code, int level, const char *file, unsigned int line, const char *fmt, ...);
-int cgps_predict_data(struct cgps_project *proj, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names, int type);
+int cgps_predict_data(struct cgps_project *proj, void *data, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names, int type);
+
+/*
+ * Read one line from socket stream to buffer.
+ */
+ssize_t read_request(char **buff, size_t *size, FILE *sock);
+
+/*
+ * Split request option.
+ */
+int split_request_option(char *buff, struct request_option *req);
 
 #endif /* CGPSSQP_H__ */

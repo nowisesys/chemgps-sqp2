@@ -1,4 +1,4 @@
-/* Make Simca-QP predictions for the ChemGPS project.
+/* Simca-QP predictions for the ChemGPS project.
  * 
  * Copyright (C) 2007-2008 Computing Department at BMC, Uppsala Biomedical
  * Centre, Uppsala University.
@@ -28,8 +28,12 @@
 # include "config.h"
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
 #include <libgen.h>
 #include <chemgps.h>
 
@@ -39,6 +43,7 @@ struct options *opts = NULL;
 
 void parse_options(int argc, char **argv, struct options *opts);
 
+#ifdef HAVE_ATEXIT
 void exit_handler(void)
 {
 	if(opts) {
@@ -68,6 +73,7 @@ void exit_handler(void)
 		opts = NULL;
 	}
 }
+#endif
 
 void make_prediction(struct options *opts)
 {	
@@ -75,6 +81,11 @@ void make_prediction(struct options *opts)
 	struct cgps_predict pred;
 	struct cgps_result res;
 	int i, model;
+	struct client data;
+	
+	memset(&data, 0, sizeof(struct client));
+	data.opts = opts;
+	data.type = CGPS_STANDALONE;
 
 	opts->cgps->logger = cgps_syslog;
 	opts->cgps->indata = cgps_predict_data;
@@ -90,7 +101,7 @@ void make_prediction(struct options *opts)
 		debug("successful loaded project %s", opts->proj);
 		debug("project got %d models", proj.models);
 		for(i = 1; i <= proj.models; ++i) {			
-			cgps_predict_init(&proj, &pred);
+			cgps_predict_init(&proj, &pred, &data);
 			debug("initilized for prediction");
 			if((model = cgps_predict(&proj, i, &pred)) != -1) {					
 				debug("predict called (index=%d, model=%d)", i, model);
@@ -134,9 +145,11 @@ int main(int argc, char **argv)
 	opts->prog = basename(argv[0]);
 	opts->parent = getpid();
 	
+#ifdef HAVE_ATEXIT
 	if(atexit(exit_handler) != 0) {
 		logerr("failed register main exit handler");
 	}
+#endif
 	parse_options(argc, argv, opts);	
 	make_prediction(opts);
 			

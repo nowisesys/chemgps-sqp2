@@ -1,5 +1,8 @@
-/* Simca-QP application for the ChemGPS project.
- * Copyright (C) 2007 Anders Lövgren
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
+ * 
  * ----------------------------------------------------------------------
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -27,11 +30,21 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <string.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
 #include <getopt.h>
 #include <errno.h>
 #include <libgen.h>

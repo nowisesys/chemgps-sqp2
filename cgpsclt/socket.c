@@ -1,7 +1,7 @@
-/* Make Simca-QP predictions for the ChemGPS project.
- * 
- * Copyright (C) 2007-2008 Computing Department at BMC, Uppsala Biomedical
- * Centre, Uppsala University.
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
  * 
  * ----------------------------------------------------------------------
  * 
@@ -24,15 +24,37 @@
  * ----------------------------------------------------------------------
  */
 
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+# include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETDB_H
+# include <netdb.h>
+#endif
 #include <sys/un.h>
-#include <netdb.h>
 
 #include "cgpssqp.h"
 #include "cgpsclt.h"
+
+/*
+ * The code should be fixed to work with IPv4/IPv6 addresses if
+ * the gethostbyname() function is missing.
+ */
+#if ! defined(HAVE_GETHOSTBYNAME) || HAVE_GETHOSTBYNAME == 0
+# error "The gethostbyname() function is missing, please rewrite init_socket()" 
+#endif
 
 /*
  * Initilize the server connection.
@@ -74,8 +96,13 @@ void init_socket(struct options *opts)
 			if(connect(opts->ipsock, 
 				   (const struct sockaddr *)&sockaddr,
 				   sizeof(struct sockaddr_in)) < 0) {
+#ifdef HAVE_INET_NTOA
 				die("failed connect to %s on port %d (%s)", 
 				    inet_ntoa(sockaddr.sin_addr), opts->port, ent->h_name);
+#else
+				die("failed connect to %s on port %d", 
+				    opts->ipaddr, opts->port);
+#endif /* ! HAVE_INET_NTOA */
 			}
 			debug("connected to %s on port %d", opts->ipaddr, opts->port);
 		} else {

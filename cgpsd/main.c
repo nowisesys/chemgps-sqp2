@@ -28,12 +28,22 @@
 # include "config.h"
 #endif
 
-#include <stdlib.h>
-#include <string.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #include <libgen.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <chemgps.h>
 
 #include "cgpssqp.h"
@@ -41,6 +51,7 @@
 
 struct options *opts;
 
+#ifdef HAVE_ATEXIT
 void exit_handler(void)
 {
 	if(opts) {
@@ -67,9 +78,15 @@ void exit_handler(void)
 		if(opts->unaddr) {
 			struct stat st;
 			if(stat(opts->unaddr, &st) == 0) {
+#ifdef HAVE_STAT_EMPTY_STRING_BUG
+				if(strlen(opts->unaddr) != 0) {
+#endif
 				if(unlink(opts->unaddr) < 0) {
 					logerr("failed unlink UNIX socket (%s)", opts->unaddr);
 				}
+#ifdef HAVE_STAT_EMPTY_STRING_BUG
+				}
+#endif
 			}
 			if(opts->unaddr != CGPSD_DEFAULT_SOCK) {
 				free(opts->unaddr);
@@ -83,6 +100,7 @@ void exit_handler(void)
 		opts = NULL;
 	}
 }
+#endif /* HAVE_ATEXIT */
 
 int main(int argc, char **argv)
 {
@@ -101,9 +119,11 @@ int main(int argc, char **argv)
 	opts->prog = basename(argv[0]);
 	opts->parent = getpid();
 	
+#ifdef HAVE_ATEXIT
 	if(atexit(exit_handler) != 0) {
 		logerr("failed register main exit handler");
 	}
+#endif
 	
 	parse_options(argc, argv, opts);
 	

@@ -1,7 +1,7 @@
-/* Make Simca-QP predictions for the ChemGPS project.
- * 
- * Copyright (C) 2007-2008 Computing Department at BMC, Uppsala Biomedical
- * Centre, Uppsala University.
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
  * 
  * ----------------------------------------------------------------------
  * 
@@ -27,12 +27,11 @@
 #ifndef __CGPSCLT_H__
 #define __CGPSCLT_H__
 
-#include "cgpssqp.h"
-
 #define CGPSCLT_RESOLVE_RETRIES 5
 #define CGPSCLT_RESOLVE_TIMEOUT 2
 
 void init_socket(struct options *opts);
 void parse_options(int argc, char **argv, struct options *opts);
+void request(struct options *opts, struct client *peer);
 
 #endif /* __CGPSCLT_H__ */

@@ -1,5 +1,8 @@
-/* Simca-QP application for the ChemGPS project.
- * Copyright (C) 2007 Anders Lövgren
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
+ * 
  * ----------------------------------------------------------------------
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -25,19 +28,20 @@
 # include "config.h"
 #endif
 
-/* #define _GNU_SOURCE */
-/* #include <stdio.h> */
-/* #include <stdlib.h> */
-/* #include <string.h> */
-/* #include <sys/types.h> */
-/* #include <ctype.h> */
-
-// #include "chemgps.h"
-// #include "simcaqp.h"
-
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <string.h>
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #include <ctype.h>
 
 #include "cgpssqp.h"
@@ -310,7 +314,7 @@ static int cgps_predict_load_stream(FILE *fs, int rows, int columns, SQX_FloatMa
 		size_t offset = 0;
 		size_t length = 0;
 		const char *pp;
-		
+
 		if(!reorder) {
 			reorder = cgps_predict_scan_indata(buff, reorder, names, &skip);
 			if(!reorder) {
@@ -353,8 +357,15 @@ static int cgps_predict_load_stream(FILE *fs, int rows, int columns, SQX_FloatMa
 		free(reorder);
 	}
 	if(!feof(fs)) {
-		logerr("premature end of file detected in input stream");
-		return -1;
+		struct stat st;
+		if(fstat(fileno(fs), &st) < 0) {
+			logerr("failed stat input stream");
+			return -1;
+		}
+		if(S_ISREG(st.st_mode)) {
+			logerr("premature end of file detected in input stream");
+			return -1;
+		}
 	}
 	return 0;
 }
@@ -380,46 +391,89 @@ static int cgps_predict_load_file(const char *path, int rows, int columns, SQX_F
 }
 
 /*
+ * Get number of observations from socket stream.
+ */
+static int cgps_predict_get_observations(struct cgps_project *proj, struct client *loader)
+{
+	char *buff = NULL;
+	size_t size = 0;
+	struct request_option req;
+	
+	read_request(&buff, &size, loader->ss);
+	if(split_request_option(buff, &req) < 0) {
+		free(buff);
+		logerr("failed receive number of observations");
+		return -1;
+	}
+	if(req.symbol != CGPSP_PROTO_LOAD) {
+		free(buff);
+		logerr("expected load option, got '%s'", req.option);
+		return -1;
+	}
+	loader->opts->numobs = atoi(req.value);
+	free(buff);
+	
+	return 0;
+}
+
+/*
  * Load quantitative data (raw).
  */
-static int cgps_predict_load_quant_data(struct cgps_project *proj, SQX_FloatMatrix *matrix, SQX_StringVector *names)
+static int cgps_predict_load_quant_data(struct cgps_project *proj, struct client *loader, SQX_FloatMatrix *matrix, SQX_StringVector *names)
 {
 	int num = SQX_GetNumStringsInVector(names);
+
+	if(loader->ss) {
+		debug("asking peer to send prediction data (quantitative)");
+		fprintf(loader->ss, "Load: quant-data\n");
+		fflush(loader->ss);
+		if(cgps_predict_get_observations(proj, loader) < 0) {
+			logerr("failed get number of observations from peer");
+			return -1;
+		}
+	}
 	
-	if(!opts->numobs) {
-		if(opts->data) {
-			if(cgps_predict_count_observations(opts->data, &opts->numobs) < 0) {
+	if(!loader->opts->numobs) {
+		if(loader->opts->data) {
+			if(cgps_predict_count_observations(loader->opts->data, &loader->opts->numobs) < 0) {
 				logerr("failed count number of observations in input data");
 				return -1;
 			} else {
-				debug("detected %d number of observations in input data", opts->numobs);
+				debug("detected %d number of observations in input data", loader->opts->numobs);
 			}
 		} else {
 			logerr("unknown number of observations in input data, use -i or -n option to fix");
 			return -1;
 		}
 	} else {
-		debug("using user defined %d number of observations", opts->numobs);
+		debug("using user defined %d number of observations", loader->opts->numobs);
 	}
-	if(!SQX_InitFloatMatrix(matrix, opts->numobs, num)) {
+	if(!SQX_InitFloatMatrix(matrix, loader->opts->numobs, num)) {
 		logerr("failed initilize float point matrix (%s)", cgps_simcaq_error());
 		return -1;
-			}
-	if(opts->data) {
-		if(cgps_predict_load_file(opts->data, opts->numobs, num, matrix, names) < 0) {
-			logerr("failed load raw data from file %s", opts->data);
+	}
+	if(loader->opts->data) {
+		if(cgps_predict_load_file(loader->opts->data, loader->opts->numobs, num, matrix, names) < 0) {
+			logerr("failed load raw data from file %s", loader->opts->data);
 			return -1;
 		}
-		debug("successful loaded raw data from %s", opts->data);
+		debug("successful loaded raw data from %s", loader->opts->data);
 	} else {
-		if(!opts->batch) {
-			loginfo("waiting for raw data input on stdin (%dx%d):", opts->numobs, num);
+		if(loader->ss) {		
+			if(cgps_predict_load_stream(loader->ss, loader->opts->numobs, num, matrix, names) < 0) {
+				logerr("failed load raw data from socket");
+				return -1;
+			}			
+		} else {
+			if(!loader->opts->batch) {
+				loginfo("waiting for raw data input on stdin (%dx%d):", loader->opts->numobs, num);
+			}
+			if(cgps_predict_load_stream(stdin, loader->opts->numobs, num, matrix, names) < 0) {
+				logerr("failed load raw data from stdin");
+				return -1;
+			}			
+			debug("successful loaded raw data from stdin");
 		}
-		if(cgps_predict_load_stream(stdin, opts->numobs, num, matrix, names) < 0) {
-			logerr("failed load raw data from stdin");
-			return -1;
-		}
-		debug("successful loaded raw data from stdin");
 	}
 	return 0;
 }
@@ -427,8 +481,11 @@ static int cgps_predict_load_quant_data(struct cgps_project *proj, SQX_FloatMatr
 /*
  * Load qualitative data.
  */
-static int cgps_predict_load_qual_data(struct cgps_project *proj, SQX_StringMatrix *matrix, SQX_StringVector *names)
+static int cgps_predict_load_qual_data(struct cgps_project *proj, struct client *loader, SQX_StringMatrix *matrix, SQX_StringVector *names)
 {
+	/*
+	 * Not yet implemented due to lack of project using qualitative data.
+	 */
 	logerr("cgps_predict_load_qual_data: not yet implemeted");
 	return -1;
 }
@@ -436,8 +493,11 @@ static int cgps_predict_load_qual_data(struct cgps_project *proj, SQX_StringMatr
 /*
  * Load qualitative data that are lagged.
  */
-static int cgps_predict_load_qual_data_lagged(struct cgps_project *proj, SQX_StringMatrix *matrix, SQX_StringVector *names)
+static int cgps_predict_load_qual_data_lagged(struct cgps_project *proj, struct client *loader, SQX_StringMatrix *matrix, SQX_StringVector *names)
 {
+	/*
+	 * Not yet implemented due to lack of project using qualitative lagged data.
+	 */
 	logerr("cgps_predict_load_qual_data_lagged: not yet implemeted");
 	return -1;
 }
@@ -445,22 +505,30 @@ static int cgps_predict_load_qual_data_lagged(struct cgps_project *proj, SQX_Str
 /*
  * Load lagged parents variables.
  */
-static int cgps_predict_load_lag_parents_data(struct cgps_project *proj, SQX_FloatMatrix *matrix, SQX_StringVector *names)
+static int cgps_predict_load_lag_parents_data(struct cgps_project *proj, struct client *loader, SQX_FloatMatrix *matrix, SQX_StringVector *names)
 {
+	/*
+	 * Not yet implemented due to lack of project using lagged parents data.
+	 */
 	logerr("cgps_predict_load_lag_parents_data: not yet implemeted");
 	return -1;
 }
 
-int cgps_predict_data(struct cgps_project *proj, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names, int type)
+/*
+ * This function gets called to load data for prediction.
+ */
+int cgps_predict_data(struct cgps_project *proj, void *params, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names, int type)
 {
+	struct client *loader = (struct client *)params;
+	
 	if(type == CGPS_GET_QUANTITATIVE_DATA) {
-		return cgps_predict_load_quant_data(proj, fmx, names);
+		return cgps_predict_load_quant_data(proj, loader, fmx, names);
 	} else if(type == CGPS_GET_QUALITATIVE_DATA) {
-		return cgps_predict_load_qual_data(proj, smx, names);
+		return cgps_predict_load_qual_data(proj, loader, smx, names);
 	} else if(type == CGPS_GET_QUAL_LAGGED_DATA) {
-		return cgps_predict_load_qual_data_lagged(proj, smx, names);
+		return cgps_predict_load_qual_data_lagged(proj, loader, smx, names);
 	} else if(type == CGPS_GET_LAG_PARENTS_DATA) {
-		return cgps_predict_load_lag_parents_data(proj, fmx, names);
+		return cgps_predict_load_lag_parents_data(proj, loader, fmx, names);
 	} else {
 		logerr("unknown type %d passed to data loader", type);
 		return -1;

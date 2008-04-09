@@ -24,11 +24,25 @@
  * ----------------------------------------------------------------------
  */
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
+#ifdef HAVE_SYS_SELECT_H
+# include <sys/select.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+# include <arpa/inet.h>
+#endif
 #include <sys/un.h>
 #include <pwd.h>
 
@@ -40,8 +54,27 @@
  */
 void service(struct options *opts)
 {
+	struct cgps_project proj;	
 	fd_set sockfds;  /* server socket file descriptors set */
 	int maxsock = 0;
+	
+        opts->cgps->logger = cgps_syslog;
+	opts->cgps->indata = cgps_predict_data;
+	
+	if(opts->debug > 1) {
+		debug("enable library debug");
+		opts->cgps->debug = opts->debug;
+		opts->cgps->verbose = opts->verbose;
+	}
+	opts->cgps->syslog = opts->syslog;
+	opts->cgps->batch  = 1;
+	
+	if(cgps_project_load(&proj, opts->proj, opts->cgps) == 0) {
+                debug("successful loaded project %s", opts->proj);
+		debug("project got %d models", proj.models);
+	} else {
+		die("failed load project %s", opts->proj);
+	}
 	
 	if(opts->ipaddr) {
 		loginfo("listening on TCP socket %s port %d", opts->ipaddr, opts->port);
@@ -91,9 +124,14 @@ void service(struct options *opts)
 				if(client < 0) {
 					logerr("failed accept TCP client connection");
 				} else {
+#ifdef HAVE_INET_NTOA
 					loginfo("accepted TCP client connection from %s on port %d", 
 						inet_ntoa(sockaddr.sin_addr), 
 						ntohs(sockaddr.sin_port));
+#else
+					loginfo("accepted TCP client connection on interface %s and port %d", 
+						opts->ipaddr, opts->port);
+#endif /* ! HAVE_INET_NTOA */
 				}
 			}
 			if(FD_ISSET(opts->unsock, &readfds)) {
@@ -128,14 +166,19 @@ void service(struct options *opts)
 					continue;
 				}
 				
+				peer->proj = &proj;
 				peer->opts = opts;
 				peer->sock = client;
 				
-				process_peer_request(peer);
+				if(process_request(peer) < 0) {
+					logerr("failed process client request");
+				}
 			}
 		}
 	}
 	debug("the done flag is set, exiting service()");
-
         restore_signals(opts);
+	
+	debug("closing project");
+	cgps_project_close(&proj);	
 }

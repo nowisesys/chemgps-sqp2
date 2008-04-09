@@ -1,7 +1,7 @@
-/* Make Simca-QP predictions for the ChemGPS project.
- * 
- * Copyright (C) 2007-2008 Computing Department at BMC, Uppsala Biomedical
- * Centre, Uppsala University.
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
  * 
  * ----------------------------------------------------------------------
  * 
@@ -28,7 +28,12 @@
 # include "config.h"
 #endif
 
-#include <string.h>
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
 #include <libgen.h>
 #include <chemgps.h>
 
@@ -37,6 +42,7 @@
 
 struct options *opts;
 
+#ifdef HAVE_ATEXIT
 void exit_handler(void)
 {
 	if(opts) {
@@ -47,12 +53,14 @@ void exit_handler(void)
 			opts->proj = NULL;
 		}
 		if(opts->ipaddr) {
+			shutdown(opts->ipsock, SHUT_RDWR);
 			if(opts->ipaddr != CGPSD_DEFAULT_ADDR) {
 				free(opts->ipaddr);
 			}
 			opts->ipaddr = NULL;
 		}
 		if(opts->unaddr) {
+			shutdown(opts->unsock, SHUT_RDWR);
 			if(opts->unaddr != CGPSD_DEFAULT_SOCK) {
 				free(opts->unaddr);
 			}
@@ -62,24 +70,40 @@ void exit_handler(void)
 		opts = NULL;
 	}
 }
+#endif /* HAVE_ATEXIT */
 
 int main(int argc, char **argv)
 {
+	struct client peer;
+	
 	opts = malloc(sizeof(struct options));
 	if(!opts) {
 		die("failed alloc memory");
 	}
 	memset(opts, 0, sizeof(struct options));
 
+        opts->cgps = malloc(sizeof(struct cgps_options));
+	if(!opts->cgps) {
+		die("failed alloc memory");
+	}
+	memset(opts->cgps, 0, sizeof(struct cgps_options));
+	
 	opts->prog = basename(argv[0]);
 	opts->parent = getpid();
 	
+#ifdef HAVE_ATEXIT
 	if(atexit(exit_handler) != 0) {
 		logerr("failed register main exit handler");
 	}
+#endif
 	
 	parse_options(argc, argv, opts);
 	init_socket(opts);
+
+	peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
+	peer.opts = opts;
+	
+	request(opts, &peer);
 	
 	return 0;
 }

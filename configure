@@ -5208,7 +5208,9 @@ done
 
 
 
-for ac_func in atexit gethostbyname inet_ntoa memset select socket strcspn strerror strspn strtol
+
+
+for ac_func in atexit gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strerror strspn strtol
 do
 as_ac_var=`echo "ac_cv_func_$ac_func" | $as_tr_sh`
 echo "$as_me:$LINENO: checking for $ac_func" >&5

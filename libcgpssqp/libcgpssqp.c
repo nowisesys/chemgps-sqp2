@@ -1,7 +1,8 @@
-/* libcgpssqp - utility library for chemgps-sqp2
+/* Simca-QP predictions for the ChemGPS project.
+ *
+ * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Uppsala Biomedical Centre, Uppsala University.
  * 
- * Copyright (C) 2007-2008 Computing Department at BMC,
- * Uppala Biomedical Centre, Uppsala University
  * ----------------------------------------------------------------------
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -29,8 +30,12 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
 #include <stdarg.h>
 #include <chemgps.h>
 
@@ -151,4 +156,96 @@ void cgps_syslog(void *pref, int status, int code, int level, const char *file, 
 	}
 		
 	free(buff);
+}
+
+struct request_type
+{
+	const char *name;
+	int value;
+};
+
+static const struct request_type request_types[] = {
+	{ "Predict", CGPSP_PROTO_PREDICT },
+	{ "Format", CGPSP_PROTO_FORMAT },
+	{ "Load", CGPSP_PROTO_LOAD },
+	{ "Result", CGPSP_PROTO_RESULT },
+	{ "CGPSP \\d\\.\\d (\\w+: [a-z]+ ready)", CGPSP_PROTO_GREETING }, 
+	{ NULL, CGPSP_PROTO_LAST }
+};
+
+/*
+ * Read one line from socket stream to buffer.
+ */
+ssize_t read_request(char **buff, size_t *size, FILE *sock)
+{
+	ssize_t bytes;
+
+	if(*buff) {
+		memset(*buff, 0, *size);
+	}
+	if((bytes = getline(buff, size, sock)) != -1) {
+		char *ptr = *buff + bytes - 1;
+		*ptr = '\0';
+	} else {
+		logerr("failed read request");
+	}
+	return bytes;
+}
+
+#ifndef HAVE_STRCASECMP
+/*
+ * Simple replacement for missing strcasecmp()
+ */
+static int strcasecmp(const char *s1, const char *s2)
+{
+	while(*s1 && *s2) {
+		if(toupper(*s1) != toupper(*s2)) break;
+		++s1; ++s2;
+	}
+	return *s1 - *s2;
+}
+#endif
+
+/*
+ * Split request option.
+ */
+int split_request_option(char *buff, struct request_option *req)
+{
+	struct request_type *type;
+	char *p;
+	
+	if(buff) {
+		if(opts->debug > 3) {
+			debug("parsing request option: '%s'", buff);
+		}
+		req->option = buff;
+		p = strchr(buff, ':');
+		if(p) {
+			*p = '\0';
+			while(*++p) {
+				if(*p != ' ')
+					break;
+			}
+			req->value = *p ? p : NULL;
+		}
+		for(type = request_types; type->name; ++type) {
+			if(opts->debug > 4) {
+				debug("matching %s against %s", req->option, type->name);
+			}
+			if(strcasecmp(type->name, req->option) == 0) {
+				if(opts->debug > 3) {
+					if(req->value) {
+						debug("matched option %s (value=%d) (option argument: %s)", 
+						      type->name, type->value, req->value);
+					} else {
+						debug("matched option %s (value=%d) (no option argument)",
+						      type->name, type->value);
+					}
+				}
+				req->symbol = type->value;
+				return 0;
+			}
+		}
+	}
+	return -1;
 }

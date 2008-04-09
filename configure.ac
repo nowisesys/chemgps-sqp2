@@ -30,7 +30,7 @@ AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_STAT
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([atexit gethostbyname inet_ntoa memset select socket strcspn strerror strspn strtol])
+AC_CHECK_FUNCS([atexit gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strerror strspn strtol])
 
 AC_CONFIG_FILES([Makefile
                  docs/Makefile
