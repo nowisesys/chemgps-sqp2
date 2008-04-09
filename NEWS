@@ -1,7 +1,10 @@
-Version 0.6.0 (2008-mm-dd):
+Version 0.6.0 (2008-04-09):
 
 	* Split the code into two packages: applications (this package) and
           a library part (libchemgps).
+	  
+	* Fixed chemgps-sqp2 to provide both client/server (cgpsd/cgpsclt) and 
+	  standalone application functionality (cgpsstd).
 	  
 *** Historical notes from chemgps-sqp (the standalone only version):
 
