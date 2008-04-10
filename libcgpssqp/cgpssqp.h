@@ -78,14 +78,14 @@ struct options
 	/*
 	 * Common members:
 	 */
-	const char *proj;     /* the project file (model) */	
+	char *proj;           /* the project file (model) */	
 	pid_t parent;         /* our prosess ID */	
 	struct cgps_options *cgps;
 	/*
 	 * Client and server options:
 	 */
-	const char *data;     /* input data */
-	const char *output;   /* output file */
+	char *data;           /* input data */
+	char *output;         /* output file */
 	int numobs;           /* number of observations */
 	int daemon;           /* running as daemon */
 	int interactive;      /* don't detach from controlling terminal */
