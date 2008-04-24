@@ -13,24 +13,28 @@ AC_PROG_RANLIB
 
 # Checks for libraries.
 ## AC_CHECK_LIB([chemgps], [cgps_project_load])
+AC_CHECK_LIB([pthread], [pthread_create])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([arpa/inet.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/socket.h syslog.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h linux/sockios.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
+AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_HEADER_TIME
 
 # Checks for library functions.
+AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_STAT
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([atexit gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strerror strspn strtol])
+AC_CHECK_FUNCS([atexit gettimeofday gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strdup strerror strncasecmp strrchr strspn strtol strtoul])
 
 CGPS_CHECK_LIBCHEMGPS
 CGPS_DISABLE_DEBUG
@@ -44,5 +48,5 @@ AC_CONFIG_FILES([Makefile
 		 cgpsstd/Makefile
                  docs/Makefile
 		 utils/Makefile
-		 utils/stress/Makefile])
+		 utils/cgpsddos/Makefile])
 AC_OUTPUT

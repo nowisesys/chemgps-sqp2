@@ -1,1 +1,1 @@
-SUBDIRS = stress
+SUBDIRS = cgpsddos
