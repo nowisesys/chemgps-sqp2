@@ -98,7 +98,9 @@ int main(int argc, char **argv)
 #endif
 	
 	parse_options(argc, argv, opts);
-	init_socket(opts);
+	if(init_socket(opts) < 0) {
+		return 1;
+	}
 
 	peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
 	peer.opts = opts;

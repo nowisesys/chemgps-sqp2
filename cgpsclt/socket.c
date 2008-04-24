@@ -49,72 +49,81 @@
 #include "cgpsclt.h"
 
 /*
- * The code should be fixed to work with IPv4/IPv6 addresses if
- * the gethostbyname() function is missing.
+ * Initilize the server connection (both IPv4 and IPv6 supported).
  */
-#if ! defined(HAVE_GETHOSTBYNAME) || HAVE_GETHOSTBYNAME == 0
-# error "The gethostbyname() function is missing, please rewrite init_socket()" 
-#endif
-
-/*
- * Initilize the server connection.
- */
-void init_socket(struct options *opts)
+int init_socket(struct options *opts)
 {
-	if(opts->ipaddr) {		
-		struct hostent *ent = NULL;
-		int retries = 0;
+	if(opts->ipaddr) {
+		struct addrinfo hints, *addr, *next = NULL;
+		int retries = 0, res;
+		char port[6];
+		char host[NI_MAXHOST], serv[NI_MAXSERV];
 		
-		while(retries < CGPSCLT_RESOLVE_RETRIES) {
-			ent = gethostbyname(opts->ipaddr);
-			if(!ent) { 
-				if(h_errno == TRY_AGAIN) {
+		snprintf(port, sizeof(port) - 1, "%d", opts->port);
+
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_flags = AI_ADDRCONFIG;
+		hints.ai_protocol = 0;
+		hints.ai_canonname = NULL;
+		hints.ai_addr = NULL;
+		hints.ai_next = NULL;
+		
+		while(retries < CGPS_RESOLVE_RETRIES) {
+			if((res = getaddrinfo(opts->ipaddr, port, &hints, &addr)) != 0) {
+				if(res == EAI_AGAIN) {
 					logwarn("temporary failure resolving hostname %s", 
 						opts->ipaddr); 
 				} else {
-					break;
+					logerr("failed resolve %s:%d", opts->ipaddr, opts->port);
+					return -1;
 				}
-				sleep(CGPSCLT_RESOLVE_TIMEOUT);
+				++retries;
+				sleep(CGPS_RESOLVE_TIMEOUT);
+			} else {
+				break;
 			}
 		}
-		if(!ent) {
-			die("failed resolve hostname %s", opts->ipaddr);
-		} 
-		
-		if(ent->h_addrtype == AF_INET) {
-			struct sockaddr_in sockaddr;
-
-			opts->ipsock = socket(PF_INET, SOCK_STREAM, 0);
+				
+		for(next = addr; next != NULL; next = next->ai_next) {
+			opts->ipsock = socket(next->ai_family, next->ai_socktype, next->ai_protocol);
 			if(opts->ipsock < 0) {
-				die("failed create TCP socket");
+				continue;
+			} 
+			if(connect(opts->ipsock, next->ai_addr, next->ai_addrlen) < 0) {
+				close(opts->ipsock);
+				continue;
 			}
-			debug("created TCP socket");
-			
-			sockaddr.sin_family = AF_INET;
-			sockaddr.sin_port = htons(opts->port);
-			memcpy(ent->h_addr, (char *)&sockaddr.sin_addr, sizeof(struct in_addr));
-			if(connect(opts->ipsock, 
-				   (const struct sockaddr *)&sockaddr,
-				   sizeof(struct sockaddr_in)) < 0) {
-#ifdef HAVE_INET_NTOA
-				die("failed connect to %s on port %d (%s)", 
-				    inet_ntoa(sockaddr.sin_addr), opts->port, ent->h_name);
-#else
-				die("failed connect to %s on port %d", 
-				    opts->ipaddr, opts->port);
-#endif /* ! HAVE_INET_NTOA */
-			}
-			debug("connected to %s on port %d", opts->ipaddr, opts->port);
-		} else {
-			die("host %s has no IPv4 address", opts->ipaddr);
+			break;
 		}
+		if(!next) {
+			logerr("failed connect to %s:%d", opts->ipaddr, opts->port);
+			freeaddrinfo(addr);
+			return -1;
+		}
+		
+		if(getnameinfo(next->ai_addr,
+			       next->ai_addrlen, 
+			       host, NI_MAXHOST,
+			       serv, NI_MAXSERV, NI_NUMERICSERV) == 0) {
+			debug("connected to %s:%s (%s:%d) (%s)", 
+			      host, serv, opts->ipaddr, opts->port, 
+			      next->ai_family == AF_INET ? "ipv4" : "ipv6");
+		} else {
+			debug("connected to %s:%d (%s)", 
+			      opts->ipaddr, opts->port, 
+			      next->ai_family == AF_INET ? "ipv4" : "ipv6");
+		}
+		freeaddrinfo(addr);
+		return 0;
 	}
 	if(opts->unaddr) {
 		struct sockaddr_un sockaddr;
 		
 		opts->unsock = socket(PF_UNIX, SOCK_STREAM, 0);
 		if(opts->unsock < 0) {
-			die("failed create UNIX socket");
+			logerr("failed create UNIX socket");
+			return -1;
 		}
 		debug("created UNIX socket");
 		
@@ -123,8 +132,12 @@ void init_socket(struct options *opts)
 		if(connect(opts->unsock, 
 			   (const struct sockaddr *)&sockaddr,
 			   sizeof(struct sockaddr_un)) < 0) {
-			die("failed connect to %s", opts->unaddr);
+			close(opts->unsock);
+			logerr("failed connect to %s", opts->unaddr);
+			return -1;
 		}
 		debug("connected to %s", opts->unaddr);
+		return 0;
 	}
+	return -1;
 }

@@ -30,12 +30,23 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #ifdef HAVE_NETINET_IN_H
 # include <netinet/in.h>
 #endif
 
 #include "cgpssqp.h"
-#include "cgpsclt.h"
 
 static void cleanup_request(struct client *peer, char *buff)
 {
@@ -114,10 +125,33 @@ static int request_send_stdin(struct client *peer)
 	return 0;
 }
 
+/*
+ * Send data from memory buffer.
+ */
+static int request_send_buffer(const char *buffer, struct client *peer)
+{
+	int lines = 0;
+	const char *curr = buffer;
+	
+	while(*curr) {
+		if(*curr++ == '\n') ++lines;
+	}
+	debug("lines: %d", lines);
+
+	debug("sending data from memory buffer (lines=%d)", lines);	
+	
+	fprintf(peer->ss, "Load: %d\n", lines);
+	fprintf(peer->ss, "%s\n", buffer);
+	fflush(peer->ss);
+	
+	return 0;
+}
+
 void request(struct options *opts, struct client *peer)
 {
 	const struct cgps_result_entry *entry;
         struct request_option req;
+	struct stat st;
 	char *buff = NULL;
 	size_t size = 0;
 	int delim = 0, done = 0;
@@ -163,7 +197,7 @@ void request(struct options *opts, struct client *peer)
 		debug("waiting for server request");
 		read_request(&buff, &size, peer->ss);
 		debug("received: '%s'", buff);
-	        if(split_request_option(buff, &req) < 0) {
+	        if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 			cleanup_request(peer, buff);
 			die("protocol error (%s unexpected)", req.option);
 		}
@@ -172,7 +206,11 @@ void request(struct options *opts, struct client *peer)
 		case CGPSP_PROTO_LOAD:
 			debug("received load request");
 			if(opts->data) {
-				request_send_file(opts->data, peer);
+				if(stat(opts->data, &st) == 0) {
+					request_send_file(opts->data, peer);
+				} else {
+					request_send_buffer(opts->data, peer);
+				}
 			} else {
 				request_send_stdin(peer);
 			}
@@ -180,7 +218,9 @@ void request(struct options *opts, struct client *peer)
 		case CGPSP_PROTO_RESULT:
 			debug("received result request");
 			while((c = getc(peer->ss)) != -1) {
-				printf("%c", c);
+				if(!opts->quiet) {
+					printf("%c", c);
+				}
 			}				
 			done = 1;
 			break;

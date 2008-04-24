@@ -27,11 +27,10 @@
 #ifndef __CGPSCLT_H__
 #define __CGPSCLT_H__
 
-#define CGPSCLT_RESOLVE_RETRIES 5
-#define CGPSCLT_RESOLVE_TIMEOUT 2
-
-void init_socket(struct options *opts);
-void parse_options(int argc, char **argv, struct options *opts);
+int init_socket(struct options *opts);
 void request(struct options *opts, struct client *peer);
+#if !defined(CGPSCLT_EXTERN)
+void parse_options(int argc, char **argv, struct options *opts);
+#endif
 
 #endif /* __CGPSCLT_H__ */
