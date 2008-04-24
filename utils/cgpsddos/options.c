@@ -45,22 +45,46 @@
 #include <getopt.h>
 
 #include "cgpssqp.h"
+#include "cgpsddos.h"
 
 static void usage(const char *prog, const char *section)
 {
 	if(!section) {
-		printf("%s - client for making prediction using Umetrics Simca-QP library.\n", prog);
+		printf("%s - distributed DOS (denial of service) application.\n", prog);
+		printf("This application should only be used for testing the cgpsd daemon.\n");
 		printf("\n");
-		printf("Usage: %s -f proj [options...]\n", prog);
-		printf("Options:\n");
-		printf("  -s, --sock[=path]:  Connect to UNIX socket [%s]\n", CGPSD_DEFAULT_SOCK);
-		printf("  -H, --host=addr:    Connect to host (IP or hostname)\n");
-		printf("  -p, --port=num:     Connect on port [%d]\n", CGPSD_DEFAULT_PORT);
+		printf("Usage: master: %s -m -c file -t target -p port [options...]\n", prog);
+		printf("       slave:  %s -s -a master [options...]\n", prog);
+		printf("       local:  %s -u sock [options...]\n", prog);
+		printf("\n");
+		printf("Master options:\n");
+		printf("  -m, --master:       Run as DDOS master\n");
+		printf("  -c, --slaves=file:  File containing list of slaves (default=stdin)\n");
+		printf("  -t, --target=addr[:port]:  DDOS targets IP or hostname including port\n");
+		printf("  -p, --port=num:     Listen on port [%d]\n", CGPSDDOS_MASTER_PORT);
+		printf("  -i, --data=path:    Raw data input file\n");
+		printf("  -r, --result=str:   Colon separated list of results to show (see -h result)\n");
+		printf("  -f, --format=str:   Set ouput format (either plain or xml)\n");
+		printf("  -w, --timeout=num:  Timeout waiting for peer response [%d]\n", CGPSDDOS_PEER_TIMEOUT);
+		printf("  -n, --count=num:    Repeate prediction num times\n");
+		printf("\n");
+		printf("Slave options:\n");
+		printf("  -s, --slave:        Run as DDOS slave\n");
+		printf("  -a, --accept=host:  Only accept connections from this master host\n");
+		printf("  -p, --port=num:     Listen on port [%d]\n", CGPSDDOS_SLAVE_PORT);
+		printf("\n");
+		printf("Local options:\n");
+		printf("  -u, --sock[=path]:  Connect to UNIX socket [%s]\n", CGPSD_DEFAULT_SOCK);
 		printf("  -i, --data=path:    Raw data input file (default=stdin)\n");
 		printf("  -r, --result=str:   Colon separated list of results to show (see -h result)\n");
 		printf("  -f, --format=str:   Set ouput format (either plain or xml)\n");
+		printf("\n");
+		printf("Common options:\n");
+		printf("  -4, --ipv4:         Only use IPv4\n");
+		printf("  -6, --ipv6:         Only use IPv6\n");
 		printf("  -d, --debug:        Enable debug output (allowed multiple times)\n");
 		printf("  -v, --verbose:      Be more verbose in output\n");
+		printf("  -q, --quiet:        Suppress some output\n");
 		printf("  -h, --help:         This help\n");
 		printf("  -V, --version:      Print version info to stdout\n");
 		printf("\n");
@@ -92,7 +116,7 @@ static void usage(const char *prog, const char *section)
 static void version(const char *prog)
 {
 	printf("%s - package %s %s\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
-	printf("The client for making prediction using Umetrics Simca-QP library.\n");
+	printf("The distributed DOS (denial of service) application.\n");
 	printf("\n");
 	printf(" * This program is distributed in the hope that it will be useful,\n");
 	printf(" * but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
@@ -104,88 +128,127 @@ static void version(const char *prog)
 	printf("This application is part of the ChemGPS project.\n");
 }
 
-void parse_options(int argc, char **argv, struct options *opts)
+void parse_options(int argc, char **argv, struct cgpsddos *ddos)
 {
 	static struct option options[] = {
-		{ "sock",    2, 0, 's' },
-		{ "host",    1, 0, 'H' },
+		{ "ipv4",    0, 0, '4' },
+		{ "ipv6",    0, 0, '6' },
+		{ "master",  0, 0, 'm' },
+		{ "slaves",  1, 0, 'c' },
+		{ "target",  1, 0, 't' },
 		{ "port",    1, 0, 'p' },
                 { "data",    1, 0, 'i' },
 		{ "result",  1, 0, 'r' },
 		{ "format",  1, 0, 'f' }, 
+		{ "slave",   0, 0, 's' },
+		{ "accept",  0, 0, 'a' },		
+		{ "sock",    2, 0, 'u' },
+		{ "timeout", 1, 0, 'w' },
+		{ "count",   1, 0, 'n' },
 		{ "debug",   0, 0, 'd' },
 		{ "verbose", 0, 0, 'v' },
+		{ "quiet",   0, 0, 'q' },
 		{ "help",    2, 0, 'h' },
 		{ "version", 0, 0, 'V' }
 	};
 	int index, c;
 
-	while((c = getopt_long(argc, argv, "df:h::i:p:H:r:s:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "46a:c:df:h::t:i:mn:p:qr:su:w:vV", options, &index)) != -1) {
 		switch(c) {
+		case '4':
+			ddos->family = AF_INET;
+			break;
+		case '6':
+			ddos->family = AF_INET6;
+			break;
+		case 'a':
+			ddos->accept = malloc(strlen(optarg) + 1);
+			if(!ddos->accept) {
+				die("failed alloc memory");
+			}
+			strcpy(ddos->accept, optarg);
+			break;
+		case 'c':
+			ddos->slaves = malloc(strlen(optarg) + 1);
+			if(!ddos->slaves) {
+				die("failed alloc memory");
+			}
+			strcpy(ddos->slaves, optarg);
+			break;
 		case 'd':
-			opts->debug++;
+			ddos->opts->debug++;
 			break;
 		case 'f':
 			if(strcmp("plain", optarg) == 0) {
-				opts->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;
+				ddos->opts->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;
 			} else if(strcmp("xml", optarg) == 0) {
-				opts->cgps->format = CGPS_OUTPUT_FORMAT_XML;
+				ddos->opts->cgps->format = CGPS_OUTPUT_FORMAT_XML;
 			} else {
 				die("unknown format '%s' argument for option -f", optarg);
 			}
 			break;
 		case 'h':
-			usage(opts->prog, optarg);
+			usage(ddos->opts->prog, optarg);
 			exit(0);
-		case 'H':
-			if(*optarg != '-') {
-				opts->ipaddr = malloc(strlen(optarg) + 1);
-				if(!opts->ipaddr) {
-					die("failed alloc memory");
-				}
-				strcpy(opts->ipaddr, optarg);
-			} else {
-				--optind;
-				opts->ipaddr = CGPSD_DEFAULT_ADDR;
-			}
-			break;
-		case 'i':
-			opts->data = malloc(strlen(optarg) + 1);
-			if(!opts->data) {
+		case 't':
+			ddos->opts->ipaddr = malloc(strlen(optarg) + 1);
+			if(!ddos->opts->ipaddr) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->data, optarg);
+			strcpy(ddos->opts->ipaddr, optarg);
+			break;
+		case 'i':
+			ddos->opts->data = malloc(strlen(optarg) + 1);
+			if(!ddos->opts->data) {
+				die("failed alloc memory");
+			}
+			strcpy(ddos->opts->data, optarg);
+			break;
+		case 'm':
+			ddos->mode = CGPSDDOS_MASTER;
+			break;
+		case 'n':
+			ddos->opts->count = strtoul(optarg, NULL, 10);
 			break;
 		case 'p':
 #ifdef HAVE_STRTOL
-			opts->port = strtol(optarg, NULL, 10);
+			ddos->opts->port = strtol(optarg, NULL, 10);
 #else
-			opts->port = atoi(optarg);
+			ddos->opts->port = atoi(optarg);
 #endif /* ! HAVE_STRTOL */
-			if(!opts->port) {
+			if(!ddos->opts->port) {
 				die("failed convert port number %s", optarg);
 			}
 			break;
+		case 'q':
+			ddos->opts->quiet = 1;
+			break;
 		case 'r':
-			opts->cgps->result = cgps_get_predict_mask(optarg);
+			ddos->opts->cgps->result = cgps_get_predict_mask(optarg);
 			break;
 		case 's':
+			ddos->mode = CGPSDDOS_SLAVE;
+			break;
+		case 'u':
 			if(*optarg != '-') {
-				opts->unaddr = malloc(strlen(optarg) + 1);
-				if(!opts->unaddr) {
+				ddos->opts->unaddr = malloc(strlen(optarg) + 1);
+				if(!ddos->opts->unaddr) {
 					die("failed alloc memory");
 				}
-				strcpy(opts->unaddr, optarg);
+				strcpy(ddos->opts->unaddr, optarg);
 			} else {
 				--optind;
-				opts->unaddr = CGPSD_DEFAULT_SOCK;
+				ddos->opts->unaddr = CGPSD_DEFAULT_SOCK;
 			}
 			break;
+		case 'w':
+			ddos->timeout = strtoul(optarg, NULL, 10);
+			break;
 		case 'v':
-			opts->verbose++;
+			ddos->opts->verbose++;
 			break;
 		case 'V':
-			version(opts->prog);
+			version(ddos->opts->prog);
 			exit(0);
 		case '?':
 			exit(1);
@@ -195,42 +258,127 @@ void parse_options(int argc, char **argv, struct options *opts)
 	/*
 	 * Check arguments and set defaults.
 	 */
-	if(opts->ipaddr && opts->unaddr) {
+	if(ddos->accept && ddos->mode != CGPSDDOS_SLAVE) {
+		die("the accept connections option (-a) is only valid in slave mode");
+	}
+	if(ddos->slaves && ddos->mode != CGPSDDOS_MASTER) {
+		die("the slaves file option (-c) is only valid in master mode");
+	}
+	if(ddos->opts->cgps->format && ddos->mode == CGPSDDOS_SLAVE) {
+		die("the format option (-f) is only valid in master or local mode");
+	}
+	if(ddos->opts->ipaddr && ddos->mode != CGPSDDOS_MASTER) {
+		die("the target host option (-t) is only valid in master mode");
+	}
+	if(ddos->opts->data && ddos->mode == CGPSDDOS_SLAVE) {
+		die("the indata option (-i) is only valid in master or local mode");
+	}
+	if(ddos->opts->port && ddos->mode == CGPSDDOS_LOCAL) {
+		die("the port option (-p) is not valid in local mode");
+	}
+	if(ddos->opts->cgps->result && ddos->mode == CGPSDDOS_SLAVE) {
+		die("the result option (-r) is only valid in master or local mode");
+	}
+	if(ddos->opts->unaddr && ddos->mode != CGPSDDOS_LOCAL) {
+		die("the socket option (-s) is only valid in local mode");
+	}
+	if(ddos->family && ddos->mode == CGPSDDOS_LOCAL) {
+		die("the address family option (-4 or -6) is not valid in local mode");
+	}
+	if(ddos->mode == CGPSDDOS_MASTER) {
+		if(!ddos->opts->data) {
+			die("input data option (-i) is missing, see --help");
+		}
+		if(!ddos->opts->ipaddr) {
+			die("target host option (-t) is missing, see --help");
+		}
+		if(!ddos->opts->cgps->result) {
+			die("result set option (-r) is missing, see --help");
+		}
+	}
+	if(ddos->mode == CGPSDDOS_SLAVE) {
+		if(!ddos->accept) {
+			logwarn("no master host defined (-a), see --help");
+			logwarn("will accept connections from any host!");
+		}
+	}
+	if(ddos->mode == CGPSDDOS_LOCAL) {
+		if(!ddos->opts->unaddr) {
+			die("socket path option (-u) is missing, see --help");
+		}
+		if(!ddos->opts->cgps->result) {
+			die("result set option (-r) is missing, see --help");
+		}
+	}
+	
+	if(ddos->opts->ipaddr && ddos->opts->unaddr) {
 		die("both TCP and UNIX connection requested");
 	}
-	if(opts->ipaddr && !opts->port) {
-		opts->port = CGPSD_DEFAULT_PORT;
-	}			  
-	if(opts->unaddr) {
+	if(ddos->opts->ipaddr && !ddos->opts->port) {
+		ddos->opts->port = CGPSD_DEFAULT_PORT;
+	}
+	if(ddos->opts->unaddr) {
 		struct stat st;
 #ifdef HAVE_STAT_EMPTY_STRING_BUG
-		if(strlen(opts->unaddr) == 0) {
+		if(strlen(ddos->opts->unaddr) == 0) {
 			die("path of UNIX socket is empty");
 		}
 #endif
-		if(stat(opts->unaddr, &st) < 0) {
-			die("failed stat UNIX socket (%s)", opts->unaddr);
+		if(stat(ddos->opts->unaddr, &st) < 0) {
+			die("failed stat UNIX socket (%s)", ddos->opts->unaddr);
 		}
 	}
-	if(!opts->cgps->format) {
-		opts->cgps->format = CGPS_OUTPUT_FORMAT_DEFAULT;
+	if(!ddos->opts->cgps->format) {
+		ddos->opts->cgps->format = CGPS_OUTPUT_FORMAT_DEFAULT;
+	}
+	if(!ddos->timeout) {
+		ddos->timeout = CGPSDDOS_PEER_TIMEOUT;
+	}
+	if(!ddos->opts->count) {
+		ddos->opts->count = 1;
 	}
 		
 	/*
 	 * Dump options for debugging purpose.
 	 */
-	if(opts->debug) {
+	if(ddos->opts->debug) {
 		debug("---------------------------------------------");
 		debug("options:");
-		if(opts->unaddr) {
-			debug("  connect to unix socket = %s", opts->unaddr);
+		if(ddos->opts->unaddr) {
+			debug("  connect to unix socket = %s", ddos->opts->unaddr);
 		}
-		if(opts->ipaddr) {
-			debug("  connect to %s on port %d", opts->ipaddr, opts->port);
+		if(ddos->opts->ipaddr) {
+			char *ipaddr, *host, *port;
+			ipaddr = split_hostaddr(strdup(ddos->opts->ipaddr), &host, &port);
+			if(port) {
+				debug("  target is %s on port %s", host, port);
+			} else {
+				debug("  target host is %s", host);
+			}
+			free(ipaddr);
+		}
+		if(ddos->opts->port) {
+			debug("  listen on port %d", ddos->opts->port);
+		}
+		if(ddos->accept) {
+			debug("  accepting connections from %s", ddos->accept);
+		}
+		if(ddos->slaves) {
+			debug("  reading slaves from file %s", ddos->slaves);
+		}
+		if(ddos->opts->cgps->format) {
+			debug("  requested %s as output format", 
+			      ddos->opts->cgps->format == CGPS_OUTPUT_FORMAT_PLAIN ? "plain" : "xml");
+		}
+		if(ddos->opts->data) {
+			debug("  reading prediction data from %s", ddos->opts->data);
+		}
+		if(ddos->timeout) {
+			debug("  timeout waiting for peer %ds", ddos->timeout);
 		}
 		debug("  flags: debug = %s, verbose = %s", 
-		      (opts->debug   ? "yes" : "no"), 
-		      (opts->verbose ? "yes" : "no"));
+		      (ddos->opts->debug   ? "yes" : "no"), 
+		      (ddos->opts->verbose ? "yes" : "no"));
 		debug("---------------------------------------------");
 	}
 }

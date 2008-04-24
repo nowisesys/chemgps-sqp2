@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(stress_SOURCES)
+SOURCES = $(cgpsddos_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -36,8 +36,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = stress$(EXEEXT)
-subdir = utils/stress
+bin_PROGRAMS = cgpsddos$(EXEEXT)
+subdir = utils/cgpsddos
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -50,11 +50,15 @@ CONFIG_CLEAN_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-am_stress_OBJECTS = stress-main.$(OBJEXT) stress-options.$(OBJEXT) \
-	stress-socket.$(OBJEXT) stress-request.$(OBJEXT) \
-	stress-result.$(OBJEXT)
-stress_OBJECTS = $(am_stress_OBJECTS)
-stress_DEPENDENCIES = ../../libcgpssqp/libcgpssqp.a
+am_cgpsddos_OBJECTS = cgpsddos-result.$(OBJEXT) \
+	cgpsddos-request.$(OBJEXT) cgpsddos-socket.$(OBJEXT) \
+	cgpsddos-main.$(OBJEXT) cgpsddos-options.$(OBJEXT) \
+	cgpsddos-master.$(OBJEXT) cgpsddos-slave.$(OBJEXT) \
+	cgpsddos-local.$(OBJEXT) cgpsddos-bind.$(OBJEXT) \
+	cgpsddos-resolve.$(OBJEXT) cgpsddos-dgram.$(OBJEXT) \
+	cgpsddos-dllist.$(OBJEXT) cgpsddos-connect.$(OBJEXT)
+cgpsddos_OBJECTS = $(am_cgpsddos_OBJECTS)
+cgpsddos_DEPENDENCIES = $(top_srcdir)/libcgpssqp/libcgpssqp.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -62,8 +66,8 @@ COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(stress_SOURCES)
-DIST_SOURCES = $(stress_SOURCES)
+SOURCES = $(cgpsddos_SOURCES)
+DIST_SOURCES = $(cgpsddos_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -147,9 +151,13 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-stress_SOURCES = main.c options.c socket.c stress.h request.c result.c
-stress_CFLAGS = -I../../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR)
-stress_LDADD = ../../libcgpssqp/libcgpssqp.a
+cgpsddos_SOURCES = ../../cgpsclt/result.c ../../cgpsclt/request.c \
+		   ../../cgpsclt/socket.c main.c options.c cgpsddos.h  \
+		   master.c slave.c local.c bind.c resolve.c dgram.c \
+		   dllist.c  dllist.h connect.c 
+
+cgpsddos_CFLAGS = -I$(top_srcdir)/libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(top_srcdir)/cgpsclt
+cgpsddos_LDADD = $(top_srcdir)/libcgpssqp/libcgpssqp.a
 all: all-am
 
 .SUFFIXES:
@@ -163,9 +171,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  utils/stress/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  utils/cgpsddos/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  utils/stress/Makefile
+	  $(AUTOMAKE) --gnu  utils/cgpsddos/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -206,9 +214,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-stress$(EXEEXT): $(stress_OBJECTS) $(stress_DEPENDENCIES) 
-	@rm -f stress$(EXEEXT)
-	$(LINK) $(stress_LDFLAGS) $(stress_OBJECTS) $(stress_LDADD) $(LIBS)
+cgpsddos$(EXEEXT): $(cgpsddos_OBJECTS) $(cgpsddos_DEPENDENCIES) 
+	@rm -f cgpsddos$(EXEEXT)
+	$(LINK) $(cgpsddos_LDFLAGS) $(cgpsddos_OBJECTS) $(cgpsddos_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -216,11 +224,19 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stress-main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stress-options.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stress-request.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stress-result.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stress-socket.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-bind.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-connect.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-dgram.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-dllist.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-local.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-master.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-options.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-resolve.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-result.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-slave.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-socket.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -236,75 +252,187 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
 
-stress-main.o: main.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-main.o -MD -MP -MF "$(DEPDIR)/stress-main.Tpo" -c -o stress-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-main.Tpo" "$(DEPDIR)/stress-main.Po"; else rm -f "$(DEPDIR)/stress-main.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='stress-main.o' libtool=no @AMDEPBACKSLASH@
+cgpsddos-result.o: ../../cgpsclt/result.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-result.o -MD -MP -MF "$(DEPDIR)/cgpsddos-result.Tpo" -c -o cgpsddos-result.o `test -f '../../cgpsclt/result.c' || echo '$(srcdir)/'`../../cgpsclt/result.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-result.Tpo" "$(DEPDIR)/cgpsddos-result.Po"; else rm -f "$(DEPDIR)/cgpsddos-result.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../cgpsclt/result.c' object='cgpsddos-result.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-result.o `test -f '../../cgpsclt/result.c' || echo '$(srcdir)/'`../../cgpsclt/result.c
 
-stress-main.obj: main.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-main.obj -MD -MP -MF "$(DEPDIR)/stress-main.Tpo" -c -o stress-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-main.Tpo" "$(DEPDIR)/stress-main.Po"; else rm -f "$(DEPDIR)/stress-main.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='stress-main.obj' libtool=no @AMDEPBACKSLASH@
+cgpsddos-result.obj: ../../cgpsclt/result.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-result.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-result.Tpo" -c -o cgpsddos-result.obj `if test -f '../../cgpsclt/result.c'; then $(CYGPATH_W) '../../cgpsclt/result.c'; else $(CYGPATH_W) '$(srcdir)/../../cgpsclt/result.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-result.Tpo" "$(DEPDIR)/cgpsddos-result.Po"; else rm -f "$(DEPDIR)/cgpsddos-result.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../cgpsclt/result.c' object='cgpsddos-result.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-result.obj `if test -f '../../cgpsclt/result.c'; then $(CYGPATH_W) '../../cgpsclt/result.c'; else $(CYGPATH_W) '$(srcdir)/../../cgpsclt/result.c'; fi`
 
-stress-options.o: options.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-options.o -MD -MP -MF "$(DEPDIR)/stress-options.Tpo" -c -o stress-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-options.Tpo" "$(DEPDIR)/stress-options.Po"; else rm -f "$(DEPDIR)/stress-options.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='options.c' object='stress-options.o' libtool=no @AMDEPBACKSLASH@
+cgpsddos-request.o: ../../cgpsclt/request.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-request.o -MD -MP -MF "$(DEPDIR)/cgpsddos-request.Tpo" -c -o cgpsddos-request.o `test -f '../../cgpsclt/request.c' || echo '$(srcdir)/'`../../cgpsclt/request.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-request.Tpo" "$(DEPDIR)/cgpsddos-request.Po"; else rm -f "$(DEPDIR)/cgpsddos-request.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../cgpsclt/request.c' object='cgpsddos-request.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-request.o `test -f '../../cgpsclt/request.c' || echo '$(srcdir)/'`../../cgpsclt/request.c
 
-stress-options.obj: options.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-options.obj -MD -MP -MF "$(DEPDIR)/stress-options.Tpo" -c -o stress-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-options.Tpo" "$(DEPDIR)/stress-options.Po"; else rm -f "$(DEPDIR)/stress-options.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='options.c' object='stress-options.obj' libtool=no @AMDEPBACKSLASH@
+cgpsddos-request.obj: ../../cgpsclt/request.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-request.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-request.Tpo" -c -o cgpsddos-request.obj `if test -f '../../cgpsclt/request.c'; then $(CYGPATH_W) '../../cgpsclt/request.c'; else $(CYGPATH_W) '$(srcdir)/../../cgpsclt/request.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-request.Tpo" "$(DEPDIR)/cgpsddos-request.Po"; else rm -f "$(DEPDIR)/cgpsddos-request.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../cgpsclt/request.c' object='cgpsddos-request.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-request.obj `if test -f '../../cgpsclt/request.c'; then $(CYGPATH_W) '../../cgpsclt/request.c'; else $(CYGPATH_W) '$(srcdir)/../../cgpsclt/request.c'; fi`
 
-stress-socket.o: socket.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-socket.o -MD -MP -MF "$(DEPDIR)/stress-socket.Tpo" -c -o stress-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-socket.Tpo" "$(DEPDIR)/stress-socket.Po"; else rm -f "$(DEPDIR)/stress-socket.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='socket.c' object='stress-socket.o' libtool=no @AMDEPBACKSLASH@
+cgpsddos-socket.o: ../../cgpsclt/socket.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-socket.o -MD -MP -MF "$(DEPDIR)/cgpsddos-socket.Tpo" -c -o cgpsddos-socket.o `test -f '../../cgpsclt/socket.c' || echo '$(srcdir)/'`../../cgpsclt/socket.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-socket.Tpo" "$(DEPDIR)/cgpsddos-socket.Po"; else rm -f "$(DEPDIR)/cgpsddos-socket.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../cgpsclt/socket.c' object='cgpsddos-socket.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-socket.o `test -f 'socket.c' || echo '$(srcdir)/'`socket.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-socket.o `test -f '../../cgpsclt/socket.c' || echo '$(srcdir)/'`../../cgpsclt/socket.c
 
-stress-socket.obj: socket.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-socket.obj -MD -MP -MF "$(DEPDIR)/stress-socket.Tpo" -c -o stress-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-socket.Tpo" "$(DEPDIR)/stress-socket.Po"; else rm -f "$(DEPDIR)/stress-socket.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='socket.c' object='stress-socket.obj' libtool=no @AMDEPBACKSLASH@
+cgpsddos-socket.obj: ../../cgpsclt/socket.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-socket.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-socket.Tpo" -c -o cgpsddos-socket.obj `if test -f '../../cgpsclt/socket.c'; then $(CYGPATH_W) '../../cgpsclt/socket.c'; else $(CYGPATH_W) '$(srcdir)/../../cgpsclt/socket.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-socket.Tpo" "$(DEPDIR)/cgpsddos-socket.Po"; else rm -f "$(DEPDIR)/cgpsddos-socket.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../../cgpsclt/socket.c' object='cgpsddos-socket.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-socket.obj `if test -f 'socket.c'; then $(CYGPATH_W) 'socket.c'; else $(CYGPATH_W) '$(srcdir)/socket.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-socket.obj `if test -f '../../cgpsclt/socket.c'; then $(CYGPATH_W) '../../cgpsclt/socket.c'; else $(CYGPATH_W) '$(srcdir)/../../cgpsclt/socket.c'; fi`
 
-stress-request.o: request.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-request.o -MD -MP -MF "$(DEPDIR)/stress-request.Tpo" -c -o stress-request.o `test -f 'request.c' || echo '$(srcdir)/'`request.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-request.Tpo" "$(DEPDIR)/stress-request.Po"; else rm -f "$(DEPDIR)/stress-request.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='request.c' object='stress-request.o' libtool=no @AMDEPBACKSLASH@
+cgpsddos-main.o: main.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-main.o -MD -MP -MF "$(DEPDIR)/cgpsddos-main.Tpo" -c -o cgpsddos-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-main.Tpo" "$(DEPDIR)/cgpsddos-main.Po"; else rm -f "$(DEPDIR)/cgpsddos-main.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='cgpsddos-main.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-request.o `test -f 'request.c' || echo '$(srcdir)/'`request.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-main.o `test -f 'main.c' || echo '$(srcdir)/'`main.c
 
-stress-request.obj: request.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-request.obj -MD -MP -MF "$(DEPDIR)/stress-request.Tpo" -c -o stress-request.obj `if test -f 'request.c'; then $(CYGPATH_W) 'request.c'; else $(CYGPATH_W) '$(srcdir)/request.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-request.Tpo" "$(DEPDIR)/stress-request.Po"; else rm -f "$(DEPDIR)/stress-request.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='request.c' object='stress-request.obj' libtool=no @AMDEPBACKSLASH@
+cgpsddos-main.obj: main.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-main.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-main.Tpo" -c -o cgpsddos-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-main.Tpo" "$(DEPDIR)/cgpsddos-main.Po"; else rm -f "$(DEPDIR)/cgpsddos-main.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='main.c' object='cgpsddos-main.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-request.obj `if test -f 'request.c'; then $(CYGPATH_W) 'request.c'; else $(CYGPATH_W) '$(srcdir)/request.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-main.obj `if test -f 'main.c'; then $(CYGPATH_W) 'main.c'; else $(CYGPATH_W) '$(srcdir)/main.c'; fi`
 
-stress-result.o: result.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-result.o -MD -MP -MF "$(DEPDIR)/stress-result.Tpo" -c -o stress-result.o `test -f 'result.c' || echo '$(srcdir)/'`result.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-result.Tpo" "$(DEPDIR)/stress-result.Po"; else rm -f "$(DEPDIR)/stress-result.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='result.c' object='stress-result.o' libtool=no @AMDEPBACKSLASH@
+cgpsddos-options.o: options.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-options.o -MD -MP -MF "$(DEPDIR)/cgpsddos-options.Tpo" -c -o cgpsddos-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-options.Tpo" "$(DEPDIR)/cgpsddos-options.Po"; else rm -f "$(DEPDIR)/cgpsddos-options.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='options.c' object='cgpsddos-options.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-result.o `test -f 'result.c' || echo '$(srcdir)/'`result.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-options.o `test -f 'options.c' || echo '$(srcdir)/'`options.c
 
-stress-result.obj: result.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -MT stress-result.obj -MD -MP -MF "$(DEPDIR)/stress-result.Tpo" -c -o stress-result.obj `if test -f 'result.c'; then $(CYGPATH_W) 'result.c'; else $(CYGPATH_W) '$(srcdir)/result.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/stress-result.Tpo" "$(DEPDIR)/stress-result.Po"; else rm -f "$(DEPDIR)/stress-result.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='result.c' object='stress-result.obj' libtool=no @AMDEPBACKSLASH@
+cgpsddos-options.obj: options.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-options.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-options.Tpo" -c -o cgpsddos-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-options.Tpo" "$(DEPDIR)/cgpsddos-options.Po"; else rm -f "$(DEPDIR)/cgpsddos-options.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='options.c' object='cgpsddos-options.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(stress_CFLAGS) $(CFLAGS) -c -o stress-result.obj `if test -f 'result.c'; then $(CYGPATH_W) 'result.c'; else $(CYGPATH_W) '$(srcdir)/result.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-options.obj `if test -f 'options.c'; then $(CYGPATH_W) 'options.c'; else $(CYGPATH_W) '$(srcdir)/options.c'; fi`
+
+cgpsddos-master.o: master.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-master.o -MD -MP -MF "$(DEPDIR)/cgpsddos-master.Tpo" -c -o cgpsddos-master.o `test -f 'master.c' || echo '$(srcdir)/'`master.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-master.Tpo" "$(DEPDIR)/cgpsddos-master.Po"; else rm -f "$(DEPDIR)/cgpsddos-master.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='master.c' object='cgpsddos-master.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-master.o `test -f 'master.c' || echo '$(srcdir)/'`master.c
+
+cgpsddos-master.obj: master.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-master.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-master.Tpo" -c -o cgpsddos-master.obj `if test -f 'master.c'; then $(CYGPATH_W) 'master.c'; else $(CYGPATH_W) '$(srcdir)/master.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-master.Tpo" "$(DEPDIR)/cgpsddos-master.Po"; else rm -f "$(DEPDIR)/cgpsddos-master.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='master.c' object='cgpsddos-master.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-master.obj `if test -f 'master.c'; then $(CYGPATH_W) 'master.c'; else $(CYGPATH_W) '$(srcdir)/master.c'; fi`
+
+cgpsddos-slave.o: slave.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-slave.o -MD -MP -MF "$(DEPDIR)/cgpsddos-slave.Tpo" -c -o cgpsddos-slave.o `test -f 'slave.c' || echo '$(srcdir)/'`slave.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-slave.Tpo" "$(DEPDIR)/cgpsddos-slave.Po"; else rm -f "$(DEPDIR)/cgpsddos-slave.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='slave.c' object='cgpsddos-slave.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-slave.o `test -f 'slave.c' || echo '$(srcdir)/'`slave.c
+
+cgpsddos-slave.obj: slave.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-slave.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-slave.Tpo" -c -o cgpsddos-slave.obj `if test -f 'slave.c'; then $(CYGPATH_W) 'slave.c'; else $(CYGPATH_W) '$(srcdir)/slave.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-slave.Tpo" "$(DEPDIR)/cgpsddos-slave.Po"; else rm -f "$(DEPDIR)/cgpsddos-slave.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='slave.c' object='cgpsddos-slave.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-slave.obj `if test -f 'slave.c'; then $(CYGPATH_W) 'slave.c'; else $(CYGPATH_W) '$(srcdir)/slave.c'; fi`
+
+cgpsddos-local.o: local.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-local.o -MD -MP -MF "$(DEPDIR)/cgpsddos-local.Tpo" -c -o cgpsddos-local.o `test -f 'local.c' || echo '$(srcdir)/'`local.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-local.Tpo" "$(DEPDIR)/cgpsddos-local.Po"; else rm -f "$(DEPDIR)/cgpsddos-local.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='local.c' object='cgpsddos-local.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-local.o `test -f 'local.c' || echo '$(srcdir)/'`local.c
+
+cgpsddos-local.obj: local.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-local.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-local.Tpo" -c -o cgpsddos-local.obj `if test -f 'local.c'; then $(CYGPATH_W) 'local.c'; else $(CYGPATH_W) '$(srcdir)/local.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-local.Tpo" "$(DEPDIR)/cgpsddos-local.Po"; else rm -f "$(DEPDIR)/cgpsddos-local.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='local.c' object='cgpsddos-local.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-local.obj `if test -f 'local.c'; then $(CYGPATH_W) 'local.c'; else $(CYGPATH_W) '$(srcdir)/local.c'; fi`
+
+cgpsddos-bind.o: bind.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-bind.o -MD -MP -MF "$(DEPDIR)/cgpsddos-bind.Tpo" -c -o cgpsddos-bind.o `test -f 'bind.c' || echo '$(srcdir)/'`bind.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-bind.Tpo" "$(DEPDIR)/cgpsddos-bind.Po"; else rm -f "$(DEPDIR)/cgpsddos-bind.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bind.c' object='cgpsddos-bind.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-bind.o `test -f 'bind.c' || echo '$(srcdir)/'`bind.c
+
+cgpsddos-bind.obj: bind.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-bind.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-bind.Tpo" -c -o cgpsddos-bind.obj `if test -f 'bind.c'; then $(CYGPATH_W) 'bind.c'; else $(CYGPATH_W) '$(srcdir)/bind.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-bind.Tpo" "$(DEPDIR)/cgpsddos-bind.Po"; else rm -f "$(DEPDIR)/cgpsddos-bind.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='bind.c' object='cgpsddos-bind.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-bind.obj `if test -f 'bind.c'; then $(CYGPATH_W) 'bind.c'; else $(CYGPATH_W) '$(srcdir)/bind.c'; fi`
+
+cgpsddos-resolve.o: resolve.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-resolve.o -MD -MP -MF "$(DEPDIR)/cgpsddos-resolve.Tpo" -c -o cgpsddos-resolve.o `test -f 'resolve.c' || echo '$(srcdir)/'`resolve.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-resolve.Tpo" "$(DEPDIR)/cgpsddos-resolve.Po"; else rm -f "$(DEPDIR)/cgpsddos-resolve.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='resolve.c' object='cgpsddos-resolve.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-resolve.o `test -f 'resolve.c' || echo '$(srcdir)/'`resolve.c
+
+cgpsddos-resolve.obj: resolve.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-resolve.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-resolve.Tpo" -c -o cgpsddos-resolve.obj `if test -f 'resolve.c'; then $(CYGPATH_W) 'resolve.c'; else $(CYGPATH_W) '$(srcdir)/resolve.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-resolve.Tpo" "$(DEPDIR)/cgpsddos-resolve.Po"; else rm -f "$(DEPDIR)/cgpsddos-resolve.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='resolve.c' object='cgpsddos-resolve.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-resolve.obj `if test -f 'resolve.c'; then $(CYGPATH_W) 'resolve.c'; else $(CYGPATH_W) '$(srcdir)/resolve.c'; fi`
+
+cgpsddos-dgram.o: dgram.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-dgram.o -MD -MP -MF "$(DEPDIR)/cgpsddos-dgram.Tpo" -c -o cgpsddos-dgram.o `test -f 'dgram.c' || echo '$(srcdir)/'`dgram.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-dgram.Tpo" "$(DEPDIR)/cgpsddos-dgram.Po"; else rm -f "$(DEPDIR)/cgpsddos-dgram.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dgram.c' object='cgpsddos-dgram.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-dgram.o `test -f 'dgram.c' || echo '$(srcdir)/'`dgram.c
+
+cgpsddos-dgram.obj: dgram.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-dgram.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-dgram.Tpo" -c -o cgpsddos-dgram.obj `if test -f 'dgram.c'; then $(CYGPATH_W) 'dgram.c'; else $(CYGPATH_W) '$(srcdir)/dgram.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-dgram.Tpo" "$(DEPDIR)/cgpsddos-dgram.Po"; else rm -f "$(DEPDIR)/cgpsddos-dgram.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dgram.c' object='cgpsddos-dgram.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-dgram.obj `if test -f 'dgram.c'; then $(CYGPATH_W) 'dgram.c'; else $(CYGPATH_W) '$(srcdir)/dgram.c'; fi`
+
+cgpsddos-dllist.o: dllist.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-dllist.o -MD -MP -MF "$(DEPDIR)/cgpsddos-dllist.Tpo" -c -o cgpsddos-dllist.o `test -f 'dllist.c' || echo '$(srcdir)/'`dllist.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-dllist.Tpo" "$(DEPDIR)/cgpsddos-dllist.Po"; else rm -f "$(DEPDIR)/cgpsddos-dllist.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dllist.c' object='cgpsddos-dllist.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-dllist.o `test -f 'dllist.c' || echo '$(srcdir)/'`dllist.c
+
+cgpsddos-dllist.obj: dllist.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-dllist.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-dllist.Tpo" -c -o cgpsddos-dllist.obj `if test -f 'dllist.c'; then $(CYGPATH_W) 'dllist.c'; else $(CYGPATH_W) '$(srcdir)/dllist.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-dllist.Tpo" "$(DEPDIR)/cgpsddos-dllist.Po"; else rm -f "$(DEPDIR)/cgpsddos-dllist.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dllist.c' object='cgpsddos-dllist.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-dllist.obj `if test -f 'dllist.c'; then $(CYGPATH_W) 'dllist.c'; else $(CYGPATH_W) '$(srcdir)/dllist.c'; fi`
+
+cgpsddos-connect.o: connect.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-connect.o -MD -MP -MF "$(DEPDIR)/cgpsddos-connect.Tpo" -c -o cgpsddos-connect.o `test -f 'connect.c' || echo '$(srcdir)/'`connect.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-connect.Tpo" "$(DEPDIR)/cgpsddos-connect.Po"; else rm -f "$(DEPDIR)/cgpsddos-connect.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='connect.c' object='cgpsddos-connect.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-connect.o `test -f 'connect.c' || echo '$(srcdir)/'`connect.c
+
+cgpsddos-connect.obj: connect.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-connect.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-connect.Tpo" -c -o cgpsddos-connect.obj `if test -f 'connect.c'; then $(CYGPATH_W) 'connect.c'; else $(CYGPATH_W) '$(srcdir)/connect.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-connect.Tpo" "$(DEPDIR)/cgpsddos-connect.Po"; else rm -f "$(DEPDIR)/cgpsddos-connect.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='connect.c' object='cgpsddos-connect.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-connect.obj `if test -f 'connect.c'; then $(CYGPATH_W) 'connect.c'; else $(CYGPATH_W) '$(srcdir)/connect.c'; fi`
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
