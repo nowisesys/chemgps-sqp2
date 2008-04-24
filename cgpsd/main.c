@@ -28,6 +28,8 @@
 # include "config.h"
 #endif
 
+#define _GNU_SOURCE
+
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
@@ -43,7 +45,7 @@
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-#include <libgen.h>
+/* #include <libgen.h> */
 #include <chemgps.h>
 
 #include "cgpssqp.h"
@@ -140,7 +142,7 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	loginfo("daemon starting up (version %s)", PACKAGE_VERSION);	
+	loginfo("daemon starting up (version %s, project %s)", PACKAGE_VERSION, basename(opts->proj));
 	service(opts);
 	loginfo("daemon shutting down...");
 	

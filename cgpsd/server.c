@@ -76,11 +76,13 @@ void service(struct options *opts)
 		die("failed load project %s", opts->proj);
 	}
 	
-	if(opts->ipaddr) {
-		loginfo("listening on TCP socket %s port %d", opts->ipaddr, opts->port);
-	}
-	if(opts->unaddr) {
-		loginfo("listening on UNIX socket %s", opts->unaddr);
+	if(!opts->quiet) {
+		if(opts->ipaddr) {
+			loginfo("listening on TCP socket %s port %d", opts->ipaddr, opts->port);
+		}
+		if(opts->unaddr) {
+			loginfo("listening on UNIX socket %s", opts->unaddr);
+		}
 	}
 	
 	FD_ZERO(&sockfds);
@@ -99,6 +101,14 @@ void service(struct options *opts)
 	
 	debug("enter running state");
         opts->state |= CGPSD_STATE_RUNNING;
+	
+	if(opts->ipsock && opts->unsock) {
+		loginfo("daemon ready (tcp: %s:%d, unix: %s)", opts->ipaddr, opts->port, opts->unaddr);
+	} else if(opts->ipsock) {
+		loginfo("daemon ready (tcp: %s:%d)", opts->ipaddr, opts->port);
+	} else if(opts->unsock) {
+		loginfo("daemon ready (unix: %s)", opts->unaddr);
+	}
 	
 	while(1) {
 		fd_set readfds = sockfds;
@@ -123,7 +133,7 @@ void service(struct options *opts)
 						&socklen);
 				if(client < 0) {
 					logerr("failed accept TCP client connection");
-				} else {
+				} else if(!opts->quiet) {
 #ifdef HAVE_INET_NTOA
 					loginfo("accepted TCP client connection from %s on port %d", 
 						inet_ntoa(sockaddr.sin_addr), 
@@ -161,6 +171,7 @@ void service(struct options *opts)
 			
 			if(client != -1) {
 				struct client *peer = malloc(sizeof(struct client));
+				
 				if(!peer) {
 					logerr("failed alloc memory");
 					continue;

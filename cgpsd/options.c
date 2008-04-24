@@ -68,6 +68,7 @@ static void usage(const char *prog, const char *section)
 	printf("  -i, --interactive:    Don't detach from controlling terminal\n");
 	printf("  -d, --debug:          Enable debug output (allowed multiple times)\n");
 	printf("  -v, --verbose:        Be more verbose in output\n");
+	printf("  -q, --quiet:          Suppress some output\n");
 	printf("  -h, --help:           This help\n");
 	printf("  -V, --version:        Print version info to stdout\n");
 	printf("\n");
@@ -102,13 +103,14 @@ void parse_options(int argc, char **argv, struct options *opts)
 		{ "interactive", 0, 0, 'i' },
 		{ "debug",   0, 0, 'd' },
 		{ "verbose", 0, 0, 'v' },
+		{ "quiet",   0, 0, 'q' },
 		{ "help",    0, 0, 'h' },
 		{ "version", 0, 0, 'V' }
 	};
 	int index, c;
 	struct stat st;
 
-	while((c = getopt_long(argc, argv, "b:df:hil:p:t:u:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "b:df:hil:p:qt:u:vV", options, &index)) != -1) {
 		switch(c) {
 		case 'b':
 			opts->backlog = atoi(optarg);
@@ -145,6 +147,9 @@ void parse_options(int argc, char **argv, struct options *opts)
 			if(!opts->port) {
 				die("failed convert port number %s", optarg);
 			}
+			break;
+		case 'q':
+			opts->quiet = 1;
 			break;
 		case 't':
 			if(*optarg != '-') {

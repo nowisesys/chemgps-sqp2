@@ -47,16 +47,22 @@ static void signal_handler(int sig)
 {	
 	switch(sig) {
 	case SIGHUP:
-		loginfo("reloading configuration (SIGHUP)");
+		if(!opts->quiet) {
+			loginfo("reloading configuration (SIGHUP)");
+		}
 		opts->state |= CGPSD_STATE_RELOAD;
 		break;
 	case SIGTERM:
-		loginfo("received the terminate signal (SIGTERM)");
+		if(!opts->quiet) {
+			loginfo("received the terminate signal (SIGTERM)");
+		}
 		opts->state |= CGPSD_STATE_CLOSING;
 		break;
 	case SIGINT:
 	case SIGQUIT:
-		loginfo("received the interupt signal from keyboard (SIGINT)");
+		if(!opts->quiet) {
+			loginfo("received the interupt signal from keyboard (SIGINT)");
+		}
 		opts->state |= CGPSD_STATE_CLOSING;
 		break;
 	default:
