@@ -400,7 +400,7 @@ static int cgps_predict_get_observations(struct cgps_project *proj, struct clien
 	struct request_option req;
 	
 	read_request(&buff, &size, loader->ss);
-	if(split_request_option(buff, &req) < 0) {
+	if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 		free(buff);
 		logerr("failed receive number of observations");
 		return -1;

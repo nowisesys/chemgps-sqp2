@@ -165,10 +165,16 @@ struct request_type
 };
 
 static const struct request_type request_types[] = {
-	{ "Predict", CGPSP_PROTO_PREDICT },
-	{ "Format", CGPSP_PROTO_FORMAT },
-	{ "Load", CGPSP_PROTO_LOAD },
-	{ "Result", CGPSP_PROTO_RESULT },
+	{ "predict", CGPSP_PROTO_PREDICT },
+	{ "format", CGPSP_PROTO_FORMAT },
+	{ "load", CGPSP_PROTO_LOAD },
+	{ "data", CGPSP_PROTO_LOAD },
+	{ "result", CGPSP_PROTO_RESULT },
+	{ "target", CGPSP_PROTO_TARGET },
+	{ "start", CGPSP_PROTO_START },
+	{ "quit", CGPSP_PROTO_QUIT },
+	{ "error", CGPSP_PROTO_ERROR },
+	{ "count", CGPSP_PROTO_COUNT },
 	{ "CGPSP \\d\\.\\d (\\w+: [a-z]+ ready)", CGPSP_PROTO_GREETING }, 
 	{ NULL, CGPSP_PROTO_LAST }
 };
@@ -243,9 +249,13 @@ int split_request_option(char *buff, struct request_option *req)
 					}
 				}
 				req->symbol = type->value;
-				return 0;
+				return req->symbol;
 			}
 		}
+		if(strncasecmp(req->option, CGPSP_PROTO_NAME, strlen(CGPSP_PROTO_NAME)) == 0) {
+			req->symbol = CGPSP_PROTO_GREETING;
+			return CGPSP_PROTO_GREETING;
+		}
 	}
-	return -1;
+	return CGPSP_PROTO_LAST;
 }

@@ -46,22 +46,32 @@
 #define CGPSD_DEFAULT_SOCK "/var/run/cgpsd.sock"
 #define CGPSD_DEFAULT_ADDR "0.0.0.0"
 
-enum CGPS_APPLICATION { CGPS_APP_UNKNOWN, CGPS_STANDALONE, CGPS_DAEMON, CGPS_CLIENT };
+enum CGPS_APPLICATION { CGPS_APP_UNKNOWN, CGPS_STANDALONE, CGPS_DAEMON, CGPS_CLIENT, CGPS_DDOS };
+
+#define CGPS_RESOLVE_RETRIES 5
+#define CGPS_RESOLVE_TIMEOUT 2
 
 #define CGPSP_PROTO_VERSION "1.0"
 #define CGPSP_PROTO_CR      0x13
 #define CGPSP_PROTO_LF      0x10
 #define CGPSP_PROTO_NEWLINE htons(CGPSP_PROTO_CR << 8 | CGPSP_PROTO_LF)
 
+#define CGPSP_PROTO_NAME "CGPSP"
+
 /*
  * Values for request_type
  */
 enum CGPSP_PROTO_VALUES {
-	CGPSP_PROTO_GREETING,    /* client/server handshake */
+	CGPSP_PROTO_GREETING = 0,/* client/server handshake */
 	CGPSP_PROTO_PREDICT,     /* server set result */
 	CGPSP_PROTO_FORMAT,      /* server set format */
 	CGPSP_PROTO_LOAD,        /* client load data */
 	CGPSP_PROTO_RESULT,      /* client read result */
+	CGPSP_PROTO_TARGET,      /* set target host (cgpsddos only) */	
+	CGPSP_PROTO_START,       /* start DDOS (cgpsddos only) */
+	CGPSP_PROTO_QUIT,        /* quit (cgpsddos only) */
+	CGPSP_PROTO_ERROR,       /* error message */
+	CGPSP_PROTO_COUNT,       /* iterations (cgpsddos only) */	
 	CGPSP_PROTO_LAST	
 };
 
@@ -75,6 +85,8 @@ struct options
 	int debug;            /* enable debug */
 	int verbose;          /* be more verbose */
 	int batch;            /* enable batch job mode */
+	int quiet;            /* be more quiet */
+	int count;            /* repeate prediction count times */
 	/*
 	 * Common members:
 	 */
