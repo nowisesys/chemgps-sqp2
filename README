@@ -9,7 +9,10 @@
    
    The cgpsclt/cgpsd works together and provides a client/server solution.
    Communication is done using local (UNIX socket) and networks (TCP socket)
-   connections.
+   connections. 
+   
+   The cgpsstd (standalone) binary is considered to be a test tool. Use the
+   client/server solution for production systems.
    
 ** PROGRAMS:
 
