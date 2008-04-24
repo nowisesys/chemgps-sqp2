@@ -98,7 +98,7 @@ int process_request(void *params)
 	debug("receiving predict request");
 	read_request(&buff, &size, peer->ss);
 	debug("received: '%s'", buff);
-	if(split_request_option(buff, &req) < 0) {
+	if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 		logerr("failed read client option (%s)", buff);
 		return cleanup_request(peer, buff, -1);
 	}
@@ -111,7 +111,7 @@ int process_request(void *params)
 	debug("receiving format request");
 	read_request(&buff, &size, peer->ss);
 	debug("received: '%s'", buff);
-	if(split_request_option(buff, &req) < 0) {
+	if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 		logerr("failed read client option (%s)", buff);
 		return cleanup_request(peer, buff, -1);
 	}
