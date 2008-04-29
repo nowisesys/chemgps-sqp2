@@ -56,7 +56,7 @@ am_cgpsddos_OBJECTS = cgpsddos-result.$(OBJEXT) \
 	cgpsddos-master.$(OBJEXT) cgpsddos-slave.$(OBJEXT) \
 	cgpsddos-local.$(OBJEXT) cgpsddos-bind.$(OBJEXT) \
 	cgpsddos-resolve.$(OBJEXT) cgpsddos-dgram.$(OBJEXT) \
-	cgpsddos-dllist.$(OBJEXT) cgpsddos-connect.$(OBJEXT)
+	cgpsddos-connect.$(OBJEXT)
 cgpsddos_OBJECTS = $(am_cgpsddos_OBJECTS)
 cgpsddos_DEPENDENCIES = $(top_srcdir)/libcgpssqp/libcgpssqp.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -154,7 +154,7 @@ target_alias = @target_alias@
 cgpsddos_SOURCES = ../../cgpsclt/result.c ../../cgpsclt/request.c \
 		   ../../cgpsclt/socket.c main.c options.c cgpsddos.h  \
 		   master.c slave.c local.c bind.c resolve.c dgram.c \
-		   dllist.c  dllist.h connect.c 
+		   connect.c 
 
 cgpsddos_CFLAGS = -I$(top_srcdir)/libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(top_srcdir)/cgpsclt
 cgpsddos_LDADD = $(top_srcdir)/libcgpssqp/libcgpssqp.a
@@ -227,7 +227,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-bind.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-connect.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-dgram.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-dllist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-local.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-master.Po@am__quote@
@@ -405,20 +404,6 @@ cgpsddos-dgram.obj: dgram.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dgram.c' object='cgpsddos-dgram.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-dgram.obj `if test -f 'dgram.c'; then $(CYGPATH_W) 'dgram.c'; else $(CYGPATH_W) '$(srcdir)/dgram.c'; fi`
-
-cgpsddos-dllist.o: dllist.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-dllist.o -MD -MP -MF "$(DEPDIR)/cgpsddos-dllist.Tpo" -c -o cgpsddos-dllist.o `test -f 'dllist.c' || echo '$(srcdir)/'`dllist.c; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-dllist.Tpo" "$(DEPDIR)/cgpsddos-dllist.Po"; else rm -f "$(DEPDIR)/cgpsddos-dllist.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dllist.c' object='cgpsddos-dllist.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-dllist.o `test -f 'dllist.c' || echo '$(srcdir)/'`dllist.c
-
-cgpsddos-dllist.obj: dllist.c
-@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-dllist.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-dllist.Tpo" -c -o cgpsddos-dllist.obj `if test -f 'dllist.c'; then $(CYGPATH_W) 'dllist.c'; else $(CYGPATH_W) '$(srcdir)/dllist.c'; fi`; \
-@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-dllist.Tpo" "$(DEPDIR)/cgpsddos-dllist.Po"; else rm -f "$(DEPDIR)/cgpsddos-dllist.Tpo"; exit 1; fi
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dllist.c' object='cgpsddos-dllist.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-dllist.obj `if test -f 'dllist.c'; then $(CYGPATH_W) 'dllist.c'; else $(CYGPATH_W) '$(srcdir)/dllist.c'; fi`
 
 cgpsddos-connect.o: connect.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-connect.o -MD -MP -MF "$(DEPDIR)/cgpsddos-connect.Tpo" -c -o cgpsddos-connect.o `test -f 'connect.c' || echo '$(srcdir)/'`connect.c; \
