@@ -14,6 +14,9 @@ AC_PROG_RANLIB
 # Checks for libraries.
 ## AC_CHECK_LIB([chemgps], [cgps_project_load])
 AC_CHECK_LIB([pthread], [pthread_create])
+if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
+  CFLAGS="$CFLAGS -pthread"
+fi
 
 # Checks for header files.
 AC_HEADER_STDC

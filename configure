@@ -3022,6 +3022,9 @@ _ACEOF
 
 fi
 
+if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
+  CFLAGS="$CFLAGS -pthread"
+fi
 
 # Checks for header files.
 ac_ext=c
