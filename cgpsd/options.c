@@ -197,16 +197,23 @@ void parse_options(int argc, char **argv, struct options *opts)
 	}
 	if(opts->cgps->logfile) {
 		if(stat(opts->cgps->logfile, &st) < 0) {
-			char *dir = dirname(opts->cgps->logfile);
-			if(strlen(dir) == 1 && dir[0] == '.') {
+			char *logfile;
+			char *logdir;
+			
+			if(!(logfile = strdup(opts->cgps->logfile))) {
+				die("failed alloc memory");
+			}
+			logdir = dirname(logfile);
+			if(strlen(logdir) == 1 && logdir[0] == '.') {
 				/*
 				 * The logfile path is relative to current directory, i.e. "simca.log".
 				 */
 			} else {
-				if(stat(dir, &st) < 0) {
-					die("failed stat directory %s", dir);
+				if(stat(logdir, &st) < 0) {
+					die("failed stat directory %s", logdir);
 				}
 			}
+			free(logfile);
 		}
 	}
 	if(opts->ipaddr && !opts->port) {
