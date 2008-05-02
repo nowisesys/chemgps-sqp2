@@ -177,4 +177,13 @@ void restore_signals(struct options *opts)
 	else {
 		debug("restored signal handler for SIGQUIT");
 	}
+	
+	if(opts->newact) {
+		free(opts->newact);
+		opts->newact = NULL;
+	}
+	if(opts->oldact) {
+		free(opts->oldact);
+		opts->oldact = NULL;
+	}
 }
