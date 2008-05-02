@@ -102,3 +102,24 @@ int init_socket(struct options *opts)
 	}
 	return 0;
 }
+
+/*
+ * Close server socket(s).
+ */
+void close_socket(struct options *opts)
+{
+	if(opts->ipsock && opts->ipsock != -1) {
+		if(shutdown(opts->ipsock, SHUT_RDWR) < 0) {
+			logerr("failed close TCP socket");
+		} else {
+			debug("closed TCP socket");
+		}
+	}
+	if(opts->unsock && opts->unsock != -1) {
+		if(shutdown(opts->unsock, SHUT_RDWR) < 0) {
+			logerr("failed close UNIX socket");
+		} else {
+			debug("closed UNIX socket");
+		}
+	}
+}

@@ -53,7 +53,6 @@
 
 struct options *opts;
 
-#ifdef HAVE_ATEXIT
 void exit_handler(void)
 {
 	if(opts) {
@@ -102,7 +101,6 @@ void exit_handler(void)
 		opts = NULL;
 	}
 }
-#endif /* HAVE_ATEXIT */
 
 int main(int argc, char **argv)
 {
@@ -145,6 +143,13 @@ int main(int argc, char **argv)
 	loginfo("daemon starting up (version %s, project %s)", PACKAGE_VERSION, basename(opts->proj));
 	service(opts);
 	loginfo("daemon shutting down...");
+
+	close_socket(opts);
+	
+#if ! defined(HAVE_ATEXIT)
+	debug("explicit calling exit handler");
+	exit_handler();
+#endif
 	
 	return 0;	
 }
