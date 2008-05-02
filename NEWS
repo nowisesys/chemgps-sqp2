@@ -1,3 +1,10 @@
+Version 0.x.y (2008-mm-dd):
+
+	* Adding multithreading capability to the chemgps daemon (cgpsd). A
+	  variant of the boss/worker model is implemented, where the pool of
+	  running threads grows dynamic. Incoming connections are accepted and 
+	  put on hold until a free worker thread becomes available.
+	  
 Version 0.6.2 (2008-04-25):
 
 	* The libchemgps library is now automatic detected from the configure script.
