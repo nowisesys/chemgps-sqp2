@@ -36,6 +36,12 @@
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
+#ifdef HAVE_LIBPTHREAD
+# include <pthread.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 #include <stdarg.h>
 #include <chemgps.h>
 
@@ -94,7 +100,7 @@ void cgps_syslog(void *pref, int status, int code, int level, const char *file, 
 	FILE *fs;
 	char *buff;
 	size_t size;
-	
+
 	struct options *opts = (struct options *)pref;
 
 	/*
@@ -102,6 +108,15 @@ void cgps_syslog(void *pref, int status, int code, int level, const char *file, 
 	 */
 	fs = open_memstream(&buff, &size);
 	if(!(opts->syslog)) {
+		if(opts->debug > 3) {
+			fprintf(fs, "[0x%lu]", pthread_self());
+		}
+		if(opts->debug > 4) {
+			struct timeval tv;
+			if(gettimeofday(&tv, NULL) == 0) {
+				fprintf(fs, "[%lu:%lu]", tv.tv_sec, tv.tv_usec);
+			}
+		}
 		switch(level) {
 		case LOG_ERR:
 		case LOG_CRIT:
