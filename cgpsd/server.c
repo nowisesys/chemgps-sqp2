@@ -43,17 +43,23 @@
 #ifdef HAVE_ARPA_INET_H
 # include <arpa/inet.h>
 #endif
+#ifdef HAVE_LIBPTHREAD
+# include <pthread.h>
+#endif
 #include <sys/un.h>
 #include <pwd.h>
 
 #include "cgpssqp.h"
 #include "cgpsd.h"
+#include "dllist.h"
+#include "worker.h"
 
 /*
  * Start accepting connections on server socket(s).
  */
 void service(struct options *opts)
 {
+	struct workers workers;	
 	struct cgps_project proj;	
 	fd_set sockfds;  /* server socket file descriptors set */
 	int maxsock = 0;
@@ -97,6 +103,10 @@ void service(struct options *opts)
 		maxsock = opts->unsock > maxsock ? opts->unsock : maxsock;
 	}
 
+	debug("initilizing worker threads...");
+	memset(&workers, 0, sizeof(struct workers));
+	worker_init(&workers, NULL, process_request);
+	
         setup_signals(opts);
 	
 	debug("enter running state");
@@ -124,7 +134,7 @@ void service(struct options *opts)
 		if(result < 0) {
 			logerr("failed select");
 		} else {
-			debug("select returned with result = %d");
+			debug("select returned with result = %d", result);
 			if(FD_ISSET(opts->ipsock, &readfds)) {
 				struct sockaddr_in sockaddr;
 				socklen_t socklen = sizeof(struct sockaddr_in);
@@ -170,25 +180,20 @@ void service(struct options *opts)
 			}
 			
 			if(client != -1) {
-				struct client *peer = malloc(sizeof(struct client));
-				
-				if(!peer) {
-					logerr("failed alloc memory");
-					continue;
-				}
-				
-				peer->proj = &proj;
-				peer->opts = opts;
-				peer->sock = client;
-				
-				if(process_request(peer) < 0) {
-					logerr("failed process client request");
+				if(worker_enqueue(&workers, client, opts, &proj) < 0) {
+					FILE *peer = fdopen(client, "r+");
+					logerr("failed enqueue peer");
+					fprintf(peer, "error: server busy");
+					fclose(peer);
 				}
 			}
 		}
 	}
 	debug("the done flag is set, exiting service()");
         restore_signals(opts);
+
+	debug("finish worker threads...");
+	worker_cleanup(&workers);
 	
 	debug("closing project");
 	cgps_project_close(&proj);	

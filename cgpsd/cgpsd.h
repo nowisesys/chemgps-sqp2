@@ -39,8 +39,9 @@
 
 void parse_options(int argc, char **argv, struct options *opts);
 void service(struct options *opts);
-int process_request(void *peer);
+void * process_request(void *peer);
 int init_socket(struct options *opts);
+void close_socket(struct options *opts);
 void setup_signals(struct options *opts);
 void restore_signals(struct options *opts);
 

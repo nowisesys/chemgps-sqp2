@@ -52,7 +52,8 @@ sbinPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(sbin_PROGRAMS)
 am_cgpsd_OBJECTS = cgpsd-main.$(OBJEXT) cgpsd-options.$(OBJEXT) \
 	cgpsd-server.$(OBJEXT) cgpsd-socket.$(OBJEXT) \
-	cgpsd-client.$(OBJEXT) cgpsd-signal.$(OBJEXT)
+	cgpsd-client.$(OBJEXT) cgpsd-signal.$(OBJEXT) \
+	cgpsd-worker.$(OBJEXT)
 cgpsd_OBJECTS = $(am_cgpsd_OBJECTS)
 cgpsd_DEPENDENCIES = ../libcgpssqp/libcgpssqp.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -147,7 +148,9 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-cgpsd_SOURCES = main.c options.c server.c socket.c cgpsd.h client.c signal.c
+cgpsd_SOURCES = main.c options.c server.c socket.c cgpsd.h client.c signal.c \
+	        worker.c worker.h
+
 cgpsd_CFLAGS = -I../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR)
 cgpsd_LDFLAGS = -L$(top_srcdir)/$(LIBCHEMGPS_LIBDIR)
 cgpsd_LDADD = ../libcgpssqp/libcgpssqp.a -lchemgps
@@ -223,6 +226,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-signal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-socket.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsd-worker.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -321,6 +325,20 @@ cgpsd-signal.obj: signal.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='signal.c' object='cgpsd-signal.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -c -o cgpsd-signal.obj `if test -f 'signal.c'; then $(CYGPATH_W) 'signal.c'; else $(CYGPATH_W) '$(srcdir)/signal.c'; fi`
+
+cgpsd-worker.o: worker.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -MT cgpsd-worker.o -MD -MP -MF "$(DEPDIR)/cgpsd-worker.Tpo" -c -o cgpsd-worker.o `test -f 'worker.c' || echo '$(srcdir)/'`worker.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsd-worker.Tpo" "$(DEPDIR)/cgpsd-worker.Po"; else rm -f "$(DEPDIR)/cgpsd-worker.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='worker.c' object='cgpsd-worker.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -c -o cgpsd-worker.o `test -f 'worker.c' || echo '$(srcdir)/'`worker.c
+
+cgpsd-worker.obj: worker.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -MT cgpsd-worker.obj -MD -MP -MF "$(DEPDIR)/cgpsd-worker.Tpo" -c -o cgpsd-worker.obj `if test -f 'worker.c'; then $(CYGPATH_W) 'worker.c'; else $(CYGPATH_W) '$(srcdir)/worker.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsd-worker.Tpo" "$(DEPDIR)/cgpsd-worker.Po"; else rm -f "$(DEPDIR)/cgpsd-worker.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='worker.c' object='cgpsd-worker.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsd_CFLAGS) $(CFLAGS) -c -o cgpsd-worker.obj `if test -f 'worker.c'; then $(CYGPATH_W) 'worker.c'; else $(CYGPATH_W) '$(srcdir)/worker.c'; fi`
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
