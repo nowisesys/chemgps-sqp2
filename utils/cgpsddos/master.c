@@ -332,7 +332,7 @@ void run_master(struct cgpsddos *ddos)
 				break;
 			default:
 				logerr("protocol error (got option=%s, value=%s, symbol=%d)",
-				    req.option, req.value, req.symbol);
+				       req.option, req.value, req.symbol);
 				break;
 			}
 		}
