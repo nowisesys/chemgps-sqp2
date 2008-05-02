@@ -1,0 +1,4 @@
+A simple script to run multiple client (cgpsclt) requests against the daemon
+(cgpsd) process.
+
+Anders Lövgren, 2008-04-30
