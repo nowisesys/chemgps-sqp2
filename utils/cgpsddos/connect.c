@@ -100,9 +100,6 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 			logerr("failed create thread (%d created)", i);
 			break;
 		}
-		/* if(pthread_detach(threads[i]) != 0) { */
-		/* 	logerr("failed detach thread"); */
-		/* } */
 		debug("thread 0x%lu: started", threads[i]);
 	}
 	debug("joining prediction threads");
