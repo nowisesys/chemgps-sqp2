@@ -39,6 +39,7 @@ AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gettimeofday gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strdup strerror strncasecmp strrchr strspn strtol strtoul])
 
+CGPS_CHECK_SIMCAQ
 CGPS_CHECK_LIBCHEMGPS
 CGPS_DISABLE_DEBUG
 CGPS_ENABLE_UTILS

@@ -5,12 +5,12 @@
 bin_PROGRAMS = cgpsclt
 cgpsclt_SOURCES = main.c options.c socket.c cgpsclt.h request.c  
 
-cgpsclt_CFLAGS = -I../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR)
+cgpsclt_CFLAGS = -I../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(SIMCAQ_INCDIR)
 cgpsclt_LDADD = ../libcgpssqp/libcgpssqp.a
 
 if FOREIGN_CLIENT
   cgpsclt_SOURCES += result.c
 else
-  cgpsclt_LDFLAGS = -L$(top_srcdir)/$(LIBCHEMGPS_LIBDIR)
-  cgpsclt_LDADD += -lchemgps
+  cgpsclt_LDFLAGS = -L$(top_srcdir)/$(LIBCHEMGPS_LIBDIR) -L$(SIMCAQ_LIBDIR)
+  cgpsclt_LDADD += -lchemgps -lsimcaq
 endif
