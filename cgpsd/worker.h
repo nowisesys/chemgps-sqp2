@@ -31,14 +31,13 @@
 #ifndef __WORKER_H__
 #define __WORKER_H__
 
-/* DEFAULT: WORKER_POOL_SIZE  5, WORKER_POOL_GROW  5, WORKER_POOL_MAX  20 */
 /*
  * These values defines characteristics for the thread pool. See
  * size, grow and max in struct workers.
  */
-#define WORKER_POOL_SIZE  1            /* workers size hint */
-#define WORKER_POOL_GROW  1            /* workers grow hint */
-#define WORKER_POOL_MAX  1            /* maximum workers hint */
+#define WORKER_POOL_SIZE  20            /* workers size hint */
+#define WORKER_POOL_GROW  5            /* workers grow hint */
+#define WORKER_POOL_MAX   20           /* maximum workers hint */
 
 /*
  * These values defines how the main thread should sleep waiting for 
@@ -62,6 +61,7 @@ struct workers
 	pthread_t *pool;               /* thread pool */
 	pthread_mutex_t poollock;      /* lock access to pool */
 	pthread_mutex_t peerlock;      /* lock access to peer list */
+	pthread_mutex_t predlock;      /* TODO: is this needed? locks for predict */
 	pthread_cond_t peercond;       /* peer wait condition */
 	int size;                      /* number of workers */
 	int used;                      /* used workers */

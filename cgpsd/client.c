@@ -234,7 +234,9 @@ void * process_request(void *param)
 				}
 				break;
 			}
-
+			
+			pthread_mutex_lock(&threads->predlock);
+			debug("locked mutex for prediction");
 			for(i = 1; i <= proj.models; ++i) {	
 				cgps_predict_init(&proj, &pred, peer);
 				debug("initilized for prediction");
@@ -258,6 +260,9 @@ void * process_request(void *param)
 				debug("cleaning up after predict");
 				cgps_predict_cleanup(&proj, &pred);
 			}
+			pthread_mutex_unlock(&threads->predlock);
+			debug("unlocked mutex for prediction");
+			
 			cleanup_request(&peer, NULL);
 			worker_release(threads);
 			if(!worker_waiting(threads)) {

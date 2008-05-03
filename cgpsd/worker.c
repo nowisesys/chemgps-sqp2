@@ -131,6 +131,11 @@ int worker_init(struct workers *threads, void *data, void * (*threadfunc)(void *
 	dllist_init(&threads->ready, NULL, worker_ready_compare);
 	debug("initilized ready list (currently %d peers)", dllist_count(&threads->ready));
 		
+	if(pthread_mutex_init(&threads->predlock, NULL) != 0) {
+		logerr("failed init mutex");
+		return -1;
+	}
+	debug("initilized predict mutex");
 	if(pthread_mutex_init(&threads->poollock, NULL) != 0) {
 		logerr("failed init mutex");
 		return -1;
@@ -337,6 +342,8 @@ void worker_cleanup(struct workers *threads)
 	}
 	dllist_free(&threads->ready);
 	
+	pthread_mutex_destroy(&threads->predlock);
+	debug("destroyed predict mutex");
 	pthread_mutex_destroy(&threads->poollock);
 	debug("destroyed thread pool mutex");
 	pthread_mutex_destroy(&threads->peerlock);
