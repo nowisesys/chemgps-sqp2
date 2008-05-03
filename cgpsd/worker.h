@@ -31,13 +31,26 @@
 #ifndef __WORKER_H__
 #define __WORKER_H__
 
-#define WORKER_POOL_SIZE  5            /* workers size hint */
-#define WORKER_POOL_GROW  5            /* workers grow hint */
-#define WORKER_POOL_MAX  20            /* maximum workers hint */
+/* DEFAULT: WORKER_POOL_SIZE  5, WORKER_POOL_GROW  5, WORKER_POOL_MAX  20 */
+/*
+ * These values defines characteristics for the thread pool. See
+ * size, grow and max in struct workers.
+ */
+#define WORKER_POOL_SIZE  1            /* workers size hint */
+#define WORKER_POOL_GROW  1            /* workers grow hint */
+#define WORKER_POOL_MAX  1            /* maximum workers hint */
+
+/*
+ * These values defines how the main thread should sleep waiting for 
+ * queued peers to finish. See wlimit and wsleep in struct workers.
+ */
+#define WORKER_WAIT_LIMIT  10          /* wait until these number of peers has finished */
+#define WORKER_WAIT_SLEEP  500000      /* number of microseconds to sleep */
 
 /*
  * Wait for worker thread queue policy (for workers->mode). This defines
- * the enqueue policy when all working threads are busy.
+ * the enqueue policy when all working threads are busy. See mode in
+ * struct workers.
  */
 #define WORKER_QUEUE_WAIT 1            /* enqueue peer waiting for a worker thread */
 #define WORKER_QUEUE_NONE 2            /* don't enqueue peer waiting for worker */
@@ -54,7 +67,9 @@ struct workers
 	int used;                      /* used workers */
 	int grow;                      /* grow size of workers */
 	int max;                       /* maximum number of workers */
-	int mode;                      /* see WORKER_QUEUE_XXX */
+	int mode;                      /* the thread queue policy */
+	int wlimit;                    /* wait until wlimit peers has finished (main thread) */
+	int wsleep;                    /* number of microseconds to sleep (main thread) */
 	void *data;                    /* common work thread data */
 	struct dllist ready;           /* list of ready peers */
 };
@@ -71,7 +86,7 @@ int worker_init(struct workers *threads, void *data, void * (*threadfunc)(void *
  * the list of worker threads. Returns -1 on failure and sets the errno variable.
  * On success 0 is returned.
  */
-int worker_enqueue(struct workers *threads, int sock, const struct options *opts, const struct cgps_project *proj);
+int worker_enqueue(struct workers *threads, int sock, struct options *opts, const struct cgps_project *proj);
 
 /*
  * Dequeue a ready peer socket from the ready list. Returns a pointer to next
@@ -88,5 +103,10 @@ void worker_release(struct workers *threads);
  * Join all threads and release resources.
  */
 void worker_cleanup(struct workers *threads);
+
+/*
+ * Returns number of peers waiting in queue.
+ */
+int worker_waiting(struct workers *threads);
 
 #endif /* __WORKER_H__ */

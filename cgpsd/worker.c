@@ -113,6 +113,12 @@ int worker_init(struct workers *threads, void *data, void * (*threadfunc)(void *
 	if(!threads->max) {
 		threads->max = WORKER_POOL_MAX;
 	}
+	if(!threads->wlimit) {
+		threads->wlimit = WORKER_WAIT_LIMIT;
+	}
+	if(!threads->wsleep) {
+		threads->wsleep = WORKER_WAIT_SLEEP;
+	}
 	threads->pool = malloc(sizeof(pthread_t) * threads->size);
 	if(!threads->pool) {
 		return -1;
@@ -169,7 +175,7 @@ int worker_init(struct workers *threads, void *data, void * (*threadfunc)(void *
  * 
  * NOTE: this function is called on behalf of the main thread.
  */
-int worker_enqueue(struct workers *threads, int sock, const struct options *opts, const struct cgps_project *proj)
+int worker_enqueue(struct workers *threads, int sock, struct options *opts, const struct cgps_project *proj)
 {
 	struct client *peer;
 
@@ -337,4 +343,18 @@ void worker_cleanup(struct workers *threads)
 	debug("destroyed peer manager mutex");
 	pthread_cond_destroy(&threads->peercond);
 	debug("destroyed peer wait condition");	
+}
+
+/*
+ * Returns number of peers waiting in queue.
+ */
+int worker_waiting(struct workers *threads)
+{
+	int count = 0;
+	
+	pthread_mutex_lock(&threads->peerlock);
+	count = dllist_count(&threads->ready);
+	pthread_mutex_unlock(&threads->peerlock);
+
+	return count;
 }
