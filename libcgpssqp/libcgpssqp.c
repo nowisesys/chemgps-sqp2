@@ -232,7 +232,7 @@ static int strcasecmp(const char *s1, const char *s2)
  */
 int split_request_option(char *buff, struct request_option *req)
 {
-	struct request_type *type;
+	const struct request_type *type;
 	char *p;
 	
 	if(buff) {
