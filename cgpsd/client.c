@@ -149,10 +149,6 @@ void * process_request(void *param)
 			struct cgps_result res;
 			int model, i;
 
-			/* memset(&cgps, 0, sizeof(struct cgps_options)); */
-			/* memset(&pred, 0, sizeof(struct cgps_predict)); */
-			/* memset(&res, 0, sizeof(struct cgps_result)); */
-			
 			debug("dequeued socket %d", peer->sock);
 
 			peer->ss = fdopen(dup(peer->sock), "r+");
@@ -160,6 +156,9 @@ void * process_request(void *param)
 				logerr("failed open socket stream");
 				cleanup_request(&peer, NULL);
 				worker_release(threads);
+				if(worker_waiting(threads)) {
+					continue;
+				}
 				break;
 			}
 			debug("opened socket stream");
@@ -171,13 +170,13 @@ void * process_request(void *param)
 			debug("reading greeting");
 			read_request(&buff, &size, peer->ss);
 			debug("received: '%s'", buff);
-			
+
 			debug("copying global libchemgps options");
 			cgps = *peer->opts->cgps;
 			debug("copying project");
 			proj = *peer->proj;
 			proj.opts = &cgps;
-			
+						
 			debug("receiving predict request");
 			read_request(&buff, &size, peer->ss);
 			debug("received: '%s'", buff);
@@ -185,12 +184,18 @@ void * process_request(void *param)
 				logerr("failed read client option (%s)", buff);
 				cleanup_request(&peer, NULL);
 				worker_release(threads);
+				if(worker_waiting(threads)) {
+					continue;
+				}
 				break;
 			}
 			if(req.symbol != CGPSP_PROTO_PREDICT) {
 				logerr("protocol error (expected predict option, got %s)", req.option);
 				cleanup_request(&peer, NULL);
 				worker_release(threads);
+				if(worker_waiting(threads)) {
+					continue;
+				}
 				break;
 			}
 			cgps.result = cgps_get_predict_mask(req.value);
@@ -202,12 +207,18 @@ void * process_request(void *param)
 				logerr("failed read client option (%s)", buff);
 				cleanup_request(&peer, NULL);
 				worker_release(threads);
+				if(worker_waiting(threads)) {
+					continue;
+				}
 				break;
 			}
 			if(req.symbol != CGPSP_PROTO_FORMAT) {
 				logerr("protocol error (expected format option, got %s)", req.option);
 				cleanup_request(&peer, NULL);
 				worker_release(threads);
+				if(worker_waiting(threads)) {
+					continue;
+				}
 				break;
 			}
 			if(strcmp("plain", req.value) == 0) {
@@ -218,6 +229,9 @@ void * process_request(void *param)
 				logerr("protocol error (invalid format argument, got %s)", req.value);
 				cleanup_request(&peer, NULL);
 				worker_release(threads);
+				if(worker_waiting(threads)) {
+					continue;
+				}
 				break;
 			}
 
@@ -246,6 +260,9 @@ void * process_request(void *param)
 			}
 			cleanup_request(&peer, NULL);
 			worker_release(threads);
+			if(!worker_waiting(threads)) {
+				break;
+			}
 		}
 	}
 	debug("cleaning up thread resources");
