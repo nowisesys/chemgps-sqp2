@@ -118,7 +118,7 @@ struct options
 struct client
 {
 	const struct cgps_project *proj;
-	const struct options *opts;
+	struct options *opts;
 	int sock;             /* client socket */
 	int type;             /* application type */
 	FILE *ss;             /* socket stream */
