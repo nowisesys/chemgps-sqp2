@@ -55,6 +55,35 @@
 #include "worker.h"
 
 /*
+ * Send error message to peer and close socket.
+ */
+static void send_error(int sock, const char *msg)
+{
+	FILE *peer = fdopen(sock, "r+");
+	fprintf(peer, "error: %s", msg);
+	fclose(peer);
+}
+
+/*
+ * Sleep until number of ready peers in wait queue has shrinked.
+ */
+static void sleep_wait_queue(struct workers *threads)
+{
+	int count, limit;
+	
+	count = worker_waiting(threads);
+	limit = count > threads->wlimit ? count - threads->wlimit : 0;
+	
+	logwarn("too many queued peers (%d), sleeping waiting for %d peers to finish", count, threads->wlimit);
+	while(count > limit) {
+		debug("sleeping waiting for %d peers to finish", count - limit);
+		pthread_yield();
+		usleep(threads->wsleep);
+		count = worker_waiting(threads);
+	}
+}
+
+/*
  * Start accepting connections on server socket(s).
  */
 void service(struct options *opts)
@@ -133,6 +162,9 @@ void service(struct options *opts)
 		
 		if(result < 0) {
 			logerr("failed select");
+			if(errno == EMFILE || errno == ENFILE) {
+				sleep_wait_queue(&workers);
+			}
 		} else {
 			debug("select returned with result = %d", result);
 			if(FD_ISSET(opts->ipsock, &readfds)) {
@@ -143,6 +175,9 @@ void service(struct options *opts)
 						&socklen);
 				if(client < 0) {
 					logerr("failed accept TCP client connection");
+					if(errno == EMFILE || errno == ENFILE) {
+						sleep_wait_queue(&workers);
+					}
 				} else if(!opts->quiet) {
 #ifdef HAVE_INET_NTOA
 					loginfo("accepted TCP client connection from %s on port %d", 
@@ -162,6 +197,9 @@ void service(struct options *opts)
 						&socklen);
 				if(client < 0) {
 					logerr("failed accept UNIX client connection");
+					if(errno == EMFILE || errno == ENFILE) {
+						sleep_wait_queue(&workers);
+					}
 				} else {
 					struct ucred cred;
 					int credlen = sizeof(struct ucred);
@@ -169,22 +207,30 @@ void service(struct options *opts)
 					if(getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cred, &credlen) < 0) {
 						logerr("failed get credentials of UNIX socket peer");
 					} else {
-						struct passwd *pwent = getpwuid(cred.uid);
-						
 						debug("UNIX socket peer: pid = %d, uid = %d, gid = %d",
 						      cred.pid, cred.uid, cred.gid);
-						loginfo("accepted UNIX client connection from %s (uid: %d, pid: %d)", 
-							pwent->pw_name, cred.uid, cred.pid);
+						while(1) {
+							struct passwd *pwent = getpwuid(cred.uid);
+							if(pwent) {
+								loginfo("accepted UNIX client connection from %s (uid: %d, pid: %d)", 
+									pwent->pw_name, cred.uid, cred.pid);
+								break;
+							} else if(errno == EMFILE || errno == ENFILE) {
+								sleep_wait_queue(&workers);
+							} else {
+								send_error(client, "internal server error");
+								logerr("failed get password database record for uid=%d", cred.uid);
+								break;
+							}
+						}
 					}
 				}
 			}
 			
 			if(client != -1) {
 				if(worker_enqueue(&workers, client, opts, &proj) < 0) {
-					FILE *peer = fdopen(client, "r+");
+					send_error(client, "server busy");
 					logerr("failed enqueue peer");
-					fprintf(peer, "error: server busy");
-					fclose(peer);
 				}
 			}
 		}
