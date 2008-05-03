@@ -217,7 +217,7 @@ void request(struct options *opts, struct client *peer)
 			break;
 		case CGPSP_PROTO_RESULT:
 			debug("received result request");
-			while((c = getc(peer->ss)) != -1) {
+			while((c = getc(peer->ss)) != EOF) {
 				if(!opts->quiet) {
 					printf("%c", c);
 				}
