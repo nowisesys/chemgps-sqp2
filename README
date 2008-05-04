@@ -17,13 +17,20 @@
 ** PROGRAMS:
 
    cgpsclt: 
-      ChemGPS client. Sends prediction requests to cgpsd.
+   
+      The ChemGPS client. Sends prediction requests to cgpsd. This application 
+      can be built without dependencies on libchemgps (and Simca QP) by enable 
+      the --enable-foreign option for the configure script.
 
    cgpsd: 
-      ChemGPS daemon. Answer prediction requests from cgpsclt.
+   
+      The ChemGPS daemon. Answer prediction requests from cgpsclt. The daemon 
+      is multithreaded and implements a variant of the boss/worker model
+      used by i.e. HTTP-servers.
 
    cgpsstd: 
-      ChemGPS standalone program. Works without chemgpsd or cgpsclt. 
+   
+      The ChemGPS standalone program. Works without chemgpsd or cgpsclt. 
       This program function as chemgps-sqp (the old standalone program), 
       but uses libchemgps for its functionality.
     
