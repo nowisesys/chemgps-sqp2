@@ -260,7 +260,11 @@ void * process_request(void *param)
 						}
 						if(errno == EPIPE) {
 							logerr("socket closed by peer");
-							process_next_peer(threads, peer, NULL);
+							cgps_result_cleanup(&proj, &res);
+							pthread_mutex_lock(&threads->predlock);
+							cgps_predict_cleanup(&proj, &pred);
+							pthread_mutex_unlock(&threads->predlock);
+							break;
 						}
 						pthread_mutex_lock(&threads->predlock);
 						debug("locked mutex for prediction");
