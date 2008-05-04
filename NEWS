@@ -1,6 +1,10 @@
-Version 0.x.y (2008-mm-dd):
+Version 0.7.1 (2008-05-05):
 
 	* Added IPv6 support to client (cgpsclt) and daemon (cgpsd).
+	
+	* The client and daemon do now graceful handle connection reset by
+	  peer (read) and broken pipe (write) errors caused by remote peer
+	  closing its socket.
 	
 Version 0.7.0 (2008-05-04):
 
