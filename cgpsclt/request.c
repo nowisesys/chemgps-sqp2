@@ -168,17 +168,29 @@ int request(struct options *opts, struct client *peer)
 		die("failed open socket stream");
 	}
 	debug("opened socket stream");
-
-	debug("reading greeting");
-	read_request(&buff, &size, peer->ss);
-	debug("received: '%s'", buff);
 	
+	debug("reading greeting");
+	if(read_request(&buff, &size, peer->ss) < 0) {
+		cleanup_request(peer, buff);
+		return CGPSCLT_CONN_RETRY;
+	}
+	debug("received: '%s'", buff);
+
 	debug("sending greeting");
-	fprintf(peer->ss, "CGPSP %s (%s: client ready)\n", CGPSP_PROTO_VERSION, opts->prog);
-	fflush(peer->ss);
+	if(fprintf(peer->ss, "CGPSP %s (%s: client ready)\n", CGPSP_PROTO_VERSION, opts->prog) > 0) {
+		fflush(peer->ss);
+	}
+	if(errno == EPIPE) {
+		cleanup_request(peer, buff);
+		return CGPSCLT_CONN_RETRY;
+	}
 	
 	debug("sending prediction request");
 	fprintf(peer->ss, "Predict: ");
+	if(errno == EPIPE) {
+		cleanup_request(peer, buff);
+		return CGPSCLT_CONN_RETRY;
+	}
 	for(entry = cgps_result_entry_list; entry->name; ++entry) {	
 		if(cgps_result_isset(opts->cgps->result, entry->value)) {
 			if(delim++) {
@@ -186,9 +198,18 @@ int request(struct options *opts, struct client *peer)
 			}
 			fprintf(peer->ss, "%s", entry->name);
 		}
+		if(errno == EPIPE) {
+			cleanup_request(peer, buff);
+			return CGPSCLT_CONN_RETRY;
+		}
 	}
-	fprintf(peer->ss, "\n");
-	fflush(peer->ss);
+	if(fprintf(peer->ss, "\n") > 0) {
+		fflush(peer->ss);
+	}
+	if(errno == EPIPE) {
+		cleanup_request(peer, buff);
+		return CGPSCLT_CONN_RETRY;
+	}
 
 	debug("sending format request");
 	if(opts->cgps->format == CGPS_OUTPUT_FORMAT_PLAIN) {
@@ -197,10 +218,18 @@ int request(struct options *opts, struct client *peer)
 		fprintf(peer->ss, "Format: xml\n");
 	}
 	fflush(peer->ss);
+	if(errno == EPIPE) {
+		cleanup_request(peer, buff);
+		return CGPSCLT_CONN_RETRY;
+	}
 	
 	while(!done) {
 		debug("waiting for server request");
-		read_request(&buff, &size, peer->ss);
+		if(read_request(&buff, &size, peer->ss) < 0) {
+			cleanup_request(peer, buff);
+			return CGPSCLT_CONN_RETRY;
+		}
+
 		debug("received: '%s'", buff);
 	        if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 			cleanup_request(peer, buff);

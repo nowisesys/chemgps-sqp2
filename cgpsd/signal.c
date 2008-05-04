@@ -41,7 +41,8 @@
 #include "cgpsd.h"
 
 /*
- * The signal handler used by the daemon.
+ * The signal handler used by the daemon. We just ignore SIGPIPE and 
+ * check if errno is ESPIPE after a write.
  */
 static void signal_handler(int sig)
 {	
@@ -64,6 +65,11 @@ static void signal_handler(int sig)
 			loginfo("received the interupt signal from keyboard (SIGINT)");
 		}
 		opts->state |= CGPSD_STATE_CLOSING;
+		break;
+	case SIGPIPE:
+		if(opts->debug && !opts->quiet) {
+			debug("received the broken pipe signal (SIGPIPE): write to pipe with no readers");
+		}
 		break;
 	default:
 		logerr(0, "received unexpected signal %d", sig);   /* impossible */
@@ -101,6 +107,9 @@ void setup_signals(struct options *opts)
 	}
 	if(sigdelset(&mask, SIGTERM) < 0) {
 		die("failed call sigdelset (SIGTERM)");
+	}
+	if(sigdelset(&mask, SIGPIPE) < 0) {
+		die("failed call sigdelset (SIGPIPE)");
 	}
 	if(opts->interactive) {
 		debug("unblocking keyboard interrupt signal (SIGINT)"); 
@@ -143,6 +152,13 @@ void setup_signals(struct options *opts)
 	else {
 		debug("installed signal handler for SIGQUIT");
 	}
+
+	if(sigaction(SIGPIPE, opts->newact, NULL) != 0) {
+		logerr("failed setup signal action (SIGPIPE)");
+	}
+	else {
+		debug("installed signal handler for SIGPIPE");
+	}
 }
 
 /*
@@ -176,6 +192,13 @@ void restore_signals(struct options *opts)
 	}
 	else {
 		debug("restored signal handler for SIGQUIT");
+	}
+
+	if(sigaction(SIGPIPE, opts->oldact, NULL) != 0) {
+		logerr("failed restore signal action (SIGPIPE)");
+	}
+	else {
+		debug("restored signal handler for SIGPIPE");
 	}
 	
 	if(opts->newact) {
