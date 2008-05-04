@@ -34,6 +34,7 @@
 #ifdef HAVE_SYS_SOCKET_H
 # include <sys/socket.h>
 #endif
+#include <signal.h>
 #include <libgen.h>
 #include <chemgps.h>
 
@@ -75,7 +76,7 @@ void exit_handler(void)
 int main(int argc, char **argv)
 {
 	struct client peer;
-	int retry = CGPSCLT_RETRY_LIMIT;
+	int retry = 0;
 	
 	opts = malloc(sizeof(struct options));
 	if(!opts) {
@@ -97,29 +98,41 @@ int main(int argc, char **argv)
 		logerr("failed register main exit handler");
 	}
 #endif
-	
+
 	parse_options(argc, argv, opts);
-	while(retry-- > 0) {
-		int res = init_socket(opts);
-		if(res == CGPSCLT_CONN_FAILED) {
-			return 1;
-		} else if(res == CGPSCLT_CONN_RETRY) {
+	if(signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
+		die("failed ignore broken pipe siganl (SIGPIPE)");
+	}
+	while(retry < CGPSCLT_RETRY_LIMIT) {
+		if(retry != 0) {
+			loginfo("retry attempt %d/%d", retry, CGPSCLT_RETRY_LIMIT);
+		}
+		retry++;
+		
+		switch(init_socket(opts)) {
+		case CGPSCLT_CONN_FAILED:
+			exit(1);
+			break;
+		case CGPSCLT_CONN_RETRY:
 			sleep(CGPSCLT_RETRY_SLEEP);
 			continue;
 		}
-			
+		
 		peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
 		peer.opts = opts;
 	
-		res = request(opts, &peer);
-		if(res == CGPSCLT_CONN_FAILED) {
-			return 1;
-		} else if(res == CGPSCLT_CONN_RETRY) {
+		switch(request(opts, &peer)) {
+		case CGPSCLT_CONN_FAILED:
+			exit(1);
+			break;
+		case CGPSCLT_CONN_RETRY:
 			sleep(CGPSCLT_RETRY_SLEEP);
 			continue;
-		} else if(res == CGPSCLT_CONN_SUCCESS) {
+		case CGPSCLT_CONN_SUCCESS:
+			retry = CGPSCLT_RETRY_LIMIT;
 			break;
 		}
+		break;
 	}
 	
 	return 0;
