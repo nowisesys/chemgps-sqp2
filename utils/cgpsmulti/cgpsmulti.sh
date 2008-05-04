@@ -17,6 +17,7 @@ result="tps"
 sock="/var/run/cgpsd.sock"
 unix="0"
 background="0"
+args=""
 
 chemgpsdir="../../../libchemgps/src/.libs"
 cgpscltdir="../../cgpsclt"
@@ -57,6 +58,8 @@ function usage()
   echo "  -s,--sock <path>:   Set UNIX socket path [$sock]"
   echo "  -l,--local:         Connect to UNIX socket [$unix]"
   echo "  -b,--background:    Run each client in background [$background]"
+  echo 
+  echo "All other options are passed direct to cgpsclt."
   echo 
   echo "This application is part of the ChemGPS project."
   echo "Send bug reports to anders.lovgren@bmc.uu.se"
@@ -103,6 +106,9 @@ while [ "$1" != "" ]; do
       usage
       exit 0
       ;;
+    *) 
+      args="$args $1"
+      ;;
   esac
   shift
 done
@@ -131,15 +137,15 @@ num=0
 while [ "$num" -lt "$max" ]; do
   if [ "$unix" == "1" ]; then
     if [ "$background" == "1" ]; then    
-      $cgpscltdir/cgpsclt -s $sock -i $input -r $result &
+      $cgpscltdir/cgpsclt $args -s $sock -i $input -r $result &
     else 
-      $cgpscltdir/cgpsclt -s $sock -i $input -r $result
+      $cgpscltdir/cgpsclt $args -s $sock -i $input -r $result
     fi 
   else
     if [ "$background" == "1" ]; then    
-      $cgpscltdir/cgpsclt -H $host -i $input -r $result &
+      $cgpscltdir/cgpsclt $args -H $host -i $input -r $result &
     else 
-      $cgpscltdir/cgpsclt -H $host -i $input -r $result
+      $cgpscltdir/cgpsclt $args -H $host -i $input -r $result
     fi
   fi
   let num=$num+1
