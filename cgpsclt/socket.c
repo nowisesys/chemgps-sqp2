@@ -62,7 +62,7 @@ int init_socket(struct options *opts)
 		
 		snprintf(port, sizeof(port) - 1, "%d", opts->port);
 
-		hints.ai_family = AF_UNSPEC;
+		hints.ai_family = opts->family;
 		hints.ai_socktype = SOCK_STREAM;
 		hints.ai_flags = AI_ADDRCONFIG;
 		hints.ai_protocol = 0;
@@ -73,10 +73,11 @@ int init_socket(struct options *opts)
 		while(retries < CGPS_RESOLVE_RETRIES) {
 			if((res = getaddrinfo(opts->ipaddr, port, &hints, &addr)) != 0) {
 				if(res == EAI_AGAIN) {
-					logwarn("temporary failure resolving hostname %s", 
-						opts->ipaddr); 
+					logwarn("temporary failure resolving hostname %s (%s)", 
+						opts->ipaddr, gai_strerror(res)); 
 				} else {
-					logerr("failed resolve %s:%d", opts->ipaddr, opts->port);
+					logerr("failed resolve %s:%d (%s)", 
+					       opts->ipaddr, opts->port, gai_strerror(res));
 					return CGPSCLT_CONN_FAILED;
 				}
 				++retries;

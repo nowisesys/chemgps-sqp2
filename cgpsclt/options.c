@@ -42,6 +42,9 @@
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
+#ifdef HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif
 #include <getopt.h>
 
 #include "cgpssqp.h"
@@ -60,6 +63,8 @@ static void usage(const char *prog, const char *section)
 		printf("  -o, --output=path:  Write result to output file (default=stdout)\n");
 		printf("  -r, --result=str:   Colon separated list of results to show (see -h result)\n");
 		printf("  -f, --format=str:   Set ouput format (either plain or xml)\n");
+		printf("  -4, --ipv4:         Only use IPv4\n");
+		printf("  -6, --ipv6:         Only use IPv6\n");		
 		printf("  -d, --debug:        Enable debug output (allowed multiple times)\n");
 		printf("  -v, --verbose:      Be more verbose in output\n");
 		printf("  -h, --help:         This help\n");
@@ -109,6 +114,8 @@ static void version(const char *prog)
 void parse_options(int argc, char **argv, struct options *opts)
 {
 	static struct option options[] = {
+                { "ipv4",    0, 0, '4' },
+		{ "ipv6",    0, 0, '6' },		
 		{ "sock",    2, 0, 's' },
 		{ "host",    1, 0, 'H' },
 		{ "port",    1, 0, 'p' },
@@ -123,8 +130,14 @@ void parse_options(int argc, char **argv, struct options *opts)
 	};
 	int index, c;
 
-	while((c = getopt_long(argc, argv, "df:h::i:o:p:H:r:s:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "46df:h::i:o:p:H:r:s:vV", options, &index)) != -1) {
 		switch(c) {
+		case '4':
+			opts->family = AF_INET;
+			break;
+		case '6':
+			opts->family = AF_INET6;
+			break;
 		case 'd':
 			opts->debug++;
 			break;
@@ -208,8 +221,13 @@ void parse_options(int argc, char **argv, struct options *opts)
 	if(opts->ipaddr && opts->unaddr) {
 		die("both TCP and UNIX connection requested");
 	}
-	if(opts->ipaddr && !opts->port) {
-		opts->port = CGPSD_DEFAULT_PORT;
+	if(opts->ipaddr) {
+		if(!opts->port) {
+			opts->port = CGPSD_DEFAULT_PORT;
+		}
+		if(!opts->family) {
+			opts->family = AF_UNSPEC;
+		}
 	}			  
 	if(opts->unaddr) {
 		struct stat st;
