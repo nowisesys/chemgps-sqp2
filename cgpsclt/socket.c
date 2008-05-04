@@ -101,12 +101,17 @@ int init_socket(struct options *opts)
 		}
 		if(!next) {
 			freeaddrinfo(addr);
-			if(errval == ETIMEDOUT) {
-				debug("timeout connecting to server %s (retrying)", opts->ipaddr);
-				return CGPSCLT_CONN_RETRY;
-			} else {
-				logerr("failed connect to %s:%d", opts->ipaddr, opts->port);
+			if(opts->ipsock < 0) {
+				logerr("failed create TCP socket");
 				return CGPSCLT_CONN_FAILED;
+			} else {
+				if(errval == ETIMEDOUT) {
+					debug("timeout connecting to server %s (retrying)", opts->ipaddr);
+					return CGPSCLT_CONN_RETRY;
+				} else {
+					logerr("failed connect to %s:%d", opts->ipaddr, opts->port);
+					return CGPSCLT_CONN_FAILED;
+				}
 			}
 		}
 		
