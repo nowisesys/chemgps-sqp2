@@ -47,6 +47,7 @@
 #endif
 
 #include "cgpssqp.h"
+#include "cgpsclt.h"
 
 static void cleanup_request(struct client *peer, char *buff)
 {
@@ -147,7 +148,7 @@ static int request_send_buffer(const char *buffer, struct client *peer)
 	return 0;
 }
 
-void request(struct options *opts, struct client *peer)
+int request(struct options *opts, struct client *peer)
 {
 	const struct cgps_result_entry *entry;
         struct request_option req;
@@ -159,6 +160,10 @@ void request(struct options *opts, struct client *peer)
 	
 	peer->ss = fdopen(dup(peer->sock), "r+");
 	if(!peer->ss) {
+		if(errno == EBADF) {
+			cleanup_request(peer, buff);
+			return CGPSCLT_CONN_RETRY;
+		} 
 		cleanup_request(peer, buff);
 		die("failed open socket stream");
 	}
@@ -221,7 +226,7 @@ void request(struct options *opts, struct client *peer)
 				if(!opts->quiet) {
 					printf("%c", c);
 				}
-			}				
+			}
 			done = 1;
 			break;
 		default:
@@ -232,4 +237,5 @@ void request(struct options *opts, struct client *peer)
 	debug("done with request");
 	
 	cleanup_request(peer, buff);
+	return CGPSCLT_CONN_SUCCESS;
 }

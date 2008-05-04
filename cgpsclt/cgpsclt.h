@@ -28,9 +28,19 @@
 #define __CGPSCLT_H__
 
 int init_socket(struct options *opts);
-void request(struct options *opts, struct client *peer);
-#if !defined(CGPSCLT_EXTERN)
+int request(struct options *opts, struct client *peer);
+
+#if ! defined(CGPSCLT_EXTERN)
+
+# define CGPSCLT_RETRY_LIMIT 5    /* number of connect retries */
+# define CGPSCLT_RETRY_SLEEP 6    /* timeout between retries */
+
+# define CGPSCLT_CONN_FAILED -1   /* permanent connection error */
+# define CGPSCLT_CONN_SUCCESS 0   /* successful connected */
+# define CGPSCLT_CONN_RETRY   1   /* temporary connection error (retry) */
+
 void parse_options(int argc, char **argv, struct options *opts);
+
 #endif
 
 #endif /* __CGPSCLT_H__ */

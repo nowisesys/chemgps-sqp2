@@ -75,6 +75,7 @@ void exit_handler(void)
 int main(int argc, char **argv)
 {
 	struct client peer;
+	int retry = CGPSCLT_RETRY_LIMIT;
 	
 	opts = malloc(sizeof(struct options));
 	if(!opts) {
@@ -98,14 +99,28 @@ int main(int argc, char **argv)
 #endif
 	
 	parse_options(argc, argv, opts);
-	if(init_socket(opts) < 0) {
-		return 1;
-	}
-
-	peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
-	peer.opts = opts;
+	while(retry-- > 0) {
+		int res = init_socket(opts);
+		if(res == CGPSCLT_CONN_FAILED) {
+			return 1;
+		} else if(res == CGPSCLT_CONN_RETRY) {
+			sleep(CGPSCLT_RETRY_SLEEP);
+			continue;
+		}
+			
+		peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
+		peer.opts = opts;
 	
-	request(opts, &peer);
+		res = request(opts, &peer);
+		if(res == CGPSCLT_CONN_FAILED) {
+			return 1;
+		} else if(res == CGPSCLT_CONN_RETRY) {
+			sleep(CGPSCLT_RETRY_SLEEP);
+			continue;
+		} else if(res == CGPSCLT_CONN_SUCCESS) {
+			break;
+		}
+	}
 	
 	return 0;
 }

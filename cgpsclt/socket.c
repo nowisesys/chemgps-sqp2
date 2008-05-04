@@ -58,6 +58,7 @@ int init_socket(struct options *opts)
 		int retries = 0, res;
 		char port[6];
 		char host[NI_MAXHOST], serv[NI_MAXSERV];
+		int errval = 0;
 		
 		snprintf(port, sizeof(port) - 1, "%d", opts->port);
 
@@ -76,7 +77,7 @@ int init_socket(struct options *opts)
 						opts->ipaddr); 
 				} else {
 					logerr("failed resolve %s:%d", opts->ipaddr, opts->port);
-					return -1;
+					return CGPSCLT_CONN_FAILED;
 				}
 				++retries;
 				sleep(CGPS_RESOLVE_TIMEOUT);
@@ -84,22 +85,28 @@ int init_socket(struct options *opts)
 				break;
 			}
 		}
-				
+		
 		for(next = addr; next != NULL; next = next->ai_next) {
 			opts->ipsock = socket(next->ai_family, next->ai_socktype, next->ai_protocol);
 			if(opts->ipsock < 0) {
 				continue;
 			} 
 			if(connect(opts->ipsock, next->ai_addr, next->ai_addrlen) < 0) {
+				errval = errno;
 				close(opts->ipsock);
 				continue;
 			}
 			break;
 		}
 		if(!next) {
-			logerr("failed connect to %s:%d", opts->ipaddr, opts->port);
 			freeaddrinfo(addr);
-			return -1;
+			if(errval == ETIMEDOUT) {
+				debug("timeout connecting to server %s (retrying)", opts->ipaddr);
+				return CGPSCLT_CONN_RETRY;
+			} else {
+				logerr("failed connect to %s:%d", opts->ipaddr, opts->port);
+				return CGPSCLT_CONN_FAILED;
+			}
 		}
 		
 		if(getnameinfo(next->ai_addr,
@@ -115,7 +122,7 @@ int init_socket(struct options *opts)
 			      next->ai_family == AF_INET ? "ipv4" : "ipv6");
 		}
 		freeaddrinfo(addr);
-		return 0;
+		return CGPSCLT_CONN_SUCCESS;
 	}
 	if(opts->unaddr) {
 		struct sockaddr_un sockaddr;
@@ -123,7 +130,7 @@ int init_socket(struct options *opts)
 		opts->unsock = socket(PF_UNIX, SOCK_STREAM, 0);
 		if(opts->unsock < 0) {
 			logerr("failed create UNIX socket");
-			return -1;
+			return CGPSCLT_CONN_FAILED;
 		}
 		debug("created UNIX socket");
 		
@@ -132,12 +139,18 @@ int init_socket(struct options *opts)
 		if(connect(opts->unsock, 
 			   (const struct sockaddr *)&sockaddr,
 			   sizeof(struct sockaddr_un)) < 0) {
-			close(opts->unsock);
-			logerr("failed connect to %s", opts->unaddr);
-			return -1;
+			if(errno == ETIMEDOUT) {
+				debug("timeout connecting to socket %s (retrying)", opts->unaddr);
+				close(opts->unsock);
+				return CGPSCLT_CONN_RETRY;
+			} else {
+				close(opts->unsock);
+				logerr("failed connect to %s", opts->unaddr);
+				return CGPSCLT_CONN_FAILED;
+			}
 		}
 		debug("connected to %s", opts->unaddr);
-		return 0;
+		return CGPSCLT_CONN_SUCCESS;
 	}
-	return -1;
+	return CGPSCLT_CONN_FAILED;
 }
