@@ -140,7 +140,7 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	loginfo("daemon starting up (version %s, project %s)", PACKAGE_VERSION, basename(opts->proj));
+	loginfo("daemon starting up (version: %s, project: %s)", PACKAGE_VERSION, basename(opts->proj));
 	service(opts);
 	loginfo("daemon shutting down...");
 
