@@ -208,7 +208,7 @@ ssize_t read_request(char **buff, size_t *size, FILE *sock)
 		char *ptr = *buff + bytes - 1;
 		*ptr = '\0';
 	} else {
-		logerr("failed read request");
+		logerr("failed read peer request");
 	}
 	return bytes;
 }
