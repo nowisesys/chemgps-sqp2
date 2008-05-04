@@ -92,7 +92,7 @@ void * resolve_host(void *args)
 	hints.ai_canonname = NULL;
 	hints.ai_addr = NULL;
 	hints.ai_next = NULL;
-
+	
 	if(getaddrinfo(res->peer->host, res->peer->port, &hints, &addr) == 0) {
 		for(next = addr; next != NULL; next = next->ai_next) {
 			if(!res->peer->host) {

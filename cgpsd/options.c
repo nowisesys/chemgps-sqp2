@@ -45,6 +45,9 @@
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
+#ifdef HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif
 #include <getopt.h>
 #include <errno.h>
 #include <libgen.h>
@@ -66,6 +69,8 @@ static void usage(const char *prog, const char *section)
 	printf("  -b, --backlog=num:    Listen queue length [%d]\n", CGPSD_QUEUE_LENGTH);
 	printf("  -l, --logfile=path:   Use path as simca lib log\n");
 	printf("  -i, --interactive:    Don't detach from controlling terminal\n");
+	printf("  -4, --ipv4:           Only use IPv4\n");
+	printf("  -6, --ipv6:           Only use IPv6\n");	
 	printf("  -d, --debug:          Enable debug output (allowed multiple times)\n");
 	printf("  -v, --verbose:        Be more verbose in output\n");
 	printf("  -q, --quiet:          Suppress some output\n");
@@ -95,6 +100,8 @@ static void version(const char *prog)
 void parse_options(int argc, char **argv, struct options *opts)
 {
 	static struct option options[] = {
+                { "ipv4",    0, 0, '4' },
+		{ "ipv6",    0, 0, '6' },
 		{ "proj",    1, 0, 'f' },
 		{ "unix",    2, 0, 'u' },
 		{ "tcp",     2, 0, 't' },
@@ -111,8 +118,14 @@ void parse_options(int argc, char **argv, struct options *opts)
 	int index, c;
 	struct stat st;
 
-	while((c = getopt_long(argc, argv, "b:df:hil:p:qt:u:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "46b:df:hil:p:qt:u:vV", options, &index)) != -1) {
 		switch(c) {
+                case '4':
+			opts->family = AF_INET;
+			break;
+		case '6':
+			opts->family = AF_INET6;
+			break;
 		case 'b':
 			opts->backlog = atoi(optarg);
 			break;
@@ -190,6 +203,9 @@ void parse_options(int argc, char **argv, struct options *opts)
 	/*
 	 * Check arguments and set defaults.
 	 */
+	if(!opts->ipaddr && !opts->unaddr) {
+		die("neither -t or -u option used");
+	}
 	if(!opts->proj) {
 		die("project file option (-f) is missing");
 	}
@@ -217,8 +233,13 @@ void parse_options(int argc, char **argv, struct options *opts)
 			free(logfile);
 		}
 	}
-	if(opts->ipaddr && !opts->port) {
-		opts->port = CGPSD_DEFAULT_PORT;
+	if(opts->ipaddr) {
+		if(!opts->port) {
+			opts->port = CGPSD_DEFAULT_PORT;
+		}
+		if(!opts->family) {
+			opts->family = AF_UNSPEC;
+		}
 	}			  
 	if(!opts->backlog) {
 		opts->backlog = CGPSD_QUEUE_LENGTH;
@@ -235,10 +256,18 @@ void parse_options(int argc, char **argv, struct options *opts)
 			debug("  simca lib logfile = %s", opts->cgps->logfile);
 		}
 		if(opts->unaddr) {
-			debug("  using unix socket = %s", opts->unaddr);
+			debug("  bind UNIX socket %s", opts->unaddr);
 		}
 		if(opts->ipaddr) {
-			debug("  bind to interface %s on port %d", opts->ipaddr, opts->port);
+			const char *proto = "any protocol";
+			if(opts->family != AF_UNSPEC) {
+				proto = opts->family == AF_INET ? "ipv4" : "ipv6";
+			}
+			if(opts->ipaddr == CGPSD_DEFAULT_ADDR) {
+				debug("  bind to TCP port %d on any interface (%s)", opts->port, proto);
+			} else {
+				debug("  bind to TCP port %d on interface %s (%s)", opts->port, opts->ipaddr, proto);
+			}
 		}
 		debug("  listen queue length = %d", opts->backlog);
 		debug("  flags: debug = %s, verbose = %s, interactive = %s", 

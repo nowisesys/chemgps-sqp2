@@ -1,3 +1,7 @@
+Version 0.x.y (2008-mm-dd):
+
+	* Added IPv6 support to client (cgpsclt) and daemon (cgpsd).
+	
 Version 0.7.0 (2008-05-04):
 
 	* Adding multithreading capability to the chemgps daemon (cgpsd). A

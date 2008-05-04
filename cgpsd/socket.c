@@ -40,6 +40,9 @@
 #ifdef HAVE_ARPA_INET_H
 # include <arpa/inet.h>
 #endif
+#ifdef HAVE_NETDB_H
+# include <netdb.h>
+#endif
 #include <sys/un.h>
 
 #include "cgpssqp.h"
@@ -51,26 +54,70 @@
 int init_socket(struct options *opts)
 {
 	if(opts->ipaddr) {
-		struct sockaddr_in sockaddr;
+		struct addrinfo hints, *addr, *next = NULL;
+                char port[6];
+                char host[NI_MAXHOST], serv[NI_MAXSERV];
+                int res;
 		
-		opts->ipsock = socket(PF_INET, SOCK_STREAM, 0);
-		if(opts->ipsock < 0) {
-			die("failed create TCP socket");
-		}
-		debug("created TCP socket");
+                snprintf(port, sizeof(port) - 1, "%d", opts->port);
 		
-		memset(&sockaddr, 0, sizeof(struct sockaddr_in));
-		sockaddr.sin_family = AF_INET;
-		sockaddr.sin_port = htons(opts->port);
-		if(inet_pton(AF_INET, opts->ipaddr, &sockaddr.sin_addr) < 0) {
-			die("failed get network address of %s", opts->ipaddr);
+		hints.ai_family = opts->family;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_flags = AI_ADDRCONFIG;
+		hints.ai_protocol = 0;
+		hints.ai_canonname = NULL;
+		hints.ai_addr = NULL;
+		hints.ai_next = NULL;
+		
+		if(opts->ipaddr == CGPSD_DEFAULT_ADDR) {
+			hints.ai_flags |= AI_PASSIVE;
+			res = getaddrinfo(NULL, port, &hints, &addr);
+		} else {
+			res = getaddrinfo(opts->ipaddr, port, &hints, &addr);
 		}
-		if(bind(opts->ipsock, 
-			(const struct sockaddr *)&sockaddr, 
-			sizeof(struct sockaddr_in)) < 0) {
-			die("failed bind TCP socket");
+		if(res != 0) {
+			die("failed resolve %s:%d (%s)",
+			    opts->ipaddr, opts->port, gai_strerror(res));
 		}
-		debug("bind TCP socket to %s port %d", opts->ipaddr, opts->port);
+		
+		for(next = addr; next != NULL; next = next->ai_next) {
+			opts->ipsock = socket(next->ai_family, next->ai_socktype, next->ai_protocol);
+			if(opts->ipsock < 0) {
+				continue;
+			}
+			res = bind(opts->ipsock, next->ai_addr, next->ai_addrlen);
+			if(res < 0) {
+				close(opts->ipsock);
+				continue;
+			}
+			break;
+		}
+		if(!next) {
+			freeaddrinfo(addr);
+			if(opts->ipsock < 0) {
+				die("failed create TCP socket");
+			}
+			if(res < 0) {
+				die("failed bind to %s:%d", opts->ipaddr, opts->port);
+			}
+		}
+		
+		if(opts->debug) {
+			if(getnameinfo(next->ai_addr,
+				       next->ai_addrlen,
+				       host, NI_MAXHOST,
+				       serv, NI_MAXSERV, NI_NUMERICSERV) == 0) {
+				debug("bind TCP socket to %s port %s (%s)",
+				      host, serv, next->ai_family == AF_INET ? "ipv4" : "ipv6");
+			} else {
+				debug("bind TCP socket to %s port %d (%s)",
+				      opts->ipaddr, opts->port,
+				      next->ai_family == AF_INET ? "ipv4" : "ipv6");
+			}
+		}
+		
+		/* debug("bind TCP socket to %s port %d (%s)",  */
+		/*       opts->ipaddr, opts->port, next->ai_family == AF_INET ? "ipv4" : "ipv6"); */
 		
 		if(listen(opts->ipsock, opts->backlog) < 0) {
 			die("failed listen on TCP socket");

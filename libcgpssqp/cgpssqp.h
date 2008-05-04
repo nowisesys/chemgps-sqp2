@@ -44,7 +44,7 @@
 
 #define CGPSD_DEFAULT_PORT 9401
 #define CGPSD_DEFAULT_SOCK "/var/run/cgpsd.sock"
-#define CGPSD_DEFAULT_ADDR "0.0.0.0"
+#define CGPSD_DEFAULT_ADDR "0x0"       /* any address (ipv4 or ipv6) */
 
 enum CGPS_APPLICATION { CGPS_APP_UNKNOWN, CGPS_STANDALONE, CGPS_DAEMON, CGPS_CLIENT, CGPS_DDOS };
 
@@ -106,6 +106,7 @@ struct options
 	uint16_t port;        /* port number */
 	int ipsock;           /* TCP socket */
 	int unsock;           /* UNIX socket */
+	int family;           /* address family (ipv4 or ipv6) */
 	int backlog;          /* listen queue length */
 	int state;            /* daemon state */
 	struct sigaction *newact; /* new signal action */
