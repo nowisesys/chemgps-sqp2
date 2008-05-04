@@ -1,9 +1,17 @@
-Version 0.x.y (2008-mm-dd):
+Version 0.7.0 (2008-05-04):
 
 	* Adding multithreading capability to the chemgps daemon (cgpsd). A
 	  variant of the boss/worker model is implemented, where the pool of
 	  running threads grows dynamic. Incoming connections are accepted and 
 	  put on hold until a free worker thread becomes available.
+
+	* The client (cgpsclt) does retry on connection failure.
+	
+	* Added check for Simca Q installation in the configure script.
+	
+	* Fixed memory leaks and memory corruption problems found by valgrind. It's 
+	  still problem running simultanous predict (it seems like these stems from
+	  GNU libstdc++, Simca Q or Boost not being completly thread safe).
 	  
 Version 0.6.2 (2008-04-25):
 
