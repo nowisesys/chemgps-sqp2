@@ -55,7 +55,7 @@
 
 static void usage(const char *prog, const char *section)
 {
-	printf("%s - daemon making prediction using Umetrics Simca-QP library.\n", prog);
+	printf("%s - prediction daemon using libchemgps and Umetrics Simca-QP library.\n", prog);
 	printf("\n");
 	printf("Usage: %s -f proj [options...]\n", prog);
 	printf("Options:\n");
@@ -78,17 +78,18 @@ static void usage(const char *prog, const char *section)
 
 static void version(const char *prog)
 {
-	printf("%s - package %s %s\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
-	printf("The daemon for making prediction using Umetrics Simca-QP library.\n");
+	printf("%s - part of package %s version %s\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
+	printf("\n");
+	printf("A multithreaded prediction daemon using libchemgps and Umetrics Simca-QP.\n");
+	printf("This application is part of the ChemGPS project.\n");
 	printf("\n");
 	printf(" * This program is distributed in the hope that it will be useful,\n");
 	printf(" * but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
 	printf(" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n");
 	printf(" * GNU General Public License for more details.\n");
 	printf("\n");
-	printf("The %s software is copyright (C) 2007-2008 by Anders Lövgren and\n", PACKAGE_NAME);
-	printf("the Computing Department at Uppsala Biomedical Centre (BMC), Uppsala University.\n");
-	printf("This application is part of the ChemGPS project.\n");
+	printf("Copyright (C) 2007-2008 by Anders Lövgren and the Computing Department at\n");
+	printf("Uppsala Biomedical Centre (BMC), Uppsala University.\n");
 }
 
 void parse_options(int argc, char **argv, struct options *opts)

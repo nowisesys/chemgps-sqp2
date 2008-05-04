@@ -55,7 +55,7 @@
 static void usage(const char *prog, const char *section)
 {
 	if(!section) {
-		printf("%s - makes prediction using Simca-QP (standalone app for the ChemGPS project).\n", prog);
+		printf("%s - standalone prediction program using libchemgpg and Simca-QP.\n", prog);
 		printf("\n");
 		printf("Usage: %s -p proj -r data [options...]\n", prog);
 		printf("Options:\n");
@@ -72,6 +72,8 @@ static void usage(const char *prog, const char *section)
 		printf("  -v, --verbose:      Be more verbose in output\n");
 		printf("  -h, --help:         This help\n");
 		printf("  -V, --version:      Print version info to stdout\n");
+		printf("\n");
+		printf("This application is part of the ChemGPS project.\n");
 		printf("Send bug reports to %s\n", PACKAGE_BUGREPORT);
 	} else if(strcmp(section, "result") == 0) {
 		const struct cgps_result_entry *entry;
@@ -98,7 +100,18 @@ static void usage(const char *prog, const char *section)
 
 static void version(const char *prog)
 {
-	printf("%s - standalone version (%s %s)\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
+        printf("%s - part of package %s version %s\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
+	printf("\n");
+	printf("A standalone prediction application using libchemgps and Umetrics Simca-QP.\n");
+	printf("This application is part of the ChemGPS project.\n");
+	printf("\n");
+	printf(" * This program is distributed in the hope that it will be useful,\n");
+	printf(" * but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+	printf(" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n");
+	printf(" * GNU General Public License for more details.\n");
+	printf("\n");
+	printf("Copyright (C) 2007-2008 by Anders Lövgren and the Computing Department at\n");
+	printf("Uppsala Biomedical Centre (BMC), Uppsala University.\n");	
 }
 
 void parse_options(int argc, char **argv, struct options *opts)
