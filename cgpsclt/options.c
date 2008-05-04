@@ -220,6 +220,9 @@ void parse_options(int argc, char **argv, struct options *opts)
 		if(stat(opts->unaddr, &st) < 0) {
 			die("failed stat UNIX socket (%s)", opts->unaddr);
 		}
+		if(!S_ISSOCK(st.st_mode)) {
+			die("file %s is not a UNIX socket", opts->unaddr);
+		}
 	}
 	if(!opts->cgps->format) {
 		opts->cgps->format = CGPS_OUTPUT_FORMAT_DEFAULT;
