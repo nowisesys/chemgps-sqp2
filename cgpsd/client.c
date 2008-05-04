@@ -235,33 +235,47 @@ void * process_request(void *param)
 				break;
 			}
 			
-			pthread_mutex_lock(&threads->predlock);
-			debug("locked mutex for prediction");
 			for(i = 1; i <= proj.models; ++i) {	
+				pthread_mutex_lock(&threads->predlock);
+				debug("locked mutex for prediction");
 				cgps_predict_init(&proj, &pred, peer);
+				pthread_mutex_unlock(&threads->predlock);
+				debug("unlocked mutex for prediction");
 				debug("initilized for prediction");
+				pthread_mutex_lock(&threads->predlock);
+				debug("locked mutex for prediction");
 				if((model = cgps_predict(&proj, i, &pred)) != -1) {
+					pthread_mutex_unlock(&threads->predlock);
+					debug("unlocked mutex for prediction");
 					debug("predict called (index=%d, model=%d)", i, model);
 					if(cgps_result_init(&proj, &res) == 0) {
 						debug("intilized prediction result");
 						fprintf(peer->ss, "Result:\n");
 						fflush(peer->ss);
+						pthread_mutex_lock(&threads->predlock);
+						debug("locked mutex for prediction");
 						if(cgps_result(&proj, model, &pred, &res, peer->ss) == 0) {
 							debug("successful got result");
 						}
+						pthread_mutex_unlock(&threads->predlock);
+						debug("unlocked mutex for prediction");
 						fflush(peer->ss);
 						debug("cleaning up the result");
 						cgps_result_cleanup(&proj, &res);
 					}
 				}
 				else {
+					pthread_mutex_unlock(&threads->predlock);
+					debug("unlocked mutex for prediction");
 					logerr("failed predict");
 				}
 				debug("cleaning up after predict");
+				pthread_mutex_lock(&threads->predlock);
+				debug("locked mutex for prediction");
 				cgps_predict_cleanup(&proj, &pred);
+				pthread_mutex_unlock(&threads->predlock);
+				debug("unlocked mutex for prediction");
 			}
-			pthread_mutex_unlock(&threads->predlock);
-			debug("unlocked mutex for prediction");
 			
 			cleanup_request(&peer, NULL);
 			worker_release(threads);
