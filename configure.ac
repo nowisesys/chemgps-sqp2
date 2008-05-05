@@ -21,11 +21,24 @@ if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
   ])
   AC_MSG_CHECKING([if pthread_yield needs __USE_GNU defined])
   AC_COMPILE_IFELSE([
-    #include <ptread.h>
-    main(void) { pthread_yield(); }
+    #include <pthread.h>
+    int main(void) { pthread_yield(); }
     ], [AC_MSG_RESULT(no)], [
       AC_MSG_RESULT(yes)
       CPPFLAGS="$CPPFLAGS -D__USE_GNU"
+    ]
+  )
+  AC_MSG_CHECKING([if pthread_yield needs to be declared])
+  AC_COMPILE_IFELSE([
+    #ifdef __USE_GNU
+    # undef __USE_GNU
+    #endif
+    #define __USE_GNU 1
+    #include <pthread.h>
+    int main(void) { pthread_yield(); }
+    ], [AC_MSG_RESULT(no)], [
+      AC_MSG_RESULT(yes)
+      AC_DEFINE([NEED_PTHREAD_YIELD_DECL], [1], [Define to 1 if pthread_yield() needs to be declared])
     ]
   )
 fi

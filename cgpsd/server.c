@@ -54,6 +54,10 @@
 #include "dllist.h"
 #include "worker.h"
 
+#ifdef NEED_PTHREAD_YIELD_DECL
+extern int pthread_yield (void) __THROW;
+#endif
+
 /*
  * Send error message to peer and close socket.
  */
@@ -77,7 +81,9 @@ static void sleep_wait_queue(struct workers *threads)
 	logwarn("too many queued peers (%d), sleeping waiting for %d peers to finish", count, threads->wlimit);
 	while(count > limit) {
 		debug("sleeping waiting for %d peers to finish", count - limit);
+#ifdef HAVE_PTHREAD_YIELD
 		pthread_yield();
+#endif
 		usleep(threads->wsleep);
 		count = worker_waiting(threads);
 	}

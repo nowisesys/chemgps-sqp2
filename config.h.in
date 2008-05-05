@@ -139,6 +139,9 @@
 /* Define to 1 to disable debug */
 #undef NDEBUG
 
+/* Define to 1 if pthread_yield() needs to be declared */
+#undef NEED_PTHREAD_YIELD_DECL
+
 /* Name of package */
 #undef PACKAGE
 
