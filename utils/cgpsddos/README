@@ -1,5 +1,41 @@
-As the name suggests, this is a tool for making stress test of the server
-(the cgpsd daemon). It loads the server with *lots* if prediction request
-and measure its response time.
+** GENERAL:
 
+   As the name suggests this is a tool for making stress test (called DDOS, 
+   distributed denial of service) of the predict server (the cgpsd daemon). 
+   It loads the server with *lots* if prediction request and measure its 
+   response time.
+
+** ROLES:
+
+   The cgpsddos program can take on three different modes:
+
+     * master: control one or more slaves.
+     * slave:  answer predict request from master.
+     * local:  communicate with cgpsd using a local (unix) socket.
+
+   Both slave and local are multithreaded. The master can't be used with a 
+   cgpsddos process in local mode, only slaves can have a master.
+   
+** SCENARIOS:
+
+   1. Running multiple slaves against the same target (the cgpsd host):
+   
+      a) Start one slave process on each computer thats part of the DDOS.
+         Possibly restricting access using the -a flag.
+	 
+      b) Start the DDOS attack by running a master connecting to each slave.
+      
+   2. Testing more than one cgpsd host at the same time (maybe clustered):
+   
+      a) Start one slave on each host running the cgpsd daemon.
+      
+      b) Start the DDOS attack by connecting to each slave asking it to use 
+         127.0.0.1 as target host.
+	 
+      NOTE: each cgpsd process must listen on TCP socket for this scenario.
+      
+   3. Testing a local cgpsd process:
+   
+      a) Start the DDOS attack running cgpsddos in local mode.
+      
 Anders Lövgren, 2008-04-09
