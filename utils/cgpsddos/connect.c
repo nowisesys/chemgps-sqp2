@@ -85,7 +85,11 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
-		
+	if(!threads) {	
+		die("failed alloc memory");
+	}
+	memset(threads, 0, args->count * sizeof(pthread_t));
+	
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 	
@@ -102,10 +106,13 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		}
 		debug("thread 0x%lu: started", threads[i]);
 	}
+	
 	debug("joining prediction threads");
 	for(i = 0; i < args->count; ++i) {
-		debug("thread 0x%lu: joined", threads[i]);
-		pthread_join(threads[i], NULL);
+		if(threads[i]) {
+			pthread_join(threads[i], NULL);
+			debug("thread 0x%lu: joined", threads[i]);
+		}
 	}
 	free(threads);
 	debug("all prediction threads joined");
