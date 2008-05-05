@@ -51,9 +51,10 @@
 
 static void cleanup_request(struct client *peer, char *buff)
 {
-	fclose(peer->ss);
-	debug("closed socket stream");
-	
+	if(peer) {
+		fclose(peer->ss);
+		debug("closed socket stream");
+	}
 	if(buff) {
 		free(buff);
 	}
