@@ -75,9 +75,8 @@ void * cgpsddos_connect(void *args)
 
 int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struct options *args)
 {
-	struct timeval tc;      /* connect time */
 	struct timeval ts;      /* predict start */
-	struct timeval tf;      /* predict finished */
+	struct timeval te;      /* predict finished */
 	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
@@ -93,7 +92,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 	
-	if(gettimeofday(&tc, NULL) < 0) {
+	if(gettimeofday(&ts, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
 		return -1;
 	}
@@ -117,15 +116,15 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	free(threads);
 	debug("all prediction threads joined");
 		
-	if(gettimeofday(&tf, NULL) < 0) {
+	if(gettimeofday(&te, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
 		return -1;
 	}
 		
 	debug("sending predict result to peer");
 	snprintf(msg, sizeof(msg), "predict: %lu.%lu %lu.%lu %d\n", 
-		 tc.tv_sec, tc.tv_usec,
-		 tf.tv_sec, tf.tv_usec, thrmax);
+		 ts.tv_sec, ts.tv_usec,
+		 te.tv_sec, te.tv_usec, thrmax);
 	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
 		logerr("failed send to %s", "<fix me: unknown peer>");
 	}
