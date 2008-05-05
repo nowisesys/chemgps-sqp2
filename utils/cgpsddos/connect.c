@@ -80,7 +80,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
-	int i, thrmax = 0;
+	int i, runned = 0, remain = 0, thrmax = 0, thrnow = 0;
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
@@ -97,34 +97,46 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		return -1;
 	}
 	
-	debug("starting prediction threads");
-	for(i = 0; i < args->count; ++i, ++thrmax) {
-		if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) != 0) {
-			logerr("failed create thread (%d created)", i);
-			break;
+	remain = args->count;
+	debug("start running predictions");
+	while(runned < args->count) {
+		debug("%d predictions of %d total left to run", remain, args->count);
+		debug("starting prediction threads");
+		thrnow = 0;
+		for(i = 0; i < remain; ++i, ++thrnow) {
+			if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) != 0) {
+				logerr("failed create thread (%d created)", i);
+				break;
+			}
+			debug("thread 0x%lu: started", threads[i]);
 		}
-		debug("thread 0x%lu: started", threads[i]);
-	}
-	
-	debug("joining prediction threads");
-	for(i = 0; i < args->count; ++i) {
-		if(threads[i]) {
+		if(thrnow > thrmax) {
+			thrmax = thrnow;
+		}
+
+		debug("joining prediction threads");
+		for(i = 0; i < thrnow; ++i) {
 			pthread_join(threads[i], NULL);
 			debug("thread 0x%lu: joined", threads[i]);
 		}
-	}
-	free(threads);
-	debug("all prediction threads joined");
+		debug("all prediction threads joined");
 		
+		runned += thrnow;
+		remain -= thrnow;
+	}	
+	debug("finished running predictions");
+	
 	if(gettimeofday(&te, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
 		return -1;
 	}
-		
+
+	free(threads);
+	
 	debug("sending predict result to peer");
-	snprintf(msg, sizeof(msg), "predict: %lu.%lu %lu.%lu %d\n", 
+	snprintf(msg, sizeof(msg), "predict: %lu.%lu %lu.%lu %d %d\n", 
 		 ts.tv_sec, ts.tv_usec,
-		 te.tv_sec, te.tv_usec, thrmax);
+		 te.tv_sec, te.tv_usec, thrmax, runned);
 	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
 		logerr("failed send to %s", "<fix me: unknown peer>");
 	}
