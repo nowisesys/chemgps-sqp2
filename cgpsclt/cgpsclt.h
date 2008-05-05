@@ -30,14 +30,14 @@
 int init_socket(struct options *opts);
 int request(struct options *opts, struct client *peer);
 
+#define CGPSCLT_CONN_FAILED -1    /* permanent connection error */
+#define CGPSCLT_CONN_SUCCESS 0    /* successful connected */
+#define CGPSCLT_CONN_RETRY   1    /* temporary connection error (retry) */
+
 #if ! defined(CGPSCLT_EXTERN)
 
 # define CGPSCLT_RETRY_LIMIT 5    /* number of connect retries */
 # define CGPSCLT_RETRY_SLEEP 6    /* timeout between retries */
-
-# define CGPSCLT_CONN_FAILED -1   /* permanent connection error */
-# define CGPSCLT_CONN_SUCCESS 0   /* successful connected */
-# define CGPSCLT_CONN_RETRY   1   /* temporary connection error (retry) */
 
 void parse_options(int argc, char **argv, struct options *opts);
 
