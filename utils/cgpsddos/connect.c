@@ -81,7 +81,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
-	int i;
+	int i, thrmax = 0;
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
@@ -99,7 +99,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	}
 	
 	debug("starting prediction threads");
-	for(i = 0; i < args->count; ++i) {
+	for(i = 0; i < args->count; ++i, ++thrmax) {
 		if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) != 0) {
 			logerr("failed create thread (%d created)", i);
 			break;
@@ -123,10 +123,9 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	}
 		
 	debug("sending predict result to peer");
-	snprintf(msg, sizeof(msg), "predict: %lu.%lu %lu.%lu %lu.%lu\n", 
+	snprintf(msg, sizeof(msg), "predict: %lu.%lu %lu.%lu %d\n", 
 		 tc.tv_sec, tc.tv_usec,
-		 ts.tv_sec, ts.tv_usec,
-		 tf.tv_sec, tf.tv_usec);
+		 tf.tv_sec, tf.tv_usec, thrmax);
 	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
 		logerr("failed send to %s", "<fix me: unknown peer>");
 	}
