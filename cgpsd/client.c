@@ -114,21 +114,25 @@ static void cleanup_request(struct workers *threads, struct client **peer, char 
 }
 
 /*
- * This macro should only be used in inner loop. It sends an optional 
+ * These macros should only be used in inner loop. It sends an optional 
  * protocol error message to peer and cleanup from peer request. Then 
  * it either process next peer (contimue) or quit inner loop (break).
  */
-#define process_next_peer(threads, peer, msg) { \
-	if(msg) { \
-		if(fprintf((peer)->ss, "error: %s", (msg)) > 0) { \
-			fflush((peer)->ss); \
-		} \
-	} \
+#define process_next_peer(threads, peer) { \
 	cleanup_request((threads), &(peer), NULL); \
 	if(worker_waiting((threads))) { \
 		continue; \
 	} \
 	break; \
+}
+
+#define process_close_peer(threads, peer, msg) { \
+	if(msg) { \
+		if(fprintf((peer)->ss, "error: %s", (msg)) > 0) { \
+			fflush((peer)->ss); \
+		} \
+	} \
+	process_next_peer(threads, peer); \
 }
 
 /*
@@ -177,7 +181,7 @@ void * process_request(void *param)
 			peer->ss = fdopen(dup(peer->sock), "r+");
 			if(!peer->ss) {
 				logerr("failed open socket stream");
-				process_next_peer(threads, peer, NULL);
+				process_next_peer(threads, peer);
 			}
 			debug("opened socket stream");
 			errno = 0;
@@ -188,12 +192,12 @@ void * process_request(void *param)
 			}
 			if(errno == EPIPE) {
 				logerr("socket closed by peer");
-				process_next_peer(threads, peer, NULL);
+				process_next_peer(threads, peer);
 			} 
 			
 			debug("reading greeting");
 			if(read_request(&buff, &size, peer->ss) < 0) {
-				process_next_peer(threads, peer, NULL);
+				process_next_peer(threads, peer);
 			}
 			debug("received: '%s'", buff);
 
@@ -205,31 +209,31 @@ void * process_request(void *param)
 						
 			debug("receiving predict request");
 			if(read_request(&buff, &size, peer->ss) < 0) {
-				process_next_peer(threads, peer, NULL);
+				process_next_peer(threads, peer);
 			}
 			debug("received: '%s'", buff);
 			if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 				logerr("failed read client option (%s)", buff);
-				process_next_peer(threads, peer, "unknown option");
+				process_close_peer(threads, peer, "unknown option");
 			}
 			if(req.symbol != CGPSP_PROTO_PREDICT) {
 				logerr("protocol error (expected predict option, got %s)", req.option);
-				process_next_peer(threads, peer, "expected predict");
+				process_close_peer(threads, peer, "expected predict");
 			}
 			cgps.result = cgps_get_predict_mask(req.value);
 
 			debug("receiving format request");
 			if(read_request(&buff, &size, peer->ss) < 0) {
-				process_next_peer(threads, peer, NULL);
+				process_next_peer(threads, peer);
 			}
 			debug("received: '%s'", buff);
 			if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 				logerr("failed read client option (%s)", buff);
-				process_next_peer(threads, peer, "unknown option");
+				process_close_peer(threads, peer, "unknown option");
 			}
 			if(req.symbol != CGPSP_PROTO_FORMAT) {
 				logerr("protocol error (expected format option, got %s)", req.option);
-				process_next_peer(threads, peer, "expected format");
+				process_close_peer(threads, peer, "expected format");
 			}
 			if(strcmp("plain", req.value) == 0) {
 				cgps.format = CGPS_OUTPUT_FORMAT_PLAIN;
@@ -237,7 +241,7 @@ void * process_request(void *param)
 				cgps.format = CGPS_OUTPUT_FORMAT_XML;
 			} else {
 				logerr("protocol error (invalid format argument, got %s)", req.value);
-				process_next_peer(threads, peer, "invalid format");
+				process_close_peer(threads, peer, "invalid format");
 			}
 			
 			for(i = 1; i <= proj.models; ++i) {	
