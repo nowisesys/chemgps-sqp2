@@ -16,6 +16,18 @@ AC_PROG_RANLIB
 AC_CHECK_LIB([pthread], [pthread_create])
 if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
   CFLAGS="$CFLAGS -pthread"
+  AC_CHECK_LIB([pthread], [pthread_yield], [
+    AC_DEFINE([HAVE_PTHREAD_YIELD], [1], [Define to 1 if libpthread has function pthread_yield])
+  ])
+  AC_MSG_CHECKING([if pthread_yield needs __USE_GNU defined])
+  AC_COMPILE_IFELSE([
+    #include <ptread.h>
+    main(void) { pthread_yield(); }
+    ], [AC_MSG_RESULT(no)], [
+      AC_MSG_RESULT(yes)
+      CPPFLAGS="$CPPFLAGS -D__USE_GNU"
+    ]
+  )
 fi
 
 # Checks for header files.
