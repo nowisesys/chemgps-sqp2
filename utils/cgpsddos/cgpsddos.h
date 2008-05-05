@@ -62,6 +62,8 @@
 
 #define CGPSDDOS_PEER_TIMEOUT (15 * 60)
 
+#define CGPSDDOS_THREAD_MIN 300  /* minimum number of running threads */
+
 struct cgpsddos
 {
 	struct options *opts;
@@ -134,10 +136,10 @@ int receive_dgram(int sock, char *buff, size_t size, struct sockaddr *sockaddr, 
 char * split_hostaddr(char *addr, char **host, char **port);
 
 /*
- * Resolve hostname. The function returns a addrinfo structure pointing
- * filled with info about resolved hostname. The args argument should point
- * to struct resolve_data data that is filled with reverse lookup hostname
- * and service.
+ * Resolve hostname. This function returns a void pointer to an addrinfo 
+ * structure filled with info about resolved hostname. The args argument 
+ * should point to struct resolve_data data that is filled with reverse 
+ * lookup hostname and service.
  */
 void * resolve_host(void *args);
 

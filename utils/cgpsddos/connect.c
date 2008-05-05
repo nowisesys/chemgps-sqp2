@@ -52,24 +52,39 @@
 #include "cgpsclt.h"
 #include "cgpsddos.h"
 
+pthread_mutex_t countlock;
+pthread_cond_t  countcond;
+static int count = 0;
+
 void * cgpsddos_connect(void *args)
 {	
 	struct client peer;
 	struct options topt = *(struct options *)args;
-	
-	debug("connecting to %s:%d", topt.ipaddr, topt.port);
+
+	if(!opts->quiet) {
+		debug("connecting to %s:%d", topt.ipaddr, topt.port);
+	}
 	if(init_socket(&topt) < 0) {
 		pthread_exit(NULL);
 	}
-	debug("connected to %s:%d", topt.ipaddr, topt.port);
+	if(!opts->quiet) {
+		debug("connected to %s:%d", topt.ipaddr, topt.port);
+	}
 	
 	peer.type = CGPS_DDOS;
 	peer.sock = topt.unsock ? topt.unsock : topt.ipsock;
 	peer.opts = &topt;
 	
 	request(&topt, &peer);
+		
+	pthread_mutex_lock(&countlock);
+	--count;
+	if(count < CGPSDDOS_THREAD_MIN) {
+		pthread_cond_signal(&countcond);
+	}
+	pthread_mutex_unlock(&countlock);
 	
-	close(peer.sock);	
+	close(peer.sock);
 	pthread_exit(NULL);
 }
 
@@ -80,7 +95,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
-	int i, runned = 0, remain = 0, thrmax = 0, thrnow = 0;
+	int i, finished = 0, thrmax = 0, thrnow = 0;
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
@@ -90,53 +105,81 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	memset(threads, 0, args->count * sizeof(pthread_t));
 	
 	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+ 	pthread_cond_init(&countcond, NULL);
+	pthread_mutex_init(&countlock, NULL);
 	
 	if(gettimeofday(&ts, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
 		return -1;
 	}
 	
-	remain = args->count;
 	debug("start running predictions");
-	while(runned < args->count) {
-		debug("%d predictions of %d total left to run", remain, args->count);
+	while(finished < args->count) {
+		debug("%d predictions of %d total left to run", args->count - finished, args->count);
 		debug("starting prediction threads");
 		thrnow = 0;
-		for(i = 0; i < remain; ++i, ++thrnow) {
+		for(i = finished; i < args->count; ++i, ++thrnow) {
 			if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) != 0) {
-				logerr("failed create thread (%d created)", i);
 				break;
 			}
-			debug("thread 0x%lu: started", threads[i]);
+			debug("thread 0x%lu: started", threads[i]);			
 		}
+		pthread_mutex_lock(&countlock);
+		count += thrnow;
+		pthread_mutex_unlock(&countlock);
+		
 		if(thrnow > thrmax) {
 			thrmax = thrnow;
 		}
+		finished += thrnow;
 
-		debug("joining prediction threads");
-		for(i = 0; i < thrnow; ++i) {
-			pthread_join(threads[i], NULL);
-			debug("thread 0x%lu: joined", threads[i]);
+		if(!opts->quiet || opts->verbose) {
+			pthread_mutex_lock(&countlock);
+			loginfo("started %d threads (%d already running)", thrnow, count);
+			pthread_mutex_unlock(&countlock);
 		}
-		debug("all prediction threads joined");
 		
-		runned += thrnow;
-		remain -= thrnow;
-	}	
-	debug("finished running predictions");
+		pthread_mutex_lock(&countlock);
+		while(count > CGPSDDOS_THREAD_MIN) {
+			if(pthread_cond_wait(&countcond, &countlock) != 0) {
+				pthread_mutex_unlock(&countlock);
+				continue;
+			}
+			break;
+		}
+		pthread_mutex_unlock(&countlock);
+	}
+        for(;;) {
+		pthread_mutex_lock(&countlock);
+		debug("waiting for threads to finish (%d running)...", count);
+		while(count > 0) {
+			if(pthread_cond_wait(&countcond, &countlock) != 0) {
+				pthread_mutex_unlock(&countlock);
+				continue;
+			}
+		}
+		pthread_mutex_unlock(&countlock);
+		debug("all threads has finished");
+		break;
+	}
 	
+	debug("finished running predictions");
 	if(gettimeofday(&te, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
 		return -1;
 	}
 
+	pthread_mutex_destroy(&countlock);
+ 	pthread_cond_destroy(&countcond);
+	
 	free(threads);
 	
 	debug("sending predict result to peer");
 	snprintf(msg, sizeof(msg), "predict: %lu.%lu %lu.%lu %d %d\n", 
 		 ts.tv_sec, ts.tv_usec,
-		 te.tv_sec, te.tv_usec, thrmax, runned);
+		 te.tv_sec, te.tv_usec, thrmax, finished);
 	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
 		logerr("failed send to %s", "<fix me: unknown peer>");
 	}
