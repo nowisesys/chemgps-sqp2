@@ -162,7 +162,7 @@ cgpsddos_SOURCES = ../../cgpsclt/result.c ../../cgpsclt/request.c \
 		   master.c slave.c local.c bind.c resolve.c dgram.c \
 		   connect.c 
 
-cgpsddos_CFLAGS = -I$(top_srcdir)/libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(top_srcdir)/cgpsclt
+cgpsddos_CFLAGS = -I$(top_srcdir)/libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(top_srcdir)/cgpsclt -I$(SIMCAQ_INCDIR) 
 cgpsddos_LDADD = $(top_srcdir)/libcgpssqp/libcgpssqp.a
 all: all-am
 
