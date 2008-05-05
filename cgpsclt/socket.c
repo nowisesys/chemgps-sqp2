@@ -114,18 +114,20 @@ int init_socket(struct options *opts)
 				}
 			}
 		}
-		
-		if(getnameinfo(next->ai_addr,
-			       next->ai_addrlen, 
-			       host, NI_MAXHOST,
-			       serv, NI_MAXSERV, NI_NUMERICSERV) == 0) {
-			debug("connected to %s:%s (%s:%d) (%s)", 
-			      host, serv, opts->ipaddr, opts->port, 
-			      next->ai_family == AF_INET ? "ipv4" : "ipv6");
-		} else {
-			debug("connected to %s:%d (%s)", 
-			      opts->ipaddr, opts->port, 
-			      next->ai_family == AF_INET ? "ipv4" : "ipv6");
+
+		if(opts->debug) {
+			if(getnameinfo(next->ai_addr,
+				       next->ai_addrlen, 
+				       host, NI_MAXHOST,
+				       serv, NI_MAXSERV, NI_NUMERICSERV) == 0) {
+				debug("connected to %s:%s (%s:%d) (%s)", 
+				      host, serv, opts->ipaddr, opts->port, 
+				      next->ai_family == AF_INET ? "ipv4" : "ipv6");
+			} else {
+				debug("connected to %s:%d (%s)", 
+				      opts->ipaddr, opts->port, 
+				      next->ai_family == AF_INET ? "ipv4" : "ipv6");
+			}
 		}
 		freeaddrinfo(addr);
 		return CGPSCLT_CONN_SUCCESS;
