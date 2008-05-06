@@ -55,36 +55,82 @@
 pthread_mutex_t countlock;
 pthread_cond_t  countcond;
 static int count = 0;
+static int failed = 0;
+static int chooke = 0;
+
+static int cgpsddos_init_socket(struct options *topt)
+{
+	int res, retry = 0;
+	
+	while((res = init_socket(topt)) != CGPSCLT_CONN_SUCCESS) {
+		if(res == CGPSCLT_CONN_RETRY) {
+			usleep(CGPSDDOS_THREAD_WRSLEEP * ++retry);
+			if(retry > CGPSDDOS_THREAD_WRLIMIT) break;
+		} else {
+			pthread_mutex_lock(&countlock);
+			++failed;
+			--count;
+			chooke = 1;
+			pthread_mutex_unlock(&countlock);			
+			pthread_exit(NULL);
+		}
+	}
+	
+	if(res == CGPSCLT_CONN_SUCCESS) {
+		if(!opts->quiet) {
+			debug("connected to %s:%d", topt->ipaddr, topt->port);
+		}
+		return 0;
+	} 
+	
+	return -1;
+}
+
+static int cgpsddos_request(struct options *topt, struct client *peer)
+{
+	int res, retry = 0;
+	
+	while((res = request(topt, peer)) == CGPSCLT_CONN_RETRY) {
+		usleep(CGPSDDOS_THREAD_WRSLEEP * ++retry);
+		if(retry > CGPSDDOS_THREAD_WRLIMIT) break;
+	}
+	
+	if(res == CGPSCLT_CONN_SUCCESS) {
+		return 0;
+	}
+
+	pthread_mutex_lock(&countlock);
+	++failed;
+	pthread_mutex_unlock(&countlock);
+	
+	return -1;
+}
 
 void * cgpsddos_connect(void *args)
 {	
 	struct client peer;
 	struct options topt = *(struct options *)args;
-
+	
 	if(!opts->quiet) {
 		debug("connecting to %s:%d", topt.ipaddr, topt.port);
 	}
-	if(init_socket(&topt) < 0) {
-		pthread_exit(NULL);
-	}
-	if(!opts->quiet) {
-		debug("connected to %s:%d", topt.ipaddr, topt.port);
+	
+	if(cgpsddos_init_socket(&topt) == 0) {
+		peer.type = CGPS_DDOS;
+		peer.sock = topt.unsock ? topt.unsock : topt.ipsock;
+		peer.opts = &topt;
+	
+		cgpsddos_request(&topt, &peer);
+		close(peer.sock);
 	}
 	
-	peer.type = CGPS_DDOS;
-	peer.sock = topt.unsock ? topt.unsock : topt.ipsock;
-	peer.opts = &topt;
-	
-	request(&topt, &peer);
-		
 	pthread_mutex_lock(&countlock);
 	--count;
-	if(count < CGPSDDOS_THREAD_MIN) {
+	if(count < CGPSDDOS_THREAD_RUNNING) {
 		pthread_cond_signal(&countcond);
 	}
 	pthread_mutex_unlock(&countlock);
 	
-	close(peer.sock);
 	pthread_exit(NULL);
 }
 
@@ -96,6 +142,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_t *threads;
 	pthread_attr_t attr;
 	int i, finished = 0, thrmax = 0, thrnow = 0;
+	size_t stacksize;
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
@@ -107,6 +154,14 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
+	pthread_attr_getstacksize(&attr, &stacksize);
+	debug("default stack size: %d kB", stacksize / 1024);	
+	stacksize = CGPSDDOS_THREAD_STACKSIZE;
+	debug("wanted stack size: %d kB", stacksize / 1024);	
+	pthread_attr_setstacksize(&attr, stacksize);
+	pthread_attr_getstacksize(&attr, &stacksize);
+	debug("actual stack size: %d kB", stacksize / 1024);
+	
  	pthread_cond_init(&countcond, NULL);
 	pthread_mutex_init(&countlock, NULL);
 	
@@ -121,10 +176,17 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		debug("starting prediction threads");
 		thrnow = 0;
 		for(i = finished; i < args->count; ++i, ++thrnow) {
+			pthread_mutex_lock(&countlock);
+			if(chooke) {
+				chooke = 0;
+				pthread_mutex_unlock(&countlock);
+				break;
+			}
+			pthread_mutex_unlock(&countlock);
 			if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) != 0) {
 				break;
 			}
-			debug("thread 0x%lu: started", threads[i]);			
+			debug("thread 0x%lu: started", threads[i]);
 		}
 		pthread_mutex_lock(&countlock);
 		count += thrnow;
@@ -142,7 +204,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		}
 		
 		pthread_mutex_lock(&countlock);
-		while(count > CGPSDDOS_THREAD_MIN) {
+		while(count > CGPSDDOS_THREAD_RUNNING) {
 			if(pthread_cond_wait(&countcond, &countlock) != 0) {
 				pthread_mutex_unlock(&countlock);
 				continue;
@@ -177,12 +239,12 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	free(threads);
 	
 	debug("sending predict result to peer");
-	snprintf(msg, sizeof(msg), "predict: %lu.%lu %lu.%lu %d %d\n", 
+	snprintf(msg, sizeof(msg), "predict: start=%lu.%lu finish=%lu.%lu thrmax=%d finished=%d failed=%d\n", 
 		 ts.tv_sec, ts.tv_usec,
-		 te.tv_sec, te.tv_usec, thrmax, finished);
+		 te.tv_sec, te.tv_usec, thrmax, finished, failed);
 	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
 		logerr("failed send to %s", "<fix me: unknown peer>");
 	}
-		 
+	
 	return 0;
 }
