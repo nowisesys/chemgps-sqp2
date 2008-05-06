@@ -56,7 +56,7 @@ am_cgpsddos_OBJECTS = cgpsddos-result.$(OBJEXT) \
 	cgpsddos-master.$(OBJEXT) cgpsddos-slave.$(OBJEXT) \
 	cgpsddos-local.$(OBJEXT) cgpsddos-bind.$(OBJEXT) \
 	cgpsddos-resolve.$(OBJEXT) cgpsddos-dgram.$(OBJEXT) \
-	cgpsddos-connect.$(OBJEXT)
+	cgpsddos-connect.$(OBJEXT) cgpsddos-signal.$(OBJEXT)
 cgpsddos_OBJECTS = $(am_cgpsddos_OBJECTS)
 cgpsddos_DEPENDENCIES = $(top_srcdir)/libcgpssqp/libcgpssqp.a
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
@@ -156,7 +156,7 @@ target_alias = @target_alias@
 cgpsddos_SOURCES = ../../cgpsclt/result.c ../../cgpsclt/request.c \
 		   ../../cgpsclt/socket.c main.c options.c cgpsddos.h  \
 		   master.c slave.c local.c bind.c resolve.c dgram.c \
-		   connect.c 
+		   connect.c signal.c
 
 cgpsddos_CFLAGS = -I$(top_srcdir)/libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(top_srcdir)/cgpsclt -I$(SIMCAQ_INCDIR) 
 cgpsddos_LDADD = $(top_srcdir)/libcgpssqp/libcgpssqp.a
@@ -236,6 +236,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-request.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-resolve.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-result.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-signal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-slave.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsddos-socket.Po@am__quote@
 
@@ -420,6 +421,20 @@ cgpsddos-connect.obj: connect.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='connect.c' object='cgpsddos-connect.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-connect.obj `if test -f 'connect.c'; then $(CYGPATH_W) 'connect.c'; else $(CYGPATH_W) '$(srcdir)/connect.c'; fi`
+
+cgpsddos-signal.o: signal.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-signal.o -MD -MP -MF "$(DEPDIR)/cgpsddos-signal.Tpo" -c -o cgpsddos-signal.o `test -f 'signal.c' || echo '$(srcdir)/'`signal.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-signal.Tpo" "$(DEPDIR)/cgpsddos-signal.Po"; else rm -f "$(DEPDIR)/cgpsddos-signal.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='signal.c' object='cgpsddos-signal.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-signal.o `test -f 'signal.c' || echo '$(srcdir)/'`signal.c
+
+cgpsddos-signal.obj: signal.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -MT cgpsddos-signal.obj -MD -MP -MF "$(DEPDIR)/cgpsddos-signal.Tpo" -c -o cgpsddos-signal.obj `if test -f 'signal.c'; then $(CYGPATH_W) 'signal.c'; else $(CYGPATH_W) '$(srcdir)/signal.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsddos-signal.Tpo" "$(DEPDIR)/cgpsddos-signal.Po"; else rm -f "$(DEPDIR)/cgpsddos-signal.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='signal.c' object='cgpsddos-signal.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsddos_CFLAGS) $(CFLAGS) -c -o cgpsddos-signal.obj `if test -f 'signal.c'; then $(CYGPATH_W) 'signal.c'; else $(CYGPATH_W) '$(srcdir)/signal.c'; fi`
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)

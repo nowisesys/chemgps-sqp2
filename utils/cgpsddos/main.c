@@ -110,7 +110,8 @@ int main(int argc, char **argv)
 #endif
 	
 	parse_options(argc, argv, ddos);
-	
+
+	setup_signals(opts);
 	switch(ddos->mode) {
 	case CGPSDDOS_MASTER:
 		run_master(ddos);
@@ -124,6 +125,7 @@ int main(int argc, char **argv)
 	default:
 		die("unknown mode %d", ddos->mode);
 	}
+	restore_signals(opts);
 	
 	return 0;
 }

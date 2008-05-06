@@ -118,9 +118,7 @@ ssize_t receive_dgram(int sock, char *buff, size_t size, struct sockaddr *sockad
 #endif
 		}
 	}
-	if(bytes < 0) {
-		logerr("failed receive message from peer");
-	} else if(bytes < size) {
+	if(bytes > 0 && bytes < size) {
 		buff[bytes] = '\0';
 	}
 	return bytes;

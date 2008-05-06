@@ -180,7 +180,7 @@ void run_slave(struct cgpsddos *ddos)
 
 	ddos->opts->state = CGPSDDOS_STATE_LOOP;
 	
-	while(ddos->opts->state != CGPSDDOS_STATE_QUIT) {
+	while(!cgpsddos_quit(ddos->opts->state)) {
 		struct sockaddr_storage sockaddr;
 		socklen_t sockaddr_len;
 		struct request_option req;
@@ -195,7 +195,9 @@ void run_slave(struct cgpsddos *ddos)
 				 sizeof(msg), 
 				 (struct sockaddr *)&sockaddr, 
 				 &sockaddr_len) < 0) { 
-			logerr("failed receive from master");
+			if(!cgpsddos_quit(ddos->opts->state)) {
+				logerr("failed receive from master");
+			}
 			continue;
 		}
 		

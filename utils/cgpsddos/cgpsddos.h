@@ -46,10 +46,11 @@
 #define CGPSDDOS_MASTER_PORT CGPSD_DEFAULT_PORT + 1
 #define CGPSDDOS_SLAVE_PORT  CGPSD_DEFAULT_PORT + 2
 
-#define CGPSDDOS_STATE_QUIT 0
-#define CGPSDDOS_STATE_LOOP 1
-#define CGPSDDOS_STATE_BUSY 2
-#define CGPSDDOS_STATE_FREE 4
+#define CGPSDDOS_STATE_INIT 0
+#define CGPSDDOS_STATE_QUIT 1
+#define CGPSDDOS_STATE_LOOP 2
+#define CGPSDDOS_STATE_BUSY 4
+#define CGPSDDOS_STATE_FREE 8
 
 /*
  * protocol stage:
@@ -66,6 +67,8 @@
 #define CGPSDDOS_THREAD_STACKSIZE  64 * 1024 /* thread minimum stacksize */
 #define CGPSDDOS_THREAD_WRSLEEP   50000      /* wait before retry (microseconds) */
 #define CGPSDDOS_THREAD_WRLIMIT   100        /* retry limit before giving up */
+
+#define cgpsddos_quit(state) ((state) & CGPSDDOS_STATE_QUIT)
 
 struct cgpsddos
 {
@@ -152,5 +155,15 @@ void * resolve_host(void *args);
  * the function returns, all resolved hosts are inserted in hosts list.
  */
 void resolve_slaves(struct cgpsddos *ddos, struct dllist *hosts, FILE *fs);
+
+/*
+ * Setup signal handling.
+ */
+void setup_signals(struct options *opts);
+
+/*
+ * Restore signal handling.
+ */
+void restore_signals(struct options *opts);
 
 #endif /* __CGPSDDOS_H__ */
