@@ -63,11 +63,12 @@
 
 #define CGPSDDOS_PEER_TIMEOUT (15 * 60)
 
-#define CGPSDDOS_THREAD_RUNNING    300           /* minimum number of running threads */
 #define CGPSDDOS_THREAD_STACKSIZE  64 * 1024     /* thread minimum stacksize */
 #define CGPSDDOS_THREAD_WRSLEEP    50000         /* wait before retry (microseconds) */
 #define CGPSDDOS_THREAD_WRLIMIT    100           /* retry limit before giving up */
 #define CGPSDDOS_THREAD_FILES_MAX  16 * 1024     /* maximum number of open files (only root) */
+#define CGPSDDOS_THREAD_SPAWN_MIN  200           /* minimum number of running threads */
+#define CGPSDDOS_THREAD_SPAWN_MAX  30000         /* maximum number of running threads */
 
 #define cgpsddos_quit(state) ((state) & CGPSDDOS_STATE_QUIT)
 

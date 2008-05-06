@@ -128,7 +128,7 @@ void * cgpsddos_connect(void *args)
 	
 	pthread_mutex_lock(&countlock);
 	--count;
-	if(count < CGPSDDOS_THREAD_RUNNING) {
+	if(count < CGPSDDOS_THREAD_SPAWN_MIN) {
 		pthread_cond_signal(&countcond);
 	}
 	pthread_mutex_unlock(&countlock);
@@ -207,12 +207,19 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		thrnow = 0;
 		for(i = finished; i < args->count; ++i, ++thrnow) {
 			pthread_mutex_lock(&countlock);
+			if(count > CGPSDDOS_THREAD_SPAWN_MAX) {
+				pthread_mutex_unlock(&countlock);
+				break;
+			}
 			if(chooke) {
 				chooke = 0;
 				pthread_mutex_unlock(&countlock);
 				break;
 			}
 			pthread_mutex_unlock(&countlock);
+			if(thrnow > rlim.rlim_cur) {
+				break;
+			}
 			if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) != 0) {
 				break;
 			}
@@ -234,7 +241,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		}
 		
 		pthread_mutex_lock(&countlock);
-		while(count > CGPSDDOS_THREAD_RUNNING) {
+		while(count > CGPSDDOS_THREAD_SPAWN_MIN) {
 			if(pthread_cond_wait(&countcond, &countlock) != 0) {
 				pthread_mutex_unlock(&countlock);
 				continue;
