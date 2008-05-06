@@ -28,7 +28,10 @@
 # include "config.h"
 #endif
 
-#define _GNU_SOURCE
+#ifdef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+#define _GNU_SOURCE 1
 
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
@@ -45,7 +48,6 @@
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
-/* #include <libgen.h> */
 #include <chemgps.h>
 
 #include "cgpssqp.h"
