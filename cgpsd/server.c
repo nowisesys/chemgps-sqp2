@@ -54,9 +54,27 @@
 #include "dllist.h"
 #include "worker.h"
 
-#ifdef NEED_PTHREAD_YIELD_DECL
-extern int pthread_yield (void) __THROW;
+#if !defined(HAVE_PTHREAD_YIELD) && defined(HAVE_SCHED_YIELD)
+# if defined(HAVE_SCHED_H)
+#  include <sched.h>
+# endif
 #endif
+
+#ifdef HAVE_LIBPTHREAD
+# if ! defined(HAVE_PTHREAD_YIELD) || defined(NEED_PTHREAD_YIELD_DECL)
+extern int pthread_yield (void) __THROW;
+# endif
+#endif
+
+int thread_yield(void)
+{
+#if defined(HAVE_PTHREAD_YIELD)
+	return pthread_yield();
+#elif defined(HAVE_SCHED_YIELD)
+	return sched_yield();
+#endif
+	return 0;
+}
 
 /*
  * Send error message to peer and close socket.
@@ -81,9 +99,7 @@ static void sleep_wait_queue(struct workers *threads)
 	logwarn("too many queued peers (%d), sleeping waiting for %d peers to finish", count, threads->wlimit);
 	while(count > limit) {
 		debug("sleeping waiting for %d peers to finish", count - limit);
-#ifdef HAVE_PTHREAD_YIELD
-		pthread_yield();
-#endif
+		thread_yield();
 		usleep(threads->wsleep);
 		count = worker_waiting(threads);
 	}

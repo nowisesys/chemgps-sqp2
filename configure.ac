@@ -12,36 +12,6 @@ AC_PROG_CC
 AC_PROG_RANLIB
 
 # Checks for libraries.
-## AC_CHECK_LIB([chemgps], [cgps_project_load])
-AC_CHECK_LIB([pthread], [pthread_create])
-if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
-  CFLAGS="$CFLAGS -pthread"
-  AC_CHECK_LIB([pthread], [pthread_yield], [
-    AC_DEFINE([HAVE_PTHREAD_YIELD], [1], [Define to 1 if libpthread has function pthread_yield])
-  ])
-  AC_MSG_CHECKING([if pthread_yield needs __USE_GNU defined])
-  AC_COMPILE_IFELSE([
-    #include <pthread.h>
-    int main(void) { pthread_yield(); }
-    ], [AC_MSG_RESULT(no)], [
-      AC_MSG_RESULT(yes)
-      CPPFLAGS="$CPPFLAGS -D__USE_GNU"
-    ]
-  )
-  AC_MSG_CHECKING([if pthread_yield needs to be declared])
-  AC_COMPILE_IFELSE([
-    #ifdef __USE_GNU
-    # undef __USE_GNU
-    #endif
-    #define __USE_GNU 1
-    #include <pthread.h>
-    int main(void) { pthread_yield(); }
-    ], [AC_MSG_RESULT(no)], [
-      AC_MSG_RESULT(yes)
-      AC_DEFINE([NEED_PTHREAD_YIELD_DECL], [1], [Define to 1 if pthread_yield() needs to be declared])
-    ]
-  )
-fi
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -54,11 +24,46 @@ AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_HEADER_TIME
 
+# Check threading support.
+AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_FUNCS([pthread_yield sched_yield])
+AC_CHECK_HEADERS([sched.h])
+if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
+  CFLAGS="$CFLAGS -pthread"
+  AC_CHECK_LIB([pthread], [pthread_yield], [
+    AC_DEFINE([HAVE_PTHREAD_YIELD], [1], [Define to 1 if libpthread has function pthread_yield])
+  ])
+  AC_MSG_CHECKING([if pthread_yield needs _GNU_SOURCE defined])
+  AC_COMPILE_IFELSE([
+    #include <pthread.h>
+    int main(void) { pthread_yield(); return 0; }
+    ], [AC_MSG_RESULT(no)], [
+      AC_MSG_RESULT(yes)
+      CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
+    ]
+  )
+  AC_MSG_CHECKING([if pthread_yield needs to be declared])
+  AC_COMPILE_IFELSE([
+    #ifdef _GNU_SOURCE
+    # undef _GNU_SOURCE
+    #endif
+    #define _GNU_SOURCE 1
+    #include <features.h>
+    #include <pthread.h>
+    int main(void) { pthread_yield(); return 0; }
+    ], [AC_MSG_RESULT(no)], [
+      AC_MSG_RESULT(yes)
+      AC_DEFINE([NEED_PTHREAD_YIELD_DECL], [1], [Define to 1 if pthread_yield() needs to be declared])
+    ]
+  )
+fi
+
 # Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_FUNC_SELECT_ARGTYPES
+AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
