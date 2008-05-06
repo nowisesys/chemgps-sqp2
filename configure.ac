@@ -30,6 +30,7 @@ AC_CHECK_FUNCS([pthread_yield sched_yield])
 AC_CHECK_HEADERS([sched.h])
 if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
   CFLAGS="$CFLAGS -pthread"
+  CPPFLAGS="$CPPFLAGS -D_REENTRANT -D_THREAD_SAFE"
   AC_CHECK_LIB([pthread], [pthread_yield], [
     AC_DEFINE([HAVE_PTHREAD_YIELD], [1], [Define to 1 if libpthread has function pthread_yield])
   ])

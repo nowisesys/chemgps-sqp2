@@ -4303,6 +4303,7 @@ done
 
 if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
   CFLAGS="$CFLAGS -pthread"
+  CPPFLAGS="$CPPFLAGS -D_REENTRANT -D_THREAD_SAFE"
   echo "$as_me:$LINENO: checking for pthread_yield in -lpthread" >&5
 echo $ECHO_N "checking for pthread_yield in -lpthread... $ECHO_C" >&6
 if test "${ac_cv_lib_pthread_pthread_yield+set}" = set; then
