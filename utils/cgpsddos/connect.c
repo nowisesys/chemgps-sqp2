@@ -44,6 +44,8 @@
 #ifdef HAVE_LIBPTHREAD
 # include <pthread.h>
 #endif
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <libgen.h>
 #include <chemgps.h>
 
@@ -143,6 +145,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_attr_t attr;
 	int i, finished = 0, thrmax = 0, thrnow = 0;
 	size_t stacksize;
+	struct rlimit rlim;
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
@@ -161,6 +164,33 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_attr_setstacksize(&attr, stacksize);
 	pthread_attr_getstacksize(&attr, &stacksize);
 	debug("actual stack size: %d kB", stacksize / 1024);
+	
+	if(getrlimit(RLIMIT_NOFILE, &rlim) == 0) {
+		debug("default maximum file descriptor number: %d (soft), %d (hard)", 
+		      rlim.rlim_cur, rlim.rlim_max);
+		if(args->count > rlim.rlim_cur) {
+			if(rlim.rlim_cur < rlim.rlim_max) {
+				if(getuid() == 0) {
+					if(rlim.rlim_cur < CGPSDDOS_THREAD_FILES_MAX) {
+						rlim.rlim_cur = CGPSDDOS_THREAD_FILES_MAX;
+					}
+					rlim.rlim_max = rlim.rlim_cur;
+				} else {
+					rlim.rlim_cur = rlim.rlim_max;
+				}
+				debug("wanted maximum file descriptor number: %d (soft), %d (hard)", 
+				      rlim.rlim_cur, rlim.rlim_max);
+				if(setrlimit(RLIMIT_NOFILE, &rlim) < 0) {
+					logerr("failed set maximum file descriptor number: %d", rlim.rlim_cur);
+				} else {
+					getrlimit(RLIMIT_NOFILE, &rlim);
+					debug("actual maximum file descriptor number: %d (soft), %d (hard)", 
+					      rlim.rlim_cur, rlim.rlim_max);
+				}
+			}
+		} 
+	}
+	debug("maximum number of open files: %d (from sysconf)", sysconf(_SC_OPEN_MAX));
 	
  	pthread_cond_init(&countcond, NULL);
 	pthread_mutex_init(&countlock, NULL);
