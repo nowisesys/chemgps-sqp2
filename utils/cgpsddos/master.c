@@ -200,7 +200,7 @@ void run_master(struct cgpsddos *ddos)
 	}
 
 	ddos->opts->state = CGPSDDOS_STATE_LOOP;
-	while(ddos->opts->state != CGPSDDOS_STATE_QUIT) {
+	while(!cgpsddos_quit(ddos->opts->state)) {
 		struct sockaddr_storage sockaddr;
 		socklen_t sockaddr_len;
 		struct request_option req;
@@ -215,7 +215,11 @@ void run_master(struct cgpsddos *ddos)
 		res = poll(&fds, nfds, ddos->timeout * 1000);
 		switch(res) {
 		case -1:
-			die("failed poll");
+			if(cgpsddos_quit(ddos->opts->state)) {
+				continue;
+			} else {
+				die("failed poll");
+			}
 			break;
 		case 0:
 			logerr("no client response within %d seconds, exiting", ddos->timeout);
