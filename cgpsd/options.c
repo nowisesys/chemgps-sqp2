@@ -101,7 +101,7 @@ static void version(const char *prog)
 	printf("Uppsala Biomedical Centre (BMC), Uppsala University.\n");
 }
 
-void parse_options(int argc, char **argv, struct options *opts)
+void parse_options(int argc, char **argv, struct options *popt)
 {
 	static struct option options[] = {
                 { "ipv4",    0, 0, '4' },
@@ -125,79 +125,79 @@ void parse_options(int argc, char **argv, struct options *opts)
 	while((c = getopt_long(argc, argv, "46b:df:hil:p:qt:u:vV", options, &index)) != -1) {
 		switch(c) {
                 case '4':
-			opts->family = AF_INET;
+			popt->family = AF_INET;
 			break;
 		case '6':
-			opts->family = AF_INET6;
+			popt->family = AF_INET6;
 			break;
 		case 'b':
-			opts->backlog = atoi(optarg);
+			popt->backlog = atoi(optarg);
 			break;
 		case 'd':
-			opts->debug++;
+			popt->debug++;
 			break;
 		case 'f':
-			opts->proj = malloc(strlen(optarg) + 1);
-			if(!opts->proj) {
+			popt->proj = malloc(strlen(optarg) + 1);
+			if(!popt->proj) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->proj, optarg);
+			strcpy(popt->proj, optarg);
 			break;
 		case 'h':
-			usage(opts->prog);
+			usage(popt->prog);
 			exit(0);
 		case 'i':
-			opts->interactive = 1;
+			popt->interactive = 1;
 			break;
 		case 'l':
-			opts->cgps->logfile = malloc(strlen(optarg) + 1);
-			if(!opts->cgps->logfile) {
+			popt->cgps->logfile = malloc(strlen(optarg) + 1);
+			if(!popt->cgps->logfile) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->cgps->logfile, optarg);
+			strcpy(popt->cgps->logfile, optarg);
 			break;
 		case 'p':
 #ifdef HAVE_STRTOL
-			opts->port = strtol(optarg, NULL, 10);
+			popt->port = strtol(optarg, NULL, 10);
 #else
-			opts->port = atoi(optarg);
+			popt->port = atoi(optarg);
 #endif /* ! HAVE_STRTOL */
-			if(!opts->port) {
+			if(!popt->port) {
 				die("failed convert port number %s", optarg);
 			}
 			break;
 		case 'q':
-			opts->quiet = 1;
+			popt->quiet = 1;
 			break;
 		case 't':
 			if(*optarg != '-') {
-				opts->ipaddr = malloc(strlen(optarg) + 1);
-				if(!opts->ipaddr) {
+				popt->ipaddr = malloc(strlen(optarg) + 1);
+				if(!popt->ipaddr) {
 					die("failed alloc memory");
 				}
-				strcpy(opts->ipaddr, optarg);
+				strcpy(popt->ipaddr, optarg);
 			} else {
 				--optind;
-				opts->ipaddr = CGPSD_DEFAULT_ADDR;
+				popt->ipaddr = CGPSD_DEFAULT_ADDR;
 			}
 			break;
 		case 'u':
 			if(*optarg != '-') {
-				opts->unaddr = malloc(strlen(optarg) + 1);
-				if(!opts->unaddr) {
+				popt->unaddr = malloc(strlen(optarg) + 1);
+				if(!popt->unaddr) {
 					die("failed alloc memory");
 				}
-				strcpy(opts->unaddr, optarg);
+				strcpy(popt->unaddr, optarg);
 			} else {
 				--optind;
-				opts->unaddr = CGPSD_DEFAULT_SOCK;
+				popt->unaddr = CGPSD_DEFAULT_SOCK;
 			}
 			break;
 		case 'v':
-			opts->verbose++;
+			popt->verbose++;
 			break;
 		case 'V':
-			version(opts->prog);
+			version(popt->prog);
 			exit(0);
 		case '?':
 			exit(1);
@@ -207,21 +207,21 @@ void parse_options(int argc, char **argv, struct options *opts)
 	/*
 	 * Check arguments and set defaults.
 	 */
-	if(!opts->ipaddr && !opts->unaddr) {
+	if(!popt->ipaddr && !popt->unaddr) {
 		die("neither -t or -u option used");
 	}
-	if(!opts->proj) {
+	if(!popt->proj) {
 		die("project file option (-f) is missing");
 	}
-	if(stat(opts->proj, &st) < 0) {
-		die("failed stat project file (model) %s", opts->proj);
+	if(stat(popt->proj, &st) < 0) {
+		die("failed stat project file (model) %s", popt->proj);
 	}
-	if(opts->cgps->logfile) {
-		if(stat(opts->cgps->logfile, &st) < 0) {
+	if(popt->cgps->logfile) {
+		if(stat(popt->cgps->logfile, &st) < 0) {
 			char *logfile;
 			char *logdir;
 			
-			if(!(logfile = strdup(opts->cgps->logfile))) {
+			if(!(logfile = strdup(popt->cgps->logfile))) {
 				die("failed alloc memory");
 			}
 			logdir = dirname(logfile);
@@ -237,47 +237,47 @@ void parse_options(int argc, char **argv, struct options *opts)
 			free(logfile);
 		}
 	}
-	if(opts->ipaddr) {
-		if(!opts->port) {
-			opts->port = CGPSD_DEFAULT_PORT;
+	if(popt->ipaddr) {
+		if(!popt->port) {
+			popt->port = CGPSD_DEFAULT_PORT;
 		}
-		if(!opts->family) {
-			opts->family = AF_UNSPEC;
+		if(!popt->family) {
+			popt->family = AF_UNSPEC;
 		}
 	}			  
-	if(!opts->backlog) {
-		opts->backlog = CGPSD_QUEUE_LENGTH;
+	if(!popt->backlog) {
+		popt->backlog = CGPSD_QUEUE_LENGTH;
 	}
 	
 	/*
 	 * Dump options for debugging purpose.
 	 */
-	if(opts->debug) {
+	if(popt->debug) {
 		debug("---------------------------------------------");
 		debug("options:");
-		debug("  project file path (model) = %s", opts->proj);
-		if(opts->cgps->logfile) {
-			debug("  simca lib logfile = %s", opts->cgps->logfile);
+		debug("  project file path (model) = %s", popt->proj);
+		if(popt->cgps->logfile) {
+			debug("  simca lib logfile = %s", popt->cgps->logfile);
 		}
-		if(opts->unaddr) {
-			debug("  bind UNIX socket %s", opts->unaddr);
+		if(popt->unaddr) {
+			debug("  bind UNIX socket %s", popt->unaddr);
 		}
-		if(opts->ipaddr) {
+		if(popt->ipaddr) {
 			const char *proto = "any protocol";
-			if(opts->family != AF_UNSPEC) {
-				proto = opts->family == AF_INET ? "ipv4" : "ipv6";
+			if(popt->family != AF_UNSPEC) {
+				proto = popt->family == AF_INET ? "ipv4" : "ipv6";
 			}
-			if(opts->ipaddr == CGPSD_DEFAULT_ADDR) {
-				debug("  bind to TCP port %d on any interface (%s)", opts->port, proto);
+			if(popt->ipaddr == CGPSD_DEFAULT_ADDR) {
+				debug("  bind to TCP port %d on any interface (%s)", popt->port, proto);
 			} else {
-				debug("  bind to TCP port %d on interface %s (%s)", opts->port, opts->ipaddr, proto);
+				debug("  bind to TCP port %d on interface %s (%s)", popt->port, popt->ipaddr, proto);
 			}
 		}
-		debug("  listen queue length = %d", opts->backlog);
+		debug("  listen queue length = %d", popt->backlog);
 		debug("  flags: debug = %s, verbose = %s, interactive = %s", 
-		      (opts->debug   ? "yes" : "no"), 
-		      (opts->verbose ? "yes" : "no"),
-		      (opts->interactive ? "yes" : "no" ));
+		      (popt->debug   ? "yes" : "no"), 
+		      (popt->verbose ? "yes" : "no"),
+		      (popt->interactive ? "yes" : "no" ));
 		debug("---------------------------------------------");
 	}
 }
