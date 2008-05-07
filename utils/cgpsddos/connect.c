@@ -62,6 +62,14 @@ static int failed = 0;         /* counter for failed threads */
 static int maxthr = 0;         /* maximum number of running threads */
 static int minthr = 0;         /* minimum number of running threads */
 
+static inline void cgpsddos_print_stat(struct options *opts, int count, int minthr, int maxthr, int finished, int limit)
+{
+	if(!opts->quiet || opts->verbose) {
+		loginfo("running: %d, limit: %d/%d (min/max), started: %d (of %d total)",
+			count, minthr, maxthr, finished, limit);
+	}
+}
+
 static int cgpsddos_init_socket(struct options *topt)
 {
 	int res, retry = 0;
@@ -143,7 +151,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
-	int i, finished = 0, thrmax = 0, thrnow = 0;
+	int finished = 0, thrmax = 0, thrnow = 0;
 	size_t stacksize;
 	struct rlimit rlim;
 	
@@ -208,32 +216,30 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	}
 	
 	debug("start running predictions");
+	cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
+	
 	while(finished < args->count) {
 		debug("%d predictions of %d total left to run", args->count - finished, args->count);
 		debug("starting prediction threads");
 		thrnow = 0;
-		for(i = finished; i < args->count; ++i, ++thrnow) {
+		for(; finished < args->count; ++thrnow, ++finished) {
 			pthread_mutex_lock(&countlock);
+			if(finished != 0 && finished % CGPSDDOS_THREAD_SPAWN_MAX == 0) {
+				cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
+			}
 			if(++count >= maxthr) {
 				pthread_mutex_unlock(&countlock);
 				break;
 			}
 			pthread_mutex_unlock(&countlock);
-			if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) != 0) {
+			if(pthread_create(&threads[finished], &attr, cgpsddos_connect, args) != 0) {
 				break;
 			}
-			debug("thread 0x%lu: started", threads[i]);
+			debug("thread 0x%lu: started", threads[finished]);
 		}
 		
 		if(thrnow > thrmax) {
 			thrmax = thrnow;
-		}
-		finished += thrnow;
-
-		if(!opts->quiet || opts->verbose) {
-			pthread_mutex_lock(&countlock);
-			loginfo("started %d threads (%d already running)", thrnow, count);
-			pthread_mutex_unlock(&countlock);
 		}
 		
 		pthread_mutex_lock(&countlock);
@@ -261,6 +267,8 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	}
 	
 	debug("finished running predictions");
+	cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
+	
 	if(gettimeofday(&te, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
 		return -1;
