@@ -68,7 +68,7 @@
 #define CGPSDDOS_THREAD_WRLIMIT    100           /* retry limit before giving up */
 #define CGPSDDOS_THREAD_FILES_MAX  16 * 1024     /* maximum number of open files (only root) */
 #define CGPSDDOS_THREAD_SPAWN_MIN  200           /* minimum number of running threads */
-#define CGPSDDOS_THREAD_SPAWN_MAX  30000         /* maximum number of running threads */
+#define CGPSDDOS_THREAD_SPAWN_MAX  10000         /* maximum number of started threads (report) */
 
 #define cgpsddos_quit(state) ((state) & CGPSDDOS_STATE_QUIT)
 

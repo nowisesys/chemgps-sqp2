@@ -151,7 +151,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
-	int finished = 0, thrmax = 0, thrnow = 0;
+	int finished = 0, thrmax = 0, thrnow = 0, thrrep = CGPSDDOS_THREAD_SPAWN_MAX;
 	size_t stacksize;
 	struct rlimit rlim;
 	
@@ -201,11 +201,21 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	debug("maximum number of open files: %d (from sysconf)", sysconf(_SC_OPEN_MAX));
 	
 	maxthr = sysconf(_SC_OPEN_MAX) - 1;
-	minthr = CGPSDDOS_THREAD_SPAWN_MIN;
+	minthr = CGPSDDOS_THREAD_SPAWN_MIN;	
 	if(minthr > maxthr) {
 		minthr = maxthr / 2;
 	}
 	debug("running threads: %d (max), %d (min)", maxthr, minthr);
+	
+	if(args->count < thrrep) {
+		thrrep = args->count / 4;
+	} else {
+		if(args->count / thrrep > 1000) {
+			thrrep = args->count / 1000;
+			while(thrrep % 10000 != 0) --thrrep;
+		}
+	}
+	debug("report thread stats every %d thread started", thrrep);
 	
  	pthread_cond_init(&countcond, NULL);
 	pthread_mutex_init(&countlock, NULL);
@@ -224,7 +234,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		thrnow = 0;
 		for(; finished < args->count; ++thrnow, ++finished) {
 			pthread_mutex_lock(&countlock);
-			if(finished != 0 && finished % CGPSDDOS_THREAD_SPAWN_MAX == 0) {
+			if(finished % thrrep == 0 && finished != 0) {
 				cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
 			}
 			if(++count >= maxthr) {
