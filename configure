@@ -673,6 +673,14 @@ am__leading_dot
 AMTAR
 am__tar
 am__untar
+build
+build_cpu
+build_vendor
+build_os
+host
+host_cpu
+host_vendor
+host_os
 CC
 CFLAGS
 LDFLAGS
@@ -1277,6 +1285,10 @@ Program names:
   --program-prefix=PREFIX            prepend PREFIX to installed program names
   --program-suffix=SUFFIX            append SUFFIX to installed program names
   --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+
+System types:
+  --build=BUILD     configure for building on BUILD [guessed]
+  --host=HOST       cross-compile to build programs to run on HOST [BUILD]
 _ACEOF
 fi
 
@@ -2210,9 +2222,91 @@ am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
 
 ac_config_headers="$ac_config_headers config.h"
 
+# Make sure we can run config.sub.
+$SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
+  { { echo "$as_me:$LINENO: error: cannot run $SHELL $ac_aux_dir/config.sub" >&5
+echo "$as_me: error: cannot run $SHELL $ac_aux_dir/config.sub" >&2;}
+   { (exit 1); exit 1; }; }
+
+{ echo "$as_me:$LINENO: checking build system type" >&5
+echo $ECHO_N "checking build system type... $ECHO_C" >&6; }
+if test "${ac_cv_build+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_build_alias=$build_alias
+test "x$ac_build_alias" = x &&
+  ac_build_alias=`$SHELL "$ac_aux_dir/config.guess"`
+test "x$ac_build_alias" = x &&
+  { { echo "$as_me:$LINENO: error: cannot guess build type; you must specify one" >&5
+echo "$as_me: error: cannot guess build type; you must specify one" >&2;}
+   { (exit 1); exit 1; }; }
+ac_cv_build=`$SHELL "$ac_aux_dir/config.sub" $ac_build_alias` ||
+  { { echo "$as_me:$LINENO: error: $SHELL $ac_aux_dir/config.sub $ac_build_alias failed" >&5
+echo "$as_me: error: $SHELL $ac_aux_dir/config.sub $ac_build_alias failed" >&2;}
+   { (exit 1); exit 1; }; }
+
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_build" >&5
+echo "${ECHO_T}$ac_cv_build" >&6; }
+case $ac_cv_build in
+*-*-*) ;;
+*) { { echo "$as_me:$LINENO: error: invalid value of canonical build" >&5
+echo "$as_me: error: invalid value of canonical build" >&2;}
+   { (exit 1); exit 1; }; };;
+esac
+build=$ac_cv_build
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_build
+shift
+build_cpu=$1
+build_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+build_os=$*
+IFS=$ac_save_IFS
+case $build_os in *\ *) build_os=`echo "$build_os" | sed 's/ /-/g'`;; esac
+
+
+{ echo "$as_me:$LINENO: checking host system type" >&5
+echo $ECHO_N "checking host system type... $ECHO_C" >&6; }
+if test "${ac_cv_host+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test "x$host_alias" = x; then
+  ac_cv_host=$ac_cv_build
+else
+  ac_cv_host=`$SHELL "$ac_aux_dir/config.sub" $host_alias` ||
+    { { echo "$as_me:$LINENO: error: $SHELL $ac_aux_dir/config.sub $host_alias failed" >&5
+echo "$as_me: error: $SHELL $ac_aux_dir/config.sub $host_alias failed" >&2;}
+   { (exit 1); exit 1; }; }
+fi
+
+fi
+{ echo "$as_me:$LINENO: result: $ac_cv_host" >&5
+echo "${ECHO_T}$ac_cv_host" >&6; }
+case $ac_cv_host in
+*-*-*) ;;
+*) { { echo "$as_me:$LINENO: error: invalid value of canonical host" >&5
+echo "$as_me: error: invalid value of canonical host" >&2;}
+   { (exit 1); exit 1; }; };;
+esac
+host=$ac_cv_host
+ac_save_IFS=$IFS; IFS='-'
+set x $ac_cv_host
+shift
+host_cpu=$1
+host_vendor=$2
+shift; shift
+# Remember, the first character of IFS is used to create $*,
+# except with old shells:
+host_os=$*
+IFS=$ac_save_IFS
+case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
+
+
 
 # Checks for programs.
-# AC_PROG_CC
 DEPDIR="${am__leading_dot}deps"
 
 ac_config_commands="$ac_config_commands depfiles"
@@ -3675,7 +3769,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CFLAGS="-fno-builtin $CFLAGS"
@@ -3769,7 +3863,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          :
@@ -3792,7 +3886,7 @@ echo "${ECHO_T}no" >&6; }
 	case $host in
 	  *-*-linux-gnu)
 	    CFLAGS="-std=iso9899:1990 -W -Wall -Wchar-subscripts -Wshadow -Wpointer-arith -Wmissing-prototypes -Wwrite-strings -D_XOPEN_SOURCE=600 -D_BSD_SOURCE $CFLAGS"
-	    # CXXFLAGS="-ansi -D_XOPEN_SOURCE=600 -D_BSD_SOURCE -Wcast-align -Wconversion -Wchar-subscripts $CXXFLAGS"
+	    CXXFLAGS="-ansi -D_XOPEN_SOURCE=600 -D_BSD_SOURCE -Wcast-align -Wconversion -Wchar-subscripts $CXXFLAGS"
 
   { echo "$as_me:$LINENO: checking whether $CC supports -Wmissing-format-attribute" >&5
 echo $ECHO_N "checking whether $CC supports -Wmissing-format-attribute... $ECHO_C" >&6; }
@@ -3863,7 +3957,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CFLAGS="$CFLAGS -Wformat-security -Wmissing-format-attribute"
@@ -3945,7 +4039,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CFLAGS="-Wundef $CFLAGS"
@@ -4025,7 +4119,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CFLAGS="-Wno-long-long $CFLAGS"
@@ -4035,7 +4129,86 @@ echo "${ECHO_T}no" >&6; }
          :
   fi
 
-	# CGPS_CHECK_COMPILER_FLAG(Wno-non-virtual-dtor,[CXXFLAGS="$CXXFLAGS -Wno-non-virtual-dtor"])
+
+  { echo "$as_me:$LINENO: checking whether $CC supports -Wno-non-virtual-dtor" >&5
+echo $ECHO_N "checking whether $CC supports -Wno-non-virtual-dtor... $ECHO_C" >&6; }
+  cgps_cache=`echo Wno-non-virtual-dtor | sed 'y% .=/+-,%____p__%'`
+  if { as_var=cgps_cv_prog_c_${cgps_cache}; eval "test \"\${$as_var+set}\" = set"; }; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS -Wno-non-virtual-dtor"
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+ return 0;
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_link") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && {
+	 test -z "$ac_c_werror_flag" ||
+	 test ! -s conftest.err
+       } && test -s conftest$ac_exeext &&
+       $as_test_x conftest$ac_exeext; then
+  eval "cgps_cv_prog_c_${cgps_cache}=yes"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
+      conftest$ac_exeext conftest.$ac_ext
+    CFLAGS="$save_CFLAGS"
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+fi
+
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
+    { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+         : CXXFLAGS="$CXXFLAGS -Wno-non-virtual-dtor"
+  else
+    { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+         :
+  fi
+
       fi
     fi
 
@@ -4110,7 +4283,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CXXFLAGS="$CXXFLAGS -fno-check-new"
@@ -4190,7 +4363,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CXXFLAGS="$CXXFLAGS -fno-common"
@@ -4270,7 +4443,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CXXFLAGS="$CXXFLAGS -fexceptions"
@@ -4353,7 +4526,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CFLAGS="$CFLAGS -fno-common"
@@ -4433,7 +4606,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 fi
 
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
          : CFLAGS="$CFLAGS -fexceptions"
@@ -5634,6 +5807,7 @@ fi
 
 # Check threading support.
 
+
 { echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
 echo $ECHO_N "checking for pthread_create in -lpthread... $ECHO_C" >&6; }
 if test "${ac_cv_lib_pthread_pthread_create+set}" = set; then
@@ -5944,10 +6118,10 @@ fi
 
 done
 
-if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
-  CFLAGS="$CFLAGS -pthread"
-  CPPFLAGS="$CPPFLAGS -D_REENTRANT -D_THREAD_SAFE"
-  { echo "$as_me:$LINENO: checking for pthread_yield in -lpthread" >&5
+  if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
+    CFLAGS="$CFLAGS -pthread"
+    CPPFLAGS="$CPPFLAGS -D_REENTRANT -D_THREAD_SAFE"
+    { echo "$as_me:$LINENO: checking for pthread_yield in -lpthread" >&5
 echo $ECHO_N "checking for pthread_yield in -lpthread... $ECHO_C" >&6; }
 if test "${ac_cv_lib_pthread_pthread_yield+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -6018,12 +6192,12 @@ _ACEOF
 
 fi
 
-  { echo "$as_me:$LINENO: checking if pthread_yield needs _GNU_SOURCE defined" >&5
+    { echo "$as_me:$LINENO: checking if pthread_yield needs _GNU_SOURCE defined" >&5
 echo $ECHO_N "checking if pthread_yield needs _GNU_SOURCE defined... $ECHO_C" >&6; }
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 
-    #include <pthread.h>
-    int main(void) { pthread_yield(); return 0; }
+      #include <pthread.h>
+      int main(void) { pthread_yield(); return 0; }
 
 _ACEOF
 rm -f conftest.$ac_objext
@@ -6054,21 +6228,20 @@ sed 's/^/| /' conftest.$ac_ext >&5
 echo "${ECHO_T}yes" >&6; }
       CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
 
-
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-  { echo "$as_me:$LINENO: checking if pthread_yield needs to be declared" >&5
+    { echo "$as_me:$LINENO: checking if pthread_yield needs to be declared" >&5
 echo $ECHO_N "checking if pthread_yield needs to be declared... $ECHO_C" >&6; }
-  cat >conftest.$ac_ext <<_ACEOF
+    cat >conftest.$ac_ext <<_ACEOF
 
-    #ifdef _GNU_SOURCE
-    # undef _GNU_SOURCE
-    #endif
-    #define _GNU_SOURCE 1
-    #include <features.h>
-    #include <pthread.h>
-    int main(void) { pthread_yield(); return 0; }
+      #ifdef _GNU_SOURCE
+      # undef _GNU_SOURCE
+      #endif
+      #define _GNU_SOURCE 1
+      #include <features.h>
+      #include <pthread.h>
+      int main(void) { pthread_yield(); return 0; }
 
 _ACEOF
 rm -f conftest.$ac_objext
@@ -6095,7 +6268,7 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
 
-      { echo "$as_me:$LINENO: result: yes" >&5
+        { echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6; }
 
 cat >>confdefs.h <<\_ACEOF
@@ -6103,13 +6276,16 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 
-
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
+  fi
 
-# Checks for library functions.
+
+# Checks for library functions. We need to add -fno-builtin or autoconf
+# will not find functions builtin in GCC.
+FLAGSC="$CFLAGS"
+CFLAGS="-fno-builtin"
 if test $ac_cv_c_compiler_gnu = yes; then
     { echo "$as_me:$LINENO: checking whether $CC needs -traditional" >&5
 echo $ECHO_N "checking whether $CC needs -traditional... $ECHO_C" >&6; }
@@ -7622,8 +7798,8 @@ _ACEOF
 fi
 done
 
+CFLAGS="$FLAGSC"
 
-# CGPS_DISABLE_DEBUG
 
   # Check whether --enable-utils was given.
 if test "${enable_utils+set}" = set; then
@@ -8399,6 +8575,14 @@ am__leading_dot!$am__leading_dot$ac_delim
 AMTAR!$AMTAR$ac_delim
 am__tar!$am__tar$ac_delim
 am__untar!$am__untar$ac_delim
+build!$build$ac_delim
+build_cpu!$build_cpu$ac_delim
+build_vendor!$build_vendor$ac_delim
+build_os!$build_os$ac_delim
+host!$host$ac_delim
+host_cpu!$host_cpu$ac_delim
+host_vendor!$host_vendor$ac_delim
+host_os!$host_os$ac_delim
 CC!$CC$ac_delim
 CFLAGS!$CFLAGS$ac_delim
 LDFLAGS!$LDFLAGS$ac_delim
@@ -8432,7 +8616,7 @@ FOREIGN_CLIENT_FALSE!$FOREIGN_CLIENT_FALSE$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 89; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -8451,7 +8635,7 @@ fi
 
 cat >>$CONFIG_STATUS <<_ACEOF
 cat >"\$tmp/subs-1.sed" <<\CEOF$ac_eof
-/@[a-zA-Z_][a-zA-Z_0-9]*@/!b end
+/@[a-zA-Z_][a-zA-Z_0-9]*@/!b
 _ACEOF
 sed '
 s/[,\\&]/\\&/g; s/@/@|#_!!_#|/g
@@ -8464,8 +8648,6 @@ N; s/^.*\n//; s/[,\\&]/\\&/g; s/@/@|#_!!_#|/g; b n
 ' >>$CONFIG_STATUS <conf$$subs.sed
 rm -f conf$$subs.sed
 cat >>$CONFIG_STATUS <<_ACEOF
-:end
-s/|#_!!_#|//g
 CEOF$ac_eof
 _ACEOF
 
@@ -8713,7 +8895,7 @@ s&@abs_builddir@&$ac_abs_builddir&;t t
 s&@abs_top_builddir@&$ac_abs_top_builddir&;t t
 s&@INSTALL@&$ac_INSTALL&;t t
 $ac_datarootdir_hack
-" $ac_file_inputs | sed -f "$tmp/subs-1.sed" >$tmp/out
+" $ac_file_inputs | sed -f "$tmp/subs-1.sed" | sed 's/|#_!!_#|//g' >$tmp/out
 
 test -z "$ac_datarootdir_hack$ac_datarootdir_seen" &&
   { ac_out=`sed -n '/\${datarootdir}/p' "$tmp/out"`; test -n "$ac_out"; } &&
