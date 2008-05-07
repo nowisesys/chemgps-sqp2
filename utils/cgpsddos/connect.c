@@ -276,8 +276,8 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		break;
 	}
 	
-	loginfo("finished running predictions");
 	cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
+	loginfo("finished running predictions");
 	
 	if(gettimeofday(&te, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
