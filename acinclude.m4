@@ -6,7 +6,7 @@
 ## Date:   2008-05-07
 
 dnl
-dnl This function is borroved from KDE (The K Desktop Environment) and modified
+dnl This function is borrowed from KDE (The K Desktop Environment) and modified
 dnl to work with CC instead of CXX compiler.
 dnl
 AC_DEFUN([CGPS_CHECK_COMPILER_FLAG],
@@ -23,7 +23,7 @@ AC_DEFUN([CGPS_CHECK_COMPILER_FLAG],
     CFLAGS="$save_CFLAGS"
     AC_LANG_RESTORE
   ])
-  if eval "test \"`echo '$cgps_cv_prog_c_'${citrus_cache}`\" = yes"; then
+  if eval "test \"`echo '$cgps_cv_prog_c_'${cgps_cache}`\" = yes"; then
     AC_MSG_RESULT(yes)
          : $2
   else
@@ -128,13 +128,13 @@ AC_DEFUN([CGPS_CHECK_COMPILER],
 	case $host in
 	  *-*-linux-gnu)
 	    CFLAGS="-std=iso9899:1990 -W -Wall -Wchar-subscripts -Wshadow -Wpointer-arith -Wmissing-prototypes -Wwrite-strings -D_XOPEN_SOURCE=600 -D_BSD_SOURCE $CFLAGS"
-	    # CXXFLAGS="-ansi -D_XOPEN_SOURCE=600 -D_BSD_SOURCE -Wcast-align -Wconversion -Wchar-subscripts $CXXFLAGS"
+	    CXXFLAGS="-ansi -D_XOPEN_SOURCE=600 -D_BSD_SOURCE -Wcast-align -Wconversion -Wchar-subscripts $CXXFLAGS"
 	    CGPS_CHECK_COMPILER_FLAG(Wmissing-format-attribute, [CFLAGS="$CFLAGS -Wformat-security -Wmissing-format-attribute"])
 	    ;;
 	esac
 	CGPS_CHECK_COMPILER_FLAG(Wundef,[CFLAGS="-Wundef $CFLAGS"])
 	CGPS_CHECK_COMPILER_FLAG(Wno-long-long,[CFLAGS="-Wno-long-long $CFLAGS"])
-	# CGPS_CHECK_COMPILER_FLAG(Wno-non-virtual-dtor,[CXXFLAGS="$CXXFLAGS -Wno-non-virtual-dtor"])
+	CGPS_CHECK_COMPILER_FLAG(Wno-non-virtual-dtor,[CXXFLAGS="$CXXFLAGS -Wno-non-virtual-dtor"])
       fi
     fi
     
