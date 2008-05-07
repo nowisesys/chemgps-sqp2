@@ -225,7 +225,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		return -1;
 	}
 	
-	debug("start running predictions");
+	loginfo("start running %d predictions", args->count);
 	cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
 	
 	while(finished < args->count) {
@@ -276,7 +276,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		break;
 	}
 	
-	debug("finished running predictions");
+	loginfo("finished running predictions");
 	cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
 	
 	if(gettimeofday(&te, NULL) < 0) {
