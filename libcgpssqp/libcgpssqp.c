@@ -99,7 +99,7 @@ int cgps_get_predict_mask(const char *results)
 /*
  * Common logging function. Supports logging to stdout/stderr and syslog.
  */
-void cgps_syslog(void *pref, int status, int code, int level, const char *file, unsigned int line, const char *fmt, ...)
+void cgps_syslog(void *pref, int errcode, int level, const char *file, unsigned int line, const char *fmt, ...)
 {
 	FILE *fs;
 	char *buff;
@@ -146,8 +146,8 @@ void cgps_syslog(void *pref, int status, int code, int level, const char *file, 
 	/*
 	 * Write system call error string?
 	 */
-	if(code) {
-		fprintf(fs, " (%s)", strerror(code));
+	if(errcode) {
+		fprintf(fs, " (%s)", strerror(errcode));
 	}
 	if(level == LOG_DEBUG) {
 		if(mopt->debug > 1) {

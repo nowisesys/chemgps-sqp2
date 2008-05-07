@@ -148,21 +148,21 @@ extern struct options *opts;
  */
 #if defined(__GNUC__)
 # define logerr(fmt, args...) do { \
-	cgps_syslog(opts, 0 , errno ? errno : 0 , LOG_ERR , __FILE__ , __LINE__ , (fmt) , ## args); \
+	cgps_syslog(opts, errno ? errno : 0 , LOG_ERR , __FILE__ , __LINE__ , (fmt) , ## args); \
 } while(0)
 
 # define logwarn(fmt, args...) do { \
-	cgps_syslog(opts, 0 , 0 , LOG_WARNING , __FILE__ , __LINE__ , (fmt) , ## args); \
+	cgps_syslog(opts, 0 , LOG_WARNING , __FILE__ , __LINE__ , (fmt) , ## args); \
 } while(0)
 
 # define loginfo(fmt, args...) do { \
-	cgps_syslog(opts, 0 , 0 , LOG_INFO , __FILE__ , __LINE__ , (fmt) , ## args); \
+	cgps_syslog(opts, 0 , LOG_INFO , __FILE__ , __LINE__ , (fmt) , ## args); \
 } while(0)
 
 # if ! defined(NDEBUG)
 #  define debug(fmt, args...) do { \
 	if(opts->debug) { \
-		cgps_syslog(opts, 0 , 0 , LOG_DEBUG , __FILE__ , __LINE__ , (fmt) , ## args); \
+		cgps_syslog(opts, 0 , LOG_DEBUG , __FILE__ , __LINE__ , (fmt) , ## args); \
 	} \
 } while(0)
 # else /* ! defined(NDEBUG) */
@@ -170,7 +170,7 @@ extern struct options *opts;
 # endif
 
 # define die(fmt, args...) do { \
-	cgps_syslog(opts, 1 , errno ? errno : 0 , LOG_CRIT , __FILE__ , __LINE__ , (fmt) , ## args); \
+	cgps_syslog(opts, errno ? errno : 0 , LOG_CRIT , __FILE__ , __LINE__ , (fmt) , ## args); \
 	if(!opts || opts->parent == getpid()) { \
 		exit(1); \
 	} else { \
@@ -180,21 +180,21 @@ extern struct options *opts;
 #else   /* ! defined(__GNUC__) */
 # if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 #  define logerr(...) do { \
-	cgps_syslog(opts, 0 , errno ? errno : 0 , LOG_ERR , __FILE__ , __LINE__ , __VA_ARGS__); \
+	cgps_syslog(opts, errno ? errno : 0 , LOG_ERR , __FILE__ , __LINE__ , __VA_ARGS__); \
 } while(0)
 
 #  define logwarn(...) do { \
-	cgps_syslog(opts, 0 , 0 , LOG_WARNING , __FILE__ , __LINE__ , __VA_ARGS__); \
+	cgps_syslog(opts, 0 , LOG_WARNING , __FILE__ , __LINE__ , __VA_ARGS__); \
 } while(0)
 
 #  define loginfo(...) do { \
-	cgps_syslog(opts, 0 , 0 , LOG_INFO , __FILE__ , __LINE__ , __VA_ARGS__); \
+	cgps_syslog(opts, 0 , LOG_INFO , __FILE__ , __LINE__ , __VA_ARGS__); \
 } while(0)
 
 #  if ! defined(NDEBUG)
 #   define debug(...) do { \
 	if(opts->debug) { \
-		cgps_syslog(opts, 0 , 0 , LOG_DEBUG , __FILE__ , __LINE__ , __VA_ARGS__); \
+		cgps_syslog(opts, 0 , LOG_DEBUG , __FILE__ , __LINE__ , __VA_ARGS__); \
 	} \
 } while(0)
 #  else /* ! defined(NDEBUG) */
@@ -202,7 +202,7 @@ extern struct options *opts;
 #  endif
 
 #  define die(...) do { \
-	cgps_syslog(opts, 1 , errno ? errno : 0 , LOG_CRIT , __FILE__ , __LINE__ , __VA_ARGS__); \
+	cgps_syslog(opts, errno ? errno : 0 , LOG_CRIT , __FILE__ , __LINE__ , __VA_ARGS__); \
 	if(!opts || opts->parent == getpid()) { \
 		exit(1); \
 	} else { \
@@ -228,7 +228,7 @@ int cgps_get_predict_mask(const char *results);
 /*
  * Callbacks for libchemgps.
  */
-void cgps_syslog(void *opts, int status, int code, int level, const char *file, unsigned int line, const char *fmt, ...);
+void cgps_syslog(void *opts, int errcode, int level, const char *file, unsigned int line, const char *fmt, ...);
 int cgps_predict_data(struct cgps_project *proj, void *data, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names, int type);
 
 /*
