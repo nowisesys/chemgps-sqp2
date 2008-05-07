@@ -56,9 +56,11 @@
 
 pthread_mutex_t countlock;
 pthread_cond_t  countcond;
-static int count = 0;
-static int failed = 0;
-static int chooke = 0;
+static int count = 0;          /* currently number of running threads */
+static int failed = 0;         /* counter for failed threads */
+
+static int maxthr = 0;         /* maximum number of running threads */
+static int minthr = 0;         /* minimum number of running threads */
 
 static int cgpsddos_init_socket(struct options *topt)
 {
@@ -72,7 +74,6 @@ static int cgpsddos_init_socket(struct options *topt)
 			pthread_mutex_lock(&countlock);
 			++failed;
 			--count;
-			chooke = 1;
 			pthread_mutex_unlock(&countlock);			
 			pthread_exit(NULL);
 		}
@@ -112,7 +113,7 @@ void * cgpsddos_connect(void *args)
 {	
 	struct client peer;
 	struct options topt = *(struct options *)args;
-	
+
 	if(!opts->quiet) {
 		debug("connecting to %s:%d", topt.ipaddr, topt.port);
 	}
@@ -127,8 +128,7 @@ void * cgpsddos_connect(void *args)
 	}
 	
 	pthread_mutex_lock(&countlock);
-	--count;
-	if(count < CGPSDDOS_THREAD_SPAWN_MIN) {
+	if(--count < minthr) {
 		pthread_cond_signal(&countcond);
 	}
 	pthread_mutex_unlock(&countlock);
@@ -192,6 +192,13 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	}
 	debug("maximum number of open files: %d (from sysconf)", sysconf(_SC_OPEN_MAX));
 	
+	maxthr = sysconf(_SC_OPEN_MAX) - 1;
+	minthr = CGPSDDOS_THREAD_SPAWN_MIN;
+	if(minthr > maxthr) {
+		minthr = maxthr / 2;
+	}
+	debug("running threads: %d (max), %d (min)", maxthr, minthr);
+	
  	pthread_cond_init(&countcond, NULL);
 	pthread_mutex_init(&countlock, NULL);
 	
@@ -207,27 +214,16 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		thrnow = 0;
 		for(i = finished; i < args->count; ++i, ++thrnow) {
 			pthread_mutex_lock(&countlock);
-			if(count > CGPSDDOS_THREAD_SPAWN_MAX) {
-				pthread_mutex_unlock(&countlock);
-				break;
-			}
-			if(chooke) {
-				chooke = 0;
+			if(++count >= maxthr) {
 				pthread_mutex_unlock(&countlock);
 				break;
 			}
 			pthread_mutex_unlock(&countlock);
-			if(thrnow > rlim.rlim_cur) {
-				break;
-			}
 			if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) != 0) {
 				break;
 			}
 			debug("thread 0x%lu: started", threads[i]);
 		}
-		pthread_mutex_lock(&countlock);
-		count += thrnow;
-		pthread_mutex_unlock(&countlock);
 		
 		if(thrnow > thrmax) {
 			thrmax = thrnow;
@@ -241,7 +237,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		}
 		
 		pthread_mutex_lock(&countlock);
-		while(count > CGPSDDOS_THREAD_SPAWN_MIN) {
+		while(count > minthr) {
 			if(pthread_cond_wait(&countcond, &countlock) != 0) {
 				pthread_mutex_unlock(&countlock);
 				continue;
