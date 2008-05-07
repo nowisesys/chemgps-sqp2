@@ -60,7 +60,7 @@
 #include "cgpssqp.h"
 #include "cgpsd.h"
 
-static void usage(const char *prog, const char *section)
+static void usage(const char *prog)
 {
 	printf("%s - prediction daemon using libchemgps and Umetrics Simca-QP library.\n", prog);
 	printf("\n");
@@ -144,7 +144,7 @@ void parse_options(int argc, char **argv, struct options *opts)
 			strcpy(opts->proj, optarg);
 			break;
 		case 'h':
-			usage(opts->prog, optarg);
+			usage(opts->prog);
 			exit(0);
 		case 'i':
 			opts->interactive = 1;
