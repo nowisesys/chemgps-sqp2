@@ -64,7 +64,7 @@ static int minthr = 0;         /* minimum number of running threads */
 
 static inline void cgpsddos_print_stat(struct options *opts, int count, int minthr, int maxthr, int finished, int limit)
 {
-	if(!opts->quiet || opts->verbose) {
+	if(!opts->quiet || opts->verbose || opts->debug) {
 		loginfo("running: %d, limit: %d/%d (min/max), started: %d (of %d total)",
 			count, minthr, maxthr, finished, limit);
 	}
@@ -234,7 +234,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		thrnow = 0;
 		for(; finished < args->count; ++thrnow, ++finished) {
 			pthread_mutex_lock(&countlock);
-			if(finished % thrrep == 0 && finished != 0) {
+			if((finished % thrrep == 0 && finished != 0) || opts->debug) {
 				cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
 			}
 			if(++count >= maxthr) {
