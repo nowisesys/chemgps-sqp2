@@ -1,6 +1,6 @@
 ## -*- sh -*-
 ##
-## Extensions to autoconf for the ChemGPS project.
+## Autoconf extensions for project ChemGPS.
 ##
 ## Author: Anders Lövgren <lespaul@algonet.se>
 ## Date:   2008-05-07
@@ -333,4 +333,45 @@ AC_DEFUN([CGPS_CHECK_SIMCAQ],
   fi
   AC_SUBST(SIMCAQ_LIBDIR, ${simcaq_lib_found})
   AC_SUBST(SIMCAQ_INCDIR, ${simcaq_inc_found})  
+])
+
+dnl 
+dnl Detect pthread library functions and process scheduling.
+dnl 
+AC_DEFUN([CGPS_CHECK_THREADING],
+[
+  AC_CHECK_LIB([pthread], [pthread_create])
+  AC_CHECK_FUNCS([pthread_yield sched_yield])
+  AC_CHECK_HEADERS([sched.h])
+  if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
+    CFLAGS="$CFLAGS -pthread"
+    CPPFLAGS="$CPPFLAGS -D_REENTRANT -D_THREAD_SAFE"
+    AC_CHECK_LIB([pthread], [pthread_yield], 
+    [
+      AC_DEFINE([HAVE_PTHREAD_YIELD], [1], [Define to 1 if libpthread has function pthread_yield])
+    ])
+    AC_MSG_CHECKING([if pthread_yield needs _GNU_SOURCE defined])
+    AC_COMPILE_IFELSE(
+    [
+      #include <pthread.h>
+      int main(void) { pthread_yield(); return 0; }
+      ], [AC_MSG_RESULT(no)], [
+      AC_MSG_RESULT(yes)
+      CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
+    ])
+    AC_MSG_CHECKING([if pthread_yield needs to be declared])
+    AC_COMPILE_IFELSE([
+      #ifdef _GNU_SOURCE
+      # undef _GNU_SOURCE
+      #endif
+      #define _GNU_SOURCE 1
+      #include <features.h>
+      #include <pthread.h>
+      int main(void) { pthread_yield(); return 0; }
+      ], [AC_MSG_RESULT(no)], 
+      [
+        AC_MSG_RESULT(yes)
+        AC_DEFINE([NEED_PTHREAD_YIELD_DECL], [1], [Define to 1 if pthread_yield() needs to be declared])
+      ])
+  fi
 ])
