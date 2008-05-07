@@ -8,10 +8,12 @@ AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 
 # Checks for programs.
-AC_PROG_CC
+CGPS_CHECK_COMPILER
 AC_PROG_RANLIB
 
 # Checks for libraries.
+CGPS_CHECK_SIMCAQ
+CGPS_CHECK_LIBCHEMGPS
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -70,9 +72,6 @@ AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gettimeofday gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strdup strerror strncasecmp strrchr strspn strtol strtoul])
 
-CGPS_CHECK_SIMCAQ
-CGPS_CHECK_LIBCHEMGPS
-CGPS_DISABLE_DEBUG
 CGPS_ENABLE_UTILS
 CGPS_ENABLE_FOREIGN_CLIENT
 
