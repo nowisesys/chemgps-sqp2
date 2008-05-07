@@ -6,6 +6,7 @@ AC_INIT([chemgps-sqp2], 0.7.1, anders.lovgren@bmc.uu.se)
 AM_INIT_AUTOMAKE([chemgps-sqp2], 0.7.1)
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
+AC_CANONICAL_HOST
 
 # Checks for programs.
 CGPS_CHECK_COMPILER
@@ -61,7 +62,10 @@ if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
   )
 fi
 
-# Checks for library functions.
+# Checks for library functions. We need to add -fno-builtin or autoconf
+# will not find functions builtin in GCC.
+FLAGSC="$CFLAGS"
+CFLAGS="-fno-builtin"
 AC_PROG_GCC_TRADITIONAL
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
@@ -71,6 +75,7 @@ AC_FUNC_STAT
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([atexit gettimeofday gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strdup strerror strncasecmp strrchr strspn strtol strtoul])
+CFLAGS="$FLAGSC"
 
 CGPS_ENABLE_UTILS
 CGPS_ENABLE_FOREIGN_CLIENT
