@@ -92,9 +92,9 @@ static int cgps_predict_count_observations(const char *file, int *numobs)
  */
 static const char * cgps_predict_next_decriptor(const char *buff, size_t *offset, size_t *length)
 {
-	size_t size = 0;             /* field size (float number) */
-	size_t next = 0;             /* number of whitespace chars */
-	char *delim = " ,:;\t\n";    /* field delimiter chars */
+	size_t size = 0;                   /* field size (float number) */
+	size_t next = 0;                   /* number of whitespace chars */
+	const char *delim = " ,:;\t\n";    /* field delimiter chars */
 	
 	/* 
 	 * Guess values are separated by either: space (' '), comma (','), 
@@ -397,7 +397,7 @@ static int cgps_predict_load_file(const char *path, int rows, int columns, SQX_F
 /*
  * Get number of observations from socket stream.
  */
-static int cgps_predict_get_observations(struct cgps_project *proj, struct client *loader)
+static int cgps_predict_get_observations(struct client *loader)
 {
 	char *buff = NULL;
 	size_t size = 0;
@@ -421,17 +421,53 @@ static int cgps_predict_get_observations(struct cgps_project *proj, struct clien
 }
 
 /*
+ * Check parameters to cgps_predict_load_xxx()
+ */
+static int cgps_predict_load_check_params(struct cgps_project *proj, struct client *loader, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names)
+{
+	int error = 0;
+	
+	if(!proj->handle) {
+		logerr("Invalid project handle");
+		error = 1;
+	}
+	if(!smx && fmx) {
+		logerr("Float matrix already initilized");
+		error = 1;
+	}
+	if(!fmx && smx) {
+		logerr("String matrix already initilized");
+		error = 1;
+	}
+	if(!names) {
+		logerr("Variable name vector uninitilized");
+		error = 1;
+	}
+	if(error) {
+		fprintf(loader->ss, "Error: internal server error");
+		fflush(loader->ss);
+		return -1;		
+	}
+	return 0;
+}
+
+/*
  * Load quantitative data (raw).
  */
 static int cgps_predict_load_quant_data(struct cgps_project *proj, struct client *loader, SQX_FloatMatrix *matrix, SQX_StringVector *names)
 {
 	int num = SQX_GetNumStringsInVector(names);
 
+	if(cgps_predict_load_check_params(proj, loader, matrix, NULL, names) < 0) {
+		logerr("invalid parameters to cgps_predict_load_quant_data().");
+		return -1;
+	}
+	
 	if(loader->ss) {
 		debug("asking peer to send prediction data (quantitative)");
 		fprintf(loader->ss, "Load: quant-data\n");
 		fflush(loader->ss);
-		if(cgps_predict_get_observations(proj, loader) < 0) {
+		if(cgps_predict_get_observations(loader) < 0) {
 			logerr("failed get number of observations from peer");
 			return -1;
 		}
@@ -487,6 +523,11 @@ static int cgps_predict_load_quant_data(struct cgps_project *proj, struct client
  */
 static int cgps_predict_load_qual_data(struct cgps_project *proj, struct client *loader, SQX_StringMatrix *matrix, SQX_StringVector *names)
 {
+	if(cgps_predict_load_check_params(proj, loader, NULL, matrix, names) < 0) {
+		logerr("invalid parameters to cgps_predict_load_qual_data().");
+		return -1;
+	}
+
 	/*
 	 * Not yet implemented due to lack of project using qualitative data.
 	 */
@@ -499,6 +540,11 @@ static int cgps_predict_load_qual_data(struct cgps_project *proj, struct client 
  */
 static int cgps_predict_load_qual_data_lagged(struct cgps_project *proj, struct client *loader, SQX_StringMatrix *matrix, SQX_StringVector *names)
 {
+	if(cgps_predict_load_check_params(proj, loader, NULL, matrix, names) < 0) {
+		logerr("invalid parameters to cgps_predict_load_qual_data_lagged().");
+		return -1;
+	}
+	
 	/*
 	 * Not yet implemented due to lack of project using qualitative lagged data.
 	 */
@@ -511,6 +557,11 @@ static int cgps_predict_load_qual_data_lagged(struct cgps_project *proj, struct 
  */
 static int cgps_predict_load_lag_parents_data(struct cgps_project *proj, struct client *loader, SQX_FloatMatrix *matrix, SQX_StringVector *names)
 {
+	if(cgps_predict_load_check_params(proj, loader, matrix, NULL, names) < 0) {
+		logerr("invalid parameters to cgps_predict_load_quant_data().");
+		return -1;
+	}
+	
 	/*
 	 * Not yet implemented due to lack of project using lagged parents data.
 	 */
@@ -537,5 +588,5 @@ int cgps_predict_data(struct cgps_project *proj, void *params, SQX_FloatMatrix *
 		logerr("unknown type %d passed to data loader", type);
 		return -1;
 	}
-	return 0;   // keep GCC happy ;-)
+	return 0;   /* keep GCC happy ;-) */
 }
