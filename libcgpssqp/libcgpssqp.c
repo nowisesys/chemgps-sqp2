@@ -105,17 +105,17 @@ void cgps_syslog(void *pref, int status, int code, int level, const char *file, 
 	char *buff;
 	size_t size;
 
-	struct options *opts = (struct options *)pref;
+	struct options *mopt = (struct options *)pref;
 
 	/*
 	 * Write log prefix:
 	 */
 	fs = open_memstream(&buff, &size);
-	if(!(opts->syslog)) {
-		if(opts->debug > 3) {
+	if(!(mopt->syslog)) {
+		if(mopt->debug > 3) {
 			fprintf(fs, "[0x%lu]", pthread_self());
 		}
-		if(opts->debug > 4) {
+		if(mopt->debug > 4) {
 			struct timeval tv;
 			if(gettimeofday(&tv, NULL) == 0) {
 				fprintf(fs, "[%lu:%lu]", tv.tv_sec, tv.tv_usec);
@@ -124,13 +124,13 @@ void cgps_syslog(void *pref, int status, int code, int level, const char *file, 
 		switch(level) {
 		case LOG_ERR:
 		case LOG_CRIT:
-			fprintf(fs, "%s: error: ", opts->prog);
+			fprintf(fs, "%s: error: ", mopt->prog);
 			break;
 		case LOG_DEBUG:
 			fprintf(fs, "debug: ");
 			break;
 		case LOG_WARNING:
-			fprintf(fs, "%s: warning: ", opts->prog);
+			fprintf(fs, "%s: warning: ", mopt->prog);
 			break;
 		}
 	}
@@ -150,10 +150,10 @@ void cgps_syslog(void *pref, int status, int code, int level, const char *file, 
 		fprintf(fs, " (%s)", strerror(code));
 	}
 	if(level == LOG_DEBUG) {
-		if(opts->debug > 1) {
-			fprintf(fs, "\t[%s]", opts->prog);
+		if(mopt->debug > 1) {
+			fprintf(fs, "\t[%s]", mopt->prog);
 		}
-		if(opts->debug > 2) {
+		if(mopt->debug > 2) {
 			fprintf(fs, " (%s:%d): ", file, line);
 		}
 	}
@@ -162,7 +162,7 @@ void cgps_syslog(void *pref, int status, int code, int level, const char *file, 
 	 * Close write buffer and print buffer to destination log.
 	 */
 	fclose(fs);
-	if(opts->syslog) {
+	if(mopt->syslog) {
 		syslog(level, buff);
 	}
 	else {
