@@ -155,7 +155,7 @@ static int request_send_buffer(const char *buffer, struct client *peer)
 	return 0;
 }
 
-int request(struct options *opts, struct client *peer)
+int request(struct options *popt, struct client *peer)
 {
 	const struct cgps_result_entry *entry;
         struct request_option req;
@@ -184,7 +184,7 @@ int request(struct options *opts, struct client *peer)
 	debug("received: '%s'", buff);
 
 	debug("sending greeting");
-	if(fprintf(peer->ss, "CGPSP %s (%s: client ready)\n", CGPSP_PROTO_VERSION, opts->prog) > 0) {
+	if(fprintf(peer->ss, "CGPSP %s (%s: client ready)\n", CGPSP_PROTO_VERSION, popt->prog) > 0) {
 		fflush(peer->ss);
 	}
 	if(errno == EPIPE) {
@@ -199,7 +199,7 @@ int request(struct options *opts, struct client *peer)
 		return CGPSCLT_CONN_RETRY;
 	}
 	for(entry = cgps_result_entry_list; entry->name; ++entry) {	
-		if(cgps_result_isset(opts->cgps->result, entry->value)) {
+		if(cgps_result_isset(popt->cgps->result, entry->value)) {
 			if(delim++) {
 				fprintf(peer->ss, ":");
 			}
@@ -219,7 +219,7 @@ int request(struct options *opts, struct client *peer)
 	}
 
 	debug("sending format request");
-	if(opts->cgps->format == CGPS_OUTPUT_FORMAT_PLAIN) {
+	if(popt->cgps->format == CGPS_OUTPUT_FORMAT_PLAIN) {
 		fprintf(peer->ss, "Format: plain\n");
 	} else {
 		fprintf(peer->ss, "Format: xml\n");
@@ -246,11 +246,11 @@ int request(struct options *opts, struct client *peer)
 		switch(req.symbol) {
 		case CGPSP_PROTO_LOAD:
 			debug("received load request");
-			if(opts->data) {
-				if(stat(opts->data, &st) == 0) {
-					request_send_file(opts->data, peer);
+			if(popt->data) {
+				if(stat(popt->data, &st) == 0) {
+					request_send_file(popt->data, peer);
 				} else {
-					request_send_buffer(opts->data, peer);
+					request_send_buffer(popt->data, peer);
 				}
 			} else {
 				request_send_stdin(peer);
@@ -259,7 +259,7 @@ int request(struct options *opts, struct client *peer)
 		case CGPSP_PROTO_RESULT:
 			debug("received result request");
 			while((c = getc(peer->ss)) != EOF) {
-				if(!opts->quiet) {
+				if(!popt->quiet) {
 					printf("%c", c);
 				}
 			}
