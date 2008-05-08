@@ -48,10 +48,8 @@
 #endif
 #include <getopt.h>
 
-#define CGPS_NO_EXTERN_PROTOTYPE
-
-#include "cgpssqp.h"
 #include "cgpsddos.h"
+#include "cgpssqp.h"
 
 static void usage(const char *prog, const char *section)
 {
@@ -244,7 +242,7 @@ void parse_options(int argc, char **argv, struct cgpsddos *ddos)
 				strcpy(ddos->opts->unaddr, optarg);
 			} else {
 				--optind;
-				ddos->opts->unaddr = CGPSD_DEFAULT_SOCK;
+				ddos->opts->unaddr = (char *)CGPSD_DEFAULT_SOCK;
 			}
 			break;
 		case 'w':
