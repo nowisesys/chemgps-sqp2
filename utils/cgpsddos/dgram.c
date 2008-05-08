@@ -62,7 +62,7 @@ static void print_sockaddr(const struct sockaddr *sockaddr, socklen_t addrlen, i
  * Send datagram message on (unconnected) socket sock. The destination host is
  * defined by the sockaddr argument.
  */
-ssize_t send_dgram(int sock, const char *buff, size_t size, const struct sockaddr *sockaddr, socklen_t addrlen)
+ssize_t send_dgram(int sock, const char *buff, ssize_t size, const struct sockaddr *sockaddr, socklen_t addrlen)
 {
 	ssize_t bytes;
 
@@ -96,7 +96,7 @@ ssize_t send_dgram(int sock, const char *buff, size_t size, const struct sockadd
  * stored in the sockaddr argument of length socklen or should be NULL if 
  * the socket is connected.
  */
-ssize_t receive_dgram(int sock, char *buff, size_t size, struct sockaddr *sockaddr, socklen_t *addrlen)
+ssize_t receive_dgram(int sock, char *buff, ssize_t size, struct sockaddr *sockaddr, socklen_t *addrlen)
 {
 	ssize_t bytes;
 	

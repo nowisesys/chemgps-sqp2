@@ -130,14 +130,14 @@ int open_named_socket(int family, int type, const char *addr, const char *port, 
  * Send datagram message to (unconnected) socket sock. The destination host is
  * defined by the sockaddr argument or should be NULL if socket is connected.
  */
-int send_dgram(int sock, const char *buff, size_t size, const struct sockaddr *sockaddr, socklen_t addrlen);
+int send_dgram(int sock, const char *buff, ssize_t size, const struct sockaddr *sockaddr, socklen_t addrlen);
 
 /*
  * Receive datagram message from (unconnected) socket. The peer address is 
  * stored in the sockaddr argument of length socklen or should be NULL if 
  * the socket is connected.
  */
-int receive_dgram(int sock, char *buff, size_t size, struct sockaddr *sockaddr, socklen_t *addrlen);
+int receive_dgram(int sock, char *buff, ssize_t size, struct sockaddr *sockaddr, socklen_t *addrlen);
 
 /*
  * Split the address string into host/port components. The addr argument
