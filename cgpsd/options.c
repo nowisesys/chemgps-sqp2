@@ -119,10 +119,10 @@ void parse_options(int argc, char **argv, struct options *popt)
 		{ "help",    0, 0, 'h' },
 		{ "version", 0, 0, 'V' }
 	};
-	int index, c;
+	int indexopt, c;
 	struct stat st;
 
-	while((c = getopt_long(argc, argv, "46b:df:hil:p:qt:u:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "46b:df:hil:p:qt:u:vV", options, &indexopt)) != -1) {
 		switch(c) {
                 case '4':
 			popt->family = AF_INET;
