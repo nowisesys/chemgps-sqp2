@@ -27,8 +27,8 @@
 #ifndef __CGPSCLT_H__
 #define __CGPSCLT_H__
 
-int init_socket(struct options *opts);
-int request(struct options *opts, struct client *peer);
+int init_socket(struct options *popt);
+int request(struct options *popt, struct client *peer);
 
 #define CGPSCLT_CONN_FAILED -1    /* permanent connection error */
 #define CGPSCLT_CONN_SUCCESS 0    /* successful connected */

@@ -37,11 +37,11 @@
 
 #define cgpsd_done(state) (((state) & CGPSD_STATE_CLOSING))
 
-void service(struct options *opts);
+void service(struct options *popt);
 void * process_request(void *peer);
-int init_socket(struct options *opts);
-void close_socket(struct options *opts);
-void setup_signals(struct options *opts);
-void restore_signals(struct options *opts);
+int init_socket(struct options *popt);
+void close_socket(struct options *popt);
+void setup_signals(struct options *popt);
+void restore_signals(struct options *popt);
 
 #endif /* __CGPSD_H__ */

@@ -86,7 +86,7 @@ int worker_init(struct workers *threads, void *data, void * (*threadfunc)(void *
  * the list of worker threads. Returns -1 on failure and sets the errno variable.
  * On success 0 is returned.
  */
-int worker_enqueue(struct workers *threads, int sock, struct options *opts, const struct cgps_project *proj);
+int worker_enqueue(struct workers *threads, int sock, struct options *popt, const struct cgps_project *proj);
 
 /*
  * Dequeue a ready peer socket from the ready list. Returns a pointer to next
