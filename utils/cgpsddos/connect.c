@@ -61,7 +61,7 @@ static int failed = 0;         /* counter for failed threads */
 static int maxthr = 0;         /* maximum number of running threads */
 static int minthr = 0;         /* minimum number of running threads */
 
-static inline void cgpsddos_print_stat(struct options *opts, int count, int minthr, int maxthr, int finished, int limit)
+static __inline__ void cgpsddos_print_stat(struct options *opts, int count, int minthr, int maxthr, int finished, int limit)
 {
 	if(!opts->quiet || opts->verbose || opts->debug) {
 		loginfo("running: %d, limit: %d/%d (min/max), started: %d (of %d total)",
