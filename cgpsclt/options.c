@@ -116,7 +116,7 @@ static void version(const char *prog)
 	printf("Uppsala Biomedical Centre (BMC), Uppsala University.\n");
 }
 
-void parse_options(int argc, char **argv, struct options *opts)
+void parse_options(int argc, char **argv, struct options *popt)
 {
 	static struct option options[] = {
                 { "ipv4",    0, 0, '4' },
@@ -133,87 +133,87 @@ void parse_options(int argc, char **argv, struct options *opts)
 		{ "help",    2, 0, 'h' },
 		{ "version", 0, 0, 'V' }
 	};
-	int index, c;
+	int optindex, c;
 
-	while((c = getopt_long(argc, argv, "46df:h::i:o:p:H:r:s:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "46df:h::i:o:p:H:r:s:vV", options, &optindex)) != -1) {
 		switch(c) {
 		case '4':
-			opts->family = AF_INET;
+			popt->family = AF_INET;
 			break;
 		case '6':
-			opts->family = AF_INET6;
+			popt->family = AF_INET6;
 			break;
 		case 'd':
-			opts->debug++;
+			popt->debug++;
 			break;
 		case 'f':
 			if(strcmp("plain", optarg) == 0) {
-				opts->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;
+				popt->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;
 			} else if(strcmp("xml", optarg) == 0) {
-				opts->cgps->format = CGPS_OUTPUT_FORMAT_XML;
+				popt->cgps->format = CGPS_OUTPUT_FORMAT_XML;
 			} else {
 				die("unknown format '%s' argument for option -f", optarg);
 			}
 			break;
 		case 'h':
-			usage(opts->prog, optarg);
+			usage(popt->prog, optarg);
 			exit(0);
 		case 'H':
 			if(*optarg != '-') {
-				opts->ipaddr = malloc(strlen(optarg) + 1);
-				if(!opts->ipaddr) {
+				popt->ipaddr = malloc(strlen(optarg) + 1);
+				if(!popt->ipaddr) {
 					die("failed alloc memory");
 				}
-				strcpy(opts->ipaddr, optarg);
+				strcpy(popt->ipaddr, optarg);
 			} else {
 				--optind;
-				opts->ipaddr = CGPSD_DEFAULT_ADDR;
+				popt->ipaddr = CGPSD_DEFAULT_ADDR;
 			}
 			break;
 		case 'i':
-			opts->data = malloc(strlen(optarg) + 1);
-			if(!opts->data) {
+			popt->data = malloc(strlen(optarg) + 1);
+			if(!popt->data) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->data, optarg);
+			strcpy(popt->data, optarg);
 			break;
                 case 'o':
-			opts->output = malloc(strlen(optarg) + 1);
-			if(!opts->output) {
+			popt->output = malloc(strlen(optarg) + 1);
+			if(!popt->output) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->output, optarg);
+			strcpy(popt->output, optarg);
 			break;
 		case 'p':
 #ifdef HAVE_STRTOL
-			opts->port = strtol(optarg, NULL, 10);
+			popt->port = strtol(optarg, NULL, 10);
 #else
-			opts->port = atoi(optarg);
+			popt->port = atoi(optarg);
 #endif /* ! HAVE_STRTOL */
-			if(!opts->port) {
+			if(!popt->port) {
 				die("failed convert port number %s", optarg);
 			}
 			break;
 		case 'r':
-			opts->cgps->result = cgps_get_predict_mask(optarg);
+			popt->cgps->result = cgps_get_predict_mask(optarg);
 			break;
 		case 's':
 			if(*optarg != '-') {
-				opts->unaddr = malloc(strlen(optarg) + 1);
-				if(!opts->unaddr) {
+				popt->unaddr = malloc(strlen(optarg) + 1);
+				if(!popt->unaddr) {
 					die("failed alloc memory");
 				}
-				strcpy(opts->unaddr, optarg);
+				strcpy(popt->unaddr, optarg);
 			} else {
 				--optind;
-				opts->unaddr = CGPSD_DEFAULT_SOCK;
+				popt->unaddr = CGPSD_DEFAULT_SOCK;
 			}
 			break;
 		case 'v':
-			opts->verbose++;
+			popt->verbose++;
 			break;
 		case 'V':
-			version(opts->prog);
+			version(popt->prog);
 			exit(0);
 		case '?':
 			exit(1);
@@ -223,50 +223,50 @@ void parse_options(int argc, char **argv, struct options *opts)
 	/*
 	 * Check arguments and set defaults.
 	 */
-	if(opts->ipaddr && opts->unaddr) {
+	if(popt->ipaddr && popt->unaddr) {
 		die("both TCP and UNIX connection requested");
 	}
-	if(opts->ipaddr) {
-		if(!opts->port) {
-			opts->port = CGPSD_DEFAULT_PORT;
+	if(popt->ipaddr) {
+		if(!popt->port) {
+			popt->port = CGPSD_DEFAULT_PORT;
 		}
-		if(!opts->family) {
-			opts->family = AF_UNSPEC;
+		if(!popt->family) {
+			popt->family = AF_UNSPEC;
 		}
 	}			  
-	if(opts->unaddr) {
+	if(popt->unaddr) {
 		struct stat st;
 #ifdef HAVE_STAT_EMPTY_STRING_BUG
-		if(strlen(opts->unaddr) == 0) {
+		if(strlen(popt->unaddr) == 0) {
 			die("path of UNIX socket is empty");
 		}
 #endif
-		if(stat(opts->unaddr, &st) < 0) {
-			die("failed stat UNIX socket (%s)", opts->unaddr);
+		if(stat(popt->unaddr, &st) < 0) {
+			die("failed stat UNIX socket (%s)", popt->unaddr);
 		}
 		if(!S_ISSOCK(st.st_mode)) {
-			die("file %s is not a UNIX socket", opts->unaddr);
+			die("file %s is not a UNIX socket", popt->unaddr);
 		}
 	}
-	if(!opts->cgps->format) {
-		opts->cgps->format = CGPS_OUTPUT_FORMAT_DEFAULT;
+	if(!popt->cgps->format) {
+		popt->cgps->format = CGPS_OUTPUT_FORMAT_DEFAULT;
 	}
 		
 	/*
 	 * Dump options for debugging purpose.
 	 */
-	if(opts->debug) {
+	if(popt->debug) {
 		debug("---------------------------------------------");
 		debug("options:");
-		if(opts->unaddr) {
-			debug("  connect to unix socket = %s", opts->unaddr);
+		if(popt->unaddr) {
+			debug("  connect to unix socket = %s", popt->unaddr);
 		}
-		if(opts->ipaddr) {
-			debug("  connect to %s on port %d", opts->ipaddr, opts->port);
+		if(popt->ipaddr) {
+			debug("  connect to %s on port %d", popt->ipaddr, popt->port);
 		}
 		debug("  flags: debug = %s, verbose = %s", 
-		      (opts->debug   ? "yes" : "no"), 
-		      (opts->verbose ? "yes" : "no"));
+		      (popt->debug   ? "yes" : "no"), 
+		      (popt->verbose ? "yes" : "no"));
 		debug("---------------------------------------------");
 	}
 }
