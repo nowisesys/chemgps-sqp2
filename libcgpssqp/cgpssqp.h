@@ -86,7 +86,7 @@ struct options
 	int verbose;          /* be more verbose */
 	int batch;            /* enable batch job mode */
 	int quiet;            /* be more quiet */
-	int count;            /* repeate prediction count times */
+	unsigned int count;   /* repeate prediction count times */
 	/*
 	 * Common members:
 	 */
