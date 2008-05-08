@@ -178,7 +178,7 @@ void parse_options(int argc, char **argv, struct options *popt)
 				strcpy(popt->ipaddr, optarg);
 			} else {
 				--optind;
-				popt->ipaddr = CGPSD_DEFAULT_ADDR;
+				popt->ipaddr = (char *)CGPSD_DEFAULT_ADDR;
 			}
 			break;
 		case 'u':
@@ -190,7 +190,7 @@ void parse_options(int argc, char **argv, struct options *popt)
 				strcpy(popt->unaddr, optarg);
 			} else {
 				--optind;
-				popt->unaddr = CGPSD_DEFAULT_SOCK;
+				popt->unaddr = (char *)CGPSD_DEFAULT_SOCK;
 			}
 			break;
 		case 'v':
