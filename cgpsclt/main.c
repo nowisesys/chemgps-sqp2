@@ -44,7 +44,7 @@
 struct options *opts;
 
 #ifdef HAVE_ATEXIT
-void exit_handler(void)
+static void exit_handler(void)
 {
 	if(opts) {
 		debug("cleaning up at exit...");
