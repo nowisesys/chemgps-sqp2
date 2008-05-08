@@ -48,6 +48,8 @@
 #endif
 #include <getopt.h>
 
+#define CGPS_NO_EXTERN_PROTOTYPE
+
 #include "cgpssqp.h"
 #include "cgpsddos.h"
 
@@ -155,9 +157,9 @@ void parse_options(int argc, char **argv, struct cgpsddos *ddos)
 		{ "help",    2, 0, 'h' },
 		{ "version", 0, 0, 'V' }
 	};
-	int index, c;
+	int optindex, c;
 
-	while((c = getopt_long(argc, argv, "46a:c:df:h::t:i:mn:p:qr:su:w:vV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "46a:c:df:h::t:i:mn:p:qr:su:w:vV", options, &optindex)) != -1) {
 		switch(c) {
 		case '4':
 			ddos->family = AF_INET;
