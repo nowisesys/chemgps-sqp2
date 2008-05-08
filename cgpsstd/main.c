@@ -75,7 +75,7 @@ static void exit_handler(void)
 }
 #endif
 
-static void make_prediction(struct options *opts)
+static void make_prediction(struct options *popt)
 {	
 	struct cgps_project proj;
 	struct cgps_predict pred;
@@ -84,21 +84,21 @@ static void make_prediction(struct options *opts)
 	struct client data;
 	
 	memset(&data, 0, sizeof(struct client));
-	data.opts = opts;
+	data.opts = popt;
 	data.type = CGPS_STANDALONE;
 
-	opts->cgps->logger = cgps_syslog;
-	opts->cgps->indata = cgps_predict_data;
+	popt->cgps->logger = cgps_syslog;
+	popt->cgps->indata = cgps_predict_data;
 	
-	if(opts->debug > 1) {
+	if(popt->debug > 1) {
 		debug("enable library debug");
-		opts->cgps->debug = opts->debug;
-		opts->cgps->verbose = opts->verbose;
+		popt->cgps->debug = popt->debug;
+		popt->cgps->verbose = popt->verbose;
 	}
-	opts->cgps->syslog = opts->syslog;
+	popt->cgps->syslog = popt->syslog;
 	
-	if(cgps_project_load(&proj, opts->proj, opts->cgps) == 0) {			
-		debug("successful loaded project %s", opts->proj);
+	if(cgps_project_load(&proj, popt->proj, popt->cgps) == 0) {			
+		debug("successful loaded project %s", popt->proj);
 		debug("project got %d models", proj.models);
 		for(i = 1; i <= proj.models; ++i) {			
 			cgps_predict_init(&proj, &pred, &data);
@@ -124,7 +124,7 @@ static void make_prediction(struct options *opts)
 		cgps_project_close(&proj);
 	}
 	else {
-		die("failed load project %s", opts->proj);
+		die("failed load project %s", popt->proj);
 	}
 }
 
