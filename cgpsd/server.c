@@ -82,8 +82,11 @@ static int thread_yield(void)
 static void send_error(int sock, const char *msg)
 {
 	FILE *peer = fdopen(sock, "r+");
+	errno = 0;
+	
 	fprintf(peer, "error: %s\n", msg);
 	fclose(peer);
+	
 	debug("sent error '%s' to peer", msg);
 }
 

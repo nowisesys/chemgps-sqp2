@@ -187,8 +187,8 @@ void * process_request(void *param)
 				logerr("failed open socket stream");
 				process_next_peer(threads, peer);
 			}
-			debug("opened socket stream");
 			errno = 0;
+			debug("opened socket stream");
 			
 			debug("sending greeting");
 			if(fprintf(peer->ss, "CGPSP %s (%s: server ready)\n", CGPSP_PROTO_VERSION, opts->prog) > 0) {

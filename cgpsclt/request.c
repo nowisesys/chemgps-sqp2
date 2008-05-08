@@ -174,6 +174,7 @@ int request(struct options *popt, struct client *peer)
 		cleanup_request(peer, buff);
 		die("failed open socket stream");
 	}
+	errno = 0;
 	debug("opened socket stream");
 	
 	debug("reading greeting");
