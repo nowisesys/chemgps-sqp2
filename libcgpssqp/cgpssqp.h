@@ -228,7 +228,7 @@ int cgps_get_predict_mask(const char *results);
 /*
  * Callbacks for libchemgps.
  */
-void cgps_syslog(void *opts, int errcode, int level, const char *file, unsigned int line, const char *fmt, ...);
+void cgps_syslog(void *popt, int errcode, int level, const char *file, unsigned int line, const char *fmt, ...);
 int cgps_predict_data(struct cgps_project *proj, void *data, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names, int type);
 
 /*
@@ -245,7 +245,7 @@ int split_request_option(char *buff, struct request_option *req);
 /*
  * The command line option parser.
  */
-extern void parse_options(int argc, char **argv, struct options *opts);
+extern void parse_options(int argc, char **argv, struct options *popt);
 #endif /* ! CGPS_NO_EXTERN_PROTOTYPE */
 
 #endif /* CGPSSQP_H__ */
