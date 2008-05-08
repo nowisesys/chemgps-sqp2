@@ -116,7 +116,7 @@ static int cgpsddos_request(struct options *topt, struct client *peer)
 	return -1;
 }
 
-void * cgpsddos_connect(void *args)
+static void * cgpsddos_connect(void *args)
 {	
 	struct client peer;
 	struct options topt = *(struct options *)args;
