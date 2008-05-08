@@ -39,8 +39,6 @@ int request(struct options *opts, struct client *peer);
 # define CGPSCLT_RETRY_LIMIT 5    /* number of connect retries */
 # define CGPSCLT_RETRY_SLEEP 6    /* timeout between retries */
 
-void parse_options(int argc, char **argv, struct options *opts);
-
 #endif
 
 #endif /* __CGPSCLT_H__ */

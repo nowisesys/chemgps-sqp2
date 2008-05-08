@@ -37,7 +37,6 @@
 
 #define cgpsd_done(state) (((state) & CGPSD_STATE_CLOSING))
 
-void parse_options(int argc, char **argv, struct options *opts);
 void service(struct options *opts);
 void * process_request(void *peer);
 int init_socket(struct options *opts);

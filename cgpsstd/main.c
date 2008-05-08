@@ -41,8 +41,6 @@
 
 struct options *opts = NULL;
 
-void parse_options(int argc, char **argv, struct options *opts);
-
 #ifdef HAVE_ATEXIT
 static void exit_handler(void)
 {

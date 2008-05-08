@@ -241,4 +241,9 @@ ssize_t read_request(char **buff, size_t *size, FILE *sock);
  */
 int split_request_option(char *buff, struct request_option *req);
 
+/*
+ * The command line option parser.
+ */
+extern void parse_options(int argc, char **argv, struct options *opts);
+
 #endif /* CGPSSQP_H__ */
