@@ -44,7 +44,7 @@ struct options *opts = NULL;
 void parse_options(int argc, char **argv, struct options *opts);
 
 #ifdef HAVE_ATEXIT
-void exit_handler(void)
+static void exit_handler(void)
 {
 	if(opts) {
 		debug("cleaning up at exit...");
@@ -75,7 +75,7 @@ void exit_handler(void)
 }
 #endif
 
-void make_prediction(struct options *opts)
+static void make_prediction(struct options *opts)
 {	
 	struct cgps_project proj;
 	struct cgps_predict pred;
