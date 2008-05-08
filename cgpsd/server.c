@@ -224,7 +224,7 @@ void service(struct options *popt)
 					}
 				} else {
 					struct ucred cred;
-					int credlen = sizeof(struct ucred);
+					size_t credlen = sizeof(struct ucred);
 					
 					if(getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cred, &credlen) < 0) {
 						logerr("failed get credentials of UNIX socket peer");
