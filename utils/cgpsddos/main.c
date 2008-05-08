@@ -37,10 +37,8 @@
 #include <libgen.h>
 #include <chemgps.h>
 
-#define CGPS_NO_EXTERN_PROTOTYPE
-
-#include "cgpssqp.h"
 #include "cgpsddos.h"
+#include "cgpssqp.h"
 
 struct cgpsddos *ddos;
 struct options *opts;

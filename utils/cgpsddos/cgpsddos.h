@@ -32,6 +32,8 @@
 # include <netinet/in.h>
 #endif
 
+#define CGPS_NO_EXTERN_PROTOTYPE
+
 #include "dllist.h"
 
 #define CGPSDDOS_RESOLVE_RETRIES 5

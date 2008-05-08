@@ -37,8 +37,8 @@
 #include <signal.h>
 #include <errno.h>
 
-#include "cgpssqp.h"
 #include "cgpsddos.h"
+#include "cgpssqp.h"
 
 /*
  * The signal handler used by the daemon. We just ignore SIGPIPE and 

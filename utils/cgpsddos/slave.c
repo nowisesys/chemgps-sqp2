@@ -56,8 +56,8 @@
 # error "No usable ioctl/fcntl found!"
 #endif
 
-#include "cgpssqp.h"
 #include "cgpsddos.h"
+#include "cgpssqp.h"
 
 extern int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struct options *args);
 

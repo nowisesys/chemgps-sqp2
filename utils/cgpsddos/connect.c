@@ -49,10 +49,9 @@
 #include <libgen.h>
 #include <chemgps.h>
 
-#include "cgpssqp.h"
-#define CGPSCLT_EXTERN 1
-#include "cgpsclt.h"
 #include "cgpsddos.h"
+#include "cgpssqp.h"
+#include "cgpsclt.h"
 
 pthread_mutex_t countlock;
 pthread_cond_t  countcond;

@@ -50,9 +50,8 @@
 # include <pthread.h>
 #endif
 
-#include "cgpssqp.h"
 #include "cgpsddos.h"
-
+#include "cgpssqp.h"
 
 /*
  * Compare the hostname:service of two slave nodes.

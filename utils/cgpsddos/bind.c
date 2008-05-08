@@ -38,8 +38,8 @@
 # include <netdb.h>
 #endif
 
-#include "cgpssqp.h"
 #include "cgpsddos.h"
+#include "cgpssqp.h"
 
 /*
  * Create a named TCP or UDP socket (family). The family is either AF_INET or AF_INET6

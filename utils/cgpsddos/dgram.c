@@ -38,9 +38,8 @@
 # include <netdb.h>
 #endif
 
-#include "cgpssqp.h"
 #include "cgpsddos.h"
-
+#include "cgpssqp.h"
 
 #ifndef NDEBUG
 static void print_sockaddr(const struct sockaddr *sockaddr, socklen_t addrlen, int sent)

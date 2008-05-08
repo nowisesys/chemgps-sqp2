@@ -49,8 +49,8 @@
 # include <netdb.h>
 #endif
 
-#include "cgpssqp.h"
 #include "cgpsddos.h"
+#include "cgpssqp.h"
 
 /*
  * Cleanup slave data.
