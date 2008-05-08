@@ -180,7 +180,7 @@ int worker_init(struct workers *threads, void *data, void * (*threadfunc)(void *
  * 
  * NOTE: this function is called on behalf of the main thread.
  */
-int worker_enqueue(struct workers *threads, int sock, struct options *opts, const struct cgps_project *proj)
+int worker_enqueue(struct workers *threads, int sock, struct options *popt, const struct cgps_project *proj)
 {
 	struct client *peer;
 
@@ -244,7 +244,7 @@ int worker_enqueue(struct workers *threads, int sock, struct options *opts, cons
 	memset(peer, 0, sizeof(struct client));
 	
 	peer->sock = sock;
-	peer->opts = opts;
+	peer->opts = popt;
 	peer->proj = proj;
 	
 	pthread_mutex_lock(&threads->peerlock);
