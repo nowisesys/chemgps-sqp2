@@ -89,14 +89,15 @@ static void create_slave_socket(struct cgpsddos *ddos)
  * Read size data from socket sock into buffer buff. Perhaps this code
  * belongs in receive_dgram() instead.
  */
-int read_data(struct cgpsddos *ddos, int sock, char *buff, off_t size, struct sockaddr *addr, socklen_t *addrlen)
+static int read_data(struct cgpsddos *ddos, int sock, char *buff, off_t size, struct sockaddr *addr, socklen_t *addrlen)
 {
-	off_t bytes = 0;
-	int res, read, avail;
+	off_t total = 0;
+	ssize_t bytes;
+	int res, avail;
 	struct pollfd fds;
 	nfds_t nfds = 1;
 	
-	while(bytes < size) {
+	while(total < size) {
 		avail = 0;
 		
 		fds.events = POLLIN;
@@ -121,26 +122,26 @@ int read_data(struct cgpsddos *ddos, int sock, char *buff, off_t size, struct so
 				break;
 			}
 #endif
-			if(avail > (size - bytes)) {
-				avail = size - bytes;
+			if(avail > (size - total)) {
+				avail = size - total;
 			}
 			if(ddos->opts->debug > 1) {
 				debug("going to read %d bytes of data from peer", avail);
 			}
-			read = receive_dgram(sock, buff + bytes, avail, addr, addrlen);
-			if(read < 0) {
+			bytes = receive_dgram(sock, buff + total, avail, addr, addrlen);
+			if(bytes < 0) {
 				break;
 			}
-			bytes += read;
+			total += bytes;
 		}
 	}
 	
-	if(bytes < size) {
-		logerr("failed receive data (wanted: %d, got: %d bytes)", size, bytes);
+	if(total < size) {
+		logerr("failed receive data (wanted: %d, got: %d bytes)", size, total);
 		return -1;
 	}
 	
-	debug("read %d bytes of data from peer", bytes);
+	debug("read %d bytes of data from peer", total);
 	return 0;
 }
 
