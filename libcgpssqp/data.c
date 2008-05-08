@@ -444,7 +444,7 @@ static int cgps_predict_load_check_params(struct cgps_project *proj, struct clie
 		error = 1;
 	}
 	if(error) {
-		fprintf(loader->ss, "Error: internal server error");
+		fprintf(loader->ss, "Error: failed load data\n");
 		fflush(loader->ss);
 		return -1;		
 	}
