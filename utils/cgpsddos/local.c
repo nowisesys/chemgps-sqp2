@@ -32,4 +32,6 @@
 
 void run_local(struct cgpsddos *ddos)
 {
+	/* TODO: remove, just a dummy test */
+	if(ddos) {}
 }
