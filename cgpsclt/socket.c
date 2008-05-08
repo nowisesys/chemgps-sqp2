@@ -51,18 +51,18 @@
 /*
  * Initilize the server connection (both IPv4 and IPv6 supported).
  */
-int init_socket(struct options *opts)
+int init_socket(struct options *popt)
 {
-	if(opts->ipaddr) {
+	if(popt->ipaddr) {
 		struct addrinfo hints, *addr, *next = NULL;
 		int retries = 0, res;
 		char port[6];
 		char host[NI_MAXHOST], serv[NI_MAXSERV];
 		int errval = 0;
 		
-		snprintf(port, sizeof(port) - 1, "%d", opts->port);
+		snprintf(port, sizeof(port) - 1, "%d", popt->port);
 
-		hints.ai_family = opts->family;
+		hints.ai_family = popt->family;
 		hints.ai_socktype = SOCK_STREAM;
 		hints.ai_flags = AI_ADDRCONFIG;
 		hints.ai_protocol = 0;
@@ -71,13 +71,13 @@ int init_socket(struct options *opts)
 		hints.ai_next = NULL;
 		
 		while(retries < CGPS_RESOLVE_RETRIES) {
-			if((res = getaddrinfo(opts->ipaddr, port, &hints, &addr)) != 0) {
+			if((res = getaddrinfo(popt->ipaddr, port, &hints, &addr)) != 0) {
 				if(res == EAI_AGAIN) {
 					logwarn("temporary failure resolving hostname %s (%s)", 
-						opts->ipaddr, gai_strerror(res)); 
+						popt->ipaddr, gai_strerror(res)); 
 				} else {
 					logerr("failed resolve %s:%d (%s)", 
-					       opts->ipaddr, opts->port, gai_strerror(res));
+					       popt->ipaddr, popt->port, gai_strerror(res));
 					return CGPSCLT_CONN_FAILED;
 				}
 				++retries;
@@ -88,76 +88,76 @@ int init_socket(struct options *opts)
 		}
 		
 		for(next = addr; next != NULL; next = next->ai_next) {
-			opts->ipsock = socket(next->ai_family, next->ai_socktype, next->ai_protocol);
-			if(opts->ipsock < 0) {
+			popt->ipsock = socket(next->ai_family, next->ai_socktype, next->ai_protocol);
+			if(popt->ipsock < 0) {
 				continue;
 			} 
-			if(connect(opts->ipsock, next->ai_addr, next->ai_addrlen) < 0) {
+			if(connect(popt->ipsock, next->ai_addr, next->ai_addrlen) < 0) {
 				errval = errno;
-				close(opts->ipsock);
+				close(popt->ipsock);
 				continue;
 			}
 			break;
 		}
 		if(!next) {
 			freeaddrinfo(addr);
-			if(opts->ipsock < 0) {
+			if(popt->ipsock < 0) {
 				logerr("failed create TCP socket");
 				return CGPSCLT_CONN_FAILED;
 			} else {
 				if(errval == ETIMEDOUT) {
-					debug("timeout connecting to server %s (retrying)", opts->ipaddr);
+					debug("timeout connecting to server %s (retrying)", popt->ipaddr);
 					return CGPSCLT_CONN_RETRY;
 				} else {
-					logerr("failed connect to %s:%d", opts->ipaddr, opts->port);
+					logerr("failed connect to %s:%d", popt->ipaddr, popt->port);
 					return CGPSCLT_CONN_FAILED;
 				}
 			}
 		}
 
-		if(opts->debug) {
+		if(popt->debug) {
 			if(getnameinfo(next->ai_addr,
 				       next->ai_addrlen, 
 				       host, NI_MAXHOST,
 				       serv, NI_MAXSERV, NI_NUMERICSERV) == 0) {
 				debug("connected to %s:%s (%s:%d) (%s)", 
-				      host, serv, opts->ipaddr, opts->port, 
+				      host, serv, popt->ipaddr, popt->port, 
 				      next->ai_family == AF_INET ? "ipv4" : "ipv6");
 			} else {
 				debug("connected to %s:%d (%s)", 
-				      opts->ipaddr, opts->port, 
+				      popt->ipaddr, popt->port, 
 				      next->ai_family == AF_INET ? "ipv4" : "ipv6");
 			}
 		}
 		freeaddrinfo(addr);
 		return CGPSCLT_CONN_SUCCESS;
 	}
-	if(opts->unaddr) {
+	if(popt->unaddr) {
 		struct sockaddr_un sockaddr;
 		
-		opts->unsock = socket(PF_UNIX, SOCK_STREAM, 0);
-		if(opts->unsock < 0) {
+		popt->unsock = socket(PF_UNIX, SOCK_STREAM, 0);
+		if(popt->unsock < 0) {
 			logerr("failed create UNIX socket");
 			return CGPSCLT_CONN_FAILED;
 		}
 		debug("created UNIX socket");
 		
 		sockaddr.sun_family = AF_UNIX;
-		strncpy(sockaddr.sun_path, opts->unaddr, sizeof(sockaddr.sun_path));
-		if(connect(opts->unsock, 
+		strncpy(sockaddr.sun_path, popt->unaddr, sizeof(sockaddr.sun_path));
+		if(connect(popt->unsock, 
 			   (const struct sockaddr *)&sockaddr,
 			   sizeof(struct sockaddr_un)) < 0) {
 			if(errno == ETIMEDOUT) {
-				debug("timeout connecting to socket %s (retrying)", opts->unaddr);
-				close(opts->unsock);
+				debug("timeout connecting to socket %s (retrying)", popt->unaddr);
+				close(popt->unsock);
 				return CGPSCLT_CONN_RETRY;
 			} else {
-				close(opts->unsock);
-				logerr("failed connect to %s", opts->unaddr);
+				close(popt->unsock);
+				logerr("failed connect to %s", popt->unaddr);
 				return CGPSCLT_CONN_FAILED;
 			}
 		}
-		debug("connected to %s", opts->unaddr);
+		debug("connected to %s", popt->unaddr);
 		return CGPSCLT_CONN_SUCCESS;
 	}
 	return CGPSCLT_CONN_FAILED;
