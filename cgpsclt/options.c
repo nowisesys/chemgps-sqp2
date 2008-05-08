@@ -52,6 +52,7 @@
 #include <getopt.h>
 
 #include "cgpssqp.h"
+#include "cgpsclt.h"
 
 static void usage(const char *prog, const char *section)
 {
