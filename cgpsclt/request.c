@@ -265,9 +265,14 @@ int request(struct options *popt, struct client *peer)
 			}
 			done = 1;
 			break;
-		default:
-			die("protocol error (%s unexpected)", req.option);
+		case CGPSP_PROTO_ERROR:
 			cleanup_request(peer, buff);
+			die("server responded: %s", req.option);
+			break;
+		default:
+			cleanup_request(peer, buff);
+			die("protocol error (%s unexpected)", req.option);
+			break;
 		}
 	}
 	debug("done with request");
