@@ -66,7 +66,7 @@ extern int pthread_yield (void) __THROW;
 # endif
 #endif
 
-int thread_yield(void)
+static int thread_yield(void)
 {
 #if defined(HAVE_PTHREAD_YIELD)
 	return pthread_yield();
