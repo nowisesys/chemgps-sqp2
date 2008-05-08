@@ -75,7 +75,9 @@ static void usage(const char *prog)
 	printf("  -i, --interactive:    Don't detach from controlling terminal\n");
 	printf("  -4, --ipv4:           Only use IPv4\n");
 	printf("  -6, --ipv6:           Only use IPv6\n");	
+#if ! defined(NDEBUG)
 	printf("  -d, --debug:          Enable debug output (allowed multiple times)\n");
+#endif
 	printf("  -v, --verbose:        Be more verbose in output\n");
 	printf("  -q, --quiet:          Suppress some output\n");
 	printf("  -h, --help:           This help\n");
@@ -113,7 +115,9 @@ void parse_options(int argc, char **argv, struct options *popt)
 		{ "backlog", 1, 0, 'b' },
 		{ "logfile", 1, 0, 'l' },
 		{ "interactive", 0, 0, 'i' },
+#if ! defined(NDEBUG)
 		{ "debug",   0, 0, 'd' },
+#endif
 		{ "verbose", 0, 0, 'v' },
 		{ "quiet",   0, 0, 'q' },
 		{ "help",    0, 0, 'h' },
@@ -133,9 +137,11 @@ void parse_options(int argc, char **argv, struct options *popt)
 		case 'b':
 			popt->backlog = atoi(optarg);
 			break;
+#if ! defined(NDEBUG)
 		case 'd':
 			popt->debug++;
 			break;
+#endif
 		case 'f':
 			popt->proj = malloc(strlen(optarg) + 1);
 			if(!popt->proj) {

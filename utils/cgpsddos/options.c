@@ -86,7 +86,9 @@ static void usage(const char *prog, const char *section)
 		printf("Common options:\n");
 		printf("  -4, --ipv4:         Only use IPv4\n");
 		printf("  -6, --ipv6:         Only use IPv6\n");
+#if ! defined(NDEBUG)
 		printf("  -d, --debug:        Enable debug output (allowed multiple times)\n");
+#endif
 		printf("  -v, --verbose:      Be more verbose in output\n");
 		printf("  -q, --quiet:        Suppress some output\n");
 		printf("  -h, --help:         This help\n");
@@ -149,7 +151,9 @@ void parse_options(int argc, char **argv, struct cgpsddos *ddos)
 		{ "sock",    2, 0, 'u' },
 		{ "timeout", 1, 0, 'w' },
 		{ "count",   1, 0, 'n' },
+#if ! defined(NDEBUG)
 		{ "debug",   0, 0, 'd' },
+#endif
 		{ "verbose", 0, 0, 'v' },
 		{ "quiet",   0, 0, 'q' },
 		{ "help",    2, 0, 'h' },
@@ -179,9 +183,11 @@ void parse_options(int argc, char **argv, struct cgpsddos *ddos)
 			}
 			strcpy(ddos->slaves, optarg);
 			break;
+#if ! defined(NDEBUG)
 		case 'd':
 			ddos->opts->debug++;
 			break;
+#endif
 		case 'f':
 			if(strcmp("plain", optarg) == 0) {
 				ddos->opts->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;

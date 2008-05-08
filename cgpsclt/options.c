@@ -70,7 +70,9 @@ static void usage(const char *prog, const char *section)
 		printf("  -f, --format=str:   Set ouput format (either plain or xml)\n");
 		printf("  -4, --ipv4:         Only use IPv4\n");
 		printf("  -6, --ipv6:         Only use IPv6\n");		
+#if ! defined(NDEBUG)
 		printf("  -d, --debug:        Enable debug output (allowed multiple times)\n");
+#endif
 		printf("  -v, --verbose:      Be more verbose in output\n");
 		printf("  -h, --help:         This help\n");
 		printf("  -V, --version:      Print version info to stdout\n");
@@ -128,7 +130,9 @@ void parse_options(int argc, char **argv, struct options *popt)
                 { "output",  1, 0, 'o' },
 		{ "result",  1, 0, 'r' },
 		{ "format",  1, 0, 'f' }, 
+#if ! defined(NDEBUG)
 		{ "debug",   0, 0, 'd' },
+#endif
 		{ "verbose", 0, 0, 'v' },
 		{ "help",    2, 0, 'h' },
 		{ "version", 0, 0, 'V' }
@@ -143,9 +147,11 @@ void parse_options(int argc, char **argv, struct options *popt)
 		case '6':
 			popt->family = AF_INET6;
 			break;
+#if ! defined(NDEBUG)
 		case 'd':
 			popt->debug++;
 			break;
+#endif
 		case 'f':
 			if(strcmp("plain", optarg) == 0) {
 				popt->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;

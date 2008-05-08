@@ -72,7 +72,9 @@ static void usage(const char *prog, const char *section)
 		printf("  -s, --syslog:       Use syslog(3) for application logging\n");
 		printf("  -f, --format=str:   Set ouput format (either plain or xml)\n");
 		printf("  -b, --batch:        Enable batch job mode (suppress some messages)\n");
+#if ! defined(NDEBUG)
 		printf("  -d, --debug:        Enable debug output (allowed multiple times)\n");
+#endif
 		printf("  -v, --verbose:      Be more verbose in output\n");
 		printf("  -h, --help:         This help\n");
 		printf("  -V, --version:      Print version info to stdout\n");
@@ -130,7 +132,9 @@ void parse_options(int argc, char **argv, struct options *popt)
 		{ "syslog",  0, 0, 's' },
 		{ "format",  1, 0, 'f' }, 
 		{ "batch",   0, 0, 'b' },
+#if ! defined(NDEBUG)
 		{ "debug",   0, 0, 'd' },
+#endif
 		{ "verbose", 0, 0, 'v' },
 		{ "help",    2, 0, 'h' },
 		{ "version", 0, 0, 'V' }
@@ -148,9 +152,11 @@ void parse_options(int argc, char **argv, struct options *popt)
 		case 'b':
 			popt->batch = 1;
 			break;
+#if ! defined(NDEBUG)
 		case 'd':
 			popt->debug++;
 			break;
+#endif
 		case 'f':
 			if(strcmp("plain", optarg) == 0) {
 				popt->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;
