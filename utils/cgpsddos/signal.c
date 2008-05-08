@@ -75,23 +75,23 @@ static void signal_handler(int sig)
  * Setup signal handling. Block all signals except thoose handled
  * in the signal handling function.
  */
-void setup_signals(struct options *opts)
+void setup_signals(struct options *popt)
 {
 	sigset_t mask;
 	
-	opts->newact = malloc(sizeof(struct sigaction));
-	if(!opts->newact) {
+	popt->newact = malloc(sizeof(struct sigaction));
+	if(!popt->newact) {
 		die("failed alloc memory");
 	}
-	memset(opts->newact, 0, sizeof(struct sigaction));
+	memset(popt->newact, 0, sizeof(struct sigaction));
 	
-	opts->oldact = malloc(sizeof(struct sigaction));
-	if(!opts->oldact) {
+	popt->oldact = malloc(sizeof(struct sigaction));
+	if(!popt->oldact) {
 		die("failed alloc memory");
 	}
-	memset(opts->oldact, 0, sizeof(struct sigaction));
+	memset(popt->oldact, 0, sizeof(struct sigaction));
 	
-	opts->newact->sa_handler = signal_handler;
+	popt->newact->sa_handler = signal_handler;
 	
 	if(sigfillset(&mask) < 0) {
 		die("failed call sigfillset");
@@ -115,28 +115,28 @@ void setup_signals(struct options *opts)
 		die("failed call sigprocmask");
 	}
 		
-	if(sigaction(SIGTERM, opts->newact, NULL) != 0) {
+	if(sigaction(SIGTERM, popt->newact, NULL) != 0) {
 		logerr("failed setup signal action (SIGTERM)");
 	}
 	else {
 		debug("installed signal handler for SIGTERM");
 	}
 
-	if(sigaction(SIGINT, opts->newact, NULL) != 0) {
+	if(sigaction(SIGINT, popt->newact, NULL) != 0) {
 		logerr("failed setup signal action (SIGINT)");
 	}
 	else {
 		debug("installed signal handler for SIGINT");
 	}
 
-	if(sigaction(SIGQUIT, opts->newact, NULL) != 0) {
+	if(sigaction(SIGQUIT, popt->newact, NULL) != 0) {
 		logerr("failed setup signal action (SIGQUIT)");
 	}
 	else {
 		debug("installed signal handler for SIGQUIT");
 	}
 
-	if(sigaction(SIGPIPE, opts->newact, NULL) != 0) {
+	if(sigaction(SIGPIPE, popt->newact, NULL) != 0) {
 		logerr("failed setup signal action (SIGPIPE)");
 	}
 	else {
@@ -147,42 +147,42 @@ void setup_signals(struct options *opts)
 /*
  * Restore signal handling.
  */
-void restore_signals(struct options *opts)
+void restore_signals(struct options *popt)
 {	
-	if(sigaction(SIGTERM, opts->oldact, NULL) != 0) {
+	if(sigaction(SIGTERM, popt->oldact, NULL) != 0) {
 		logerr("failed restore signal action (SIGTERM)");
 	}
 	else {
 		debug("restored signal handler for SIGTERM");
 	}
 
-	if(sigaction(SIGINT, opts->oldact, NULL) != 0) {
+	if(sigaction(SIGINT, popt->oldact, NULL) != 0) {
 		logerr("failed restore signal action (SIGINT)");
 	}
 	else {
 		debug("restored signal handler for SIGINT");
 	}
 
-	if(sigaction(SIGQUIT, opts->oldact, NULL) != 0) {
+	if(sigaction(SIGQUIT, popt->oldact, NULL) != 0) {
 		logerr("failed restore signal action (SIGQUIT)");
 	}
 	else {
 		debug("restored signal handler for SIGQUIT");
 	}
 
-	if(sigaction(SIGPIPE, opts->oldact, NULL) != 0) {
+	if(sigaction(SIGPIPE, popt->oldact, NULL) != 0) {
 		logerr("failed restore signal action (SIGPIPE)");
 	}
 	else {
 		debug("restored signal handler for SIGPIPE");
 	}
 	
-	if(opts->newact) {
-		free(opts->newact);
-		opts->newact = NULL;
+	if(popt->newact) {
+		free(popt->newact);
+		popt->newact = NULL;
 	}
-	if(opts->oldact) {
-		free(opts->oldact);
-		opts->oldact = NULL;
+	if(popt->oldact) {
+		free(popt->oldact);
+		popt->oldact = NULL;
 	}
 }
