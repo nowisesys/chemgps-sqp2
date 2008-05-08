@@ -82,8 +82,9 @@ static int thread_yield(void)
 static void send_error(int sock, const char *msg)
 {
 	FILE *peer = fdopen(sock, "r+");
-	fprintf(peer, "error: %s", msg);
+	fprintf(peer, "error: %s\n", msg);
 	fclose(peer);
+	debug("sent error '%s' to peer", msg);
 }
 
 /*
@@ -239,6 +240,7 @@ void service(struct options *popt)
 								break;
 							} else if(errno == EMFILE || errno == ENFILE) {
 								sleep_wait_queue(&workers);
+								continue;
 							} else {
 								send_error(client, "internal server error");
 								logerr("failed get password database record for uid=%d", cred.uid);
