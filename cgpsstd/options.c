@@ -118,7 +118,7 @@ static void version(const char *prog)
 	printf("Uppsala Biomedical Centre (BMC), Uppsala University.\n");	
 }
 
-void parse_options(int argc, char **argv, struct options *opts)
+void parse_options(int argc, char **argv, struct options *popt)
 {
 	static struct option options[] = {
 		{ "proj",    1, 0, 'p' },
@@ -135,77 +135,77 @@ void parse_options(int argc, char **argv, struct options *opts)
 		{ "help",    2, 0, 'h' },
 		{ "version", 0, 0, 'V' }
 	};
-	int index, c;
+	int optindex, c;
 	struct stat st;
 
 	if(argc < 3) {
-		usage(opts->prog, NULL);
+		usage(popt->prog, NULL);
 		exit(1);
 	}
 	
-	while((c = getopt_long(argc, argv, "bdf:h:i:l:n:o:p:r:svV", options, &index)) != -1) {
+	while((c = getopt_long(argc, argv, "bdf:h:i:l:n:o:p:r:svV", options, &optindex)) != -1) {
 		switch(c) {
 		case 'b':
-			opts->batch = 1;
+			popt->batch = 1;
 			break;
 		case 'd':
-			opts->debug++;
+			popt->debug++;
 			break;
 		case 'f':
 			if(strcmp("plain", optarg) == 0) {
-				opts->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;
+				popt->cgps->format = CGPS_OUTPUT_FORMAT_PLAIN;
 			} else if(strcmp("xml", optarg) == 0) {
-				opts->cgps->format = CGPS_OUTPUT_FORMAT_XML;
+				popt->cgps->format = CGPS_OUTPUT_FORMAT_XML;
 			} else {
 				die("unknown format '%s' argument for option -f", optarg);
 			}
 			break;
 		case 'h':
-			usage(opts->prog, optarg);
+			usage(popt->prog, optarg);
 			exit(0);
 		case 'i':
-			opts->data = malloc(strlen(optarg) + 1);
-			if(!opts->data) {
+			popt->data = malloc(strlen(optarg) + 1);
+			if(!popt->data) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->data, optarg);
+			strcpy(popt->data, optarg);
 			break;
 		case 'l':
-			opts->cgps->logfile = malloc(strlen(optarg) + 1);
-			if(!opts->cgps->logfile) {
+			popt->cgps->logfile = malloc(strlen(optarg) + 1);
+			if(!popt->cgps->logfile) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->cgps->logfile, optarg);
+			strcpy(popt->cgps->logfile, optarg);
 			break;
 		case 'n':
-			opts->numobs = atoi(optarg);
+			popt->numobs = atoi(optarg);
 			break;
 		case 'o':
-			opts->output = malloc(strlen(optarg) + 1);
-			if(!opts->output) {
+			popt->output = malloc(strlen(optarg) + 1);
+			if(!popt->output) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->output, optarg);
+			strcpy(popt->output, optarg);
 			break;
 		case 'p':
-			opts->proj = malloc(strlen(optarg) + 1);
-			if(!opts->proj) {
+			popt->proj = malloc(strlen(optarg) + 1);
+			if(!popt->proj) {
 				die("failed alloc memory");
 			}
-			strcpy(opts->proj, optarg);
+			strcpy(popt->proj, optarg);
 			break;
 		case 'r':
-			opts->cgps->result = cgps_get_predict_mask(optarg);
+			popt->cgps->result = cgps_get_predict_mask(optarg);
 			break;
 		case 's':
 			debug("enabling syslog (bye-bye console ;-))");
-			opts->syslog = 1;
+			popt->syslog = 1;
 			break;
 		case 'v':
-			opts->verbose++;
+			popt->verbose++;
 			break;
 		case 'V':
-			version(opts->prog);
+			version(popt->prog);
 			exit(0);
 		}
 	}
@@ -213,11 +213,11 @@ void parse_options(int argc, char **argv, struct options *opts)
 	/*
 	 * Check that required arguments where given.
 	 */
-	if(!opts->proj) {
+	if(!popt->proj) {
 		die("project file option (-p) is missing");
 	}
-	if(!opts->cgps->format) {
-		opts->cgps->format = CGPS_OUTPUT_FORMAT_DEFAULT;
+	if(!popt->cgps->format) {
+		popt->cgps->format = CGPS_OUTPUT_FORMAT_DEFAULT;
 	}
 	
 	/* 
@@ -225,29 +225,29 @@ void parse_options(int argc, char **argv, struct options *opts)
 	 * then set raw data input to be stdin.
 	 */
 	if(!isatty(0)) {
-		if(opts->data && !opts->batch) {
+		if(popt->data && !popt->batch) {
 			logwarn("called in pipe with input file enabled (not reading raw data input from stdin)");
 		}
 		/*
 		 * Enable batch mode if called in pipe.
 		 */
-		opts->batch = 1;
+		popt->batch = 1;
 	}
 	
 	/*
 	 * Check that input files exists.
 	 */
-	if(stat(opts->proj, &st) < 0) {
-		die("failed stat project file (model) %s", opts->proj);
+	if(stat(popt->proj, &st) < 0) {
+		die("failed stat project file (model) %s", popt->proj);
 	}	
-	if(opts->data) {
-		if(stat(opts->data, &st) < 0) {
-			die("failed stat raw input data file %s", opts->data);
+	if(popt->data) {
+		if(stat(popt->data, &st) < 0) {
+			die("failed stat raw input data file %s", popt->data);
 		}
 	}
-	if(opts->cgps->logfile) {
-		if(stat(opts->cgps->logfile, &st) < 0) {
-			char *dir = dirname(opts->cgps->logfile);
+	if(popt->cgps->logfile) {
+		if(stat(popt->cgps->logfile, &st) < 0) {
+			char *dir = dirname(popt->cgps->logfile);
 			if(strlen(dir) == 1 && dir[0] == '.') {
 				/*
 				 * The logfile path is relative to current directory, i.e. "simca.log".
@@ -263,29 +263,29 @@ void parse_options(int argc, char **argv, struct options *opts)
 	/*
 	 * Dump options for debugging purpose.
 	 */
-	if(opts->debug) {
+	if(popt->debug) {
 		debug("---------------------------------------------");
 		debug("options:");
-		debug("  project file path (model) = %s", opts->proj);
-		if(opts->data) {
-			debug("  input data file (raw) = %s", opts->data);
+		debug("  project file path (model) = %s", popt->proj);
+		if(popt->data) {
+			debug("  input data file (raw) = %s", popt->data);
 		} else {
 			debug("  input data (raw) is read from stdin");
 		}
-		if(opts->output) {
-			debug("  output file (result) = %s", opts->output);
+		if(popt->output) {
+			debug("  output file (result) = %s", popt->output);
 		} else {
 			debug("  output (result) is written to stdout");
 		}
-		if(opts->cgps->logfile) {
-			debug("  simca lib logfile = %s", opts->cgps->logfile);
+		if(popt->cgps->logfile) {
+			debug("  simca lib logfile = %s", popt->cgps->logfile);
 		}
 		debug("  flags: debug = %s, use syslog = %s, verbose = %s", 
-		      (opts->debug   ? "yes" : "no"), 
-		      (opts->syslog  ? "yes" : "no"),
-		      (opts->verbose ? "yes" : "no"));
+		      (popt->debug   ? "yes" : "no"), 
+		      (popt->syslog  ? "yes" : "no"),
+		      (popt->verbose ? "yes" : "no"));
 		debug("  libchemgps: format = %d, result = %d",
-		      opts->cgps->format, opts->cgps->result);
+		      popt->cgps->format, popt->cgps->result);
 		debug("---------------------------------------------");
 	}
 }
