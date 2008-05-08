@@ -125,7 +125,7 @@ static int send_message(struct cgpsddos *ddos, struct cgpspeer *peer, const char
 /*
  * Try send file.
  */
-int send_file(int sock, const struct sockaddr *addr, socklen_t addrlen, const char *path, off_t size)
+static int send_file(int sock, const struct sockaddr *addr, socklen_t addrlen, const char *path, off_t size)
 {
 	int fd;
 	
