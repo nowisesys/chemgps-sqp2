@@ -241,9 +241,11 @@ ssize_t read_request(char **buff, size_t *size, FILE *sock);
  */
 int split_request_option(char *buff, struct request_option *req);
 
+#if ! defined(CGPS_NO_EXTERN_PROTOTYPE)
 /*
  * The command line option parser.
  */
 extern void parse_options(int argc, char **argv, struct options *opts);
+#endif /* ! CGPS_NO_EXTERN_PROTOTYPE */
 
 #endif /* CGPSSQP_H__ */
