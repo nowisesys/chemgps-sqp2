@@ -46,7 +46,7 @@ struct cgpsddos *ddos;
 struct options *opts;
 
 #ifdef HAVE_ATEXIT
-void exit_handler(void)
+static void exit_handler(void)
 {
 	if(ddos) {
 		debug("cleaning up at exit...");
