@@ -268,7 +268,7 @@ int request(struct options *popt, struct client *peer)
 			break;
 		case CGPSP_PROTO_ERROR:
 			cleanup_request(peer, buff);
-			die("server responded: %s", req.option);
+			die("server responded: %s", req.value);
 			break;
 		default:
 			cleanup_request(peer, buff);
