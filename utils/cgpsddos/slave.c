@@ -145,7 +145,7 @@ static int read_data(struct cgpsddos *ddos, int sock, char *buff, off_t size, st
 	return 0;
 }
 
-void cleanup_args(struct options *args)
+static void cleanup_args(struct options *args)
 {
 	debug("cleanup options...");
 	if(args) {
