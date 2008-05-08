@@ -74,7 +74,7 @@ static int request_send_file(const char *file, struct client *peer)
 	FILE *fs;
 	int c, lines = 0;
 	
-	fs = fopen(opts->data, "r");
+	fs = fopen(file, "r");
 	if(!fs) {
 		return -1;
 	}
