@@ -42,9 +42,12 @@
 #include <errno.h>
 #include <chemgps.h>
 
+extern char cgpsd_default_sock[];
+extern char cgpsd_default_addr[];
+
 #define CGPSD_DEFAULT_PORT 9401
-#define CGPSD_DEFAULT_SOCK "/var/run/cgpsd.sock"
-#define CGPSD_DEFAULT_ADDR "0x0"       /* any address (ipv4 or ipv6) */
+#define CGPSD_DEFAULT_SOCK cgpsd_default_sock
+#define CGPSD_DEFAULT_ADDR cgpsd_default_addr       /* any address (ipv4 or ipv6) */
 
 enum CGPS_APPLICATION { CGPS_APP_UNKNOWN, CGPS_STANDALONE, CGPS_DAEMON, CGPS_CLIENT, CGPS_DDOS };
 

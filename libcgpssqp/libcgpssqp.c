@@ -51,6 +51,9 @@
 
 #include "cgpssqp.h"
 
+char cgpsd_default_sock[] = "/var/run/cgpsd.sock";
+char cgpsd_default_addr[] = "@";
+
 /*
  * This function parses the result option argument and set
  * the bitmask flags for each name.
