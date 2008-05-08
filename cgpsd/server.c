@@ -108,50 +108,50 @@ static void sleep_wait_queue(struct workers *threads)
 /*
  * Start accepting connections on server socket(s).
  */
-void service(struct options *opts)
+void service(struct options *popt)
 {
 	struct workers workers;	
 	struct cgps_project proj;	
 	fd_set sockfds;  /* server socket file descriptors set */
 	int maxsock = 0;
 	
-        opts->cgps->logger = cgps_syslog;
-	opts->cgps->indata = cgps_predict_data;
+        popt->cgps->logger = cgps_syslog;
+	popt->cgps->indata = cgps_predict_data;
 	
-	if(opts->debug > 1) {
+	if(popt->debug > 1) {
 		debug("enable library debug");
-		opts->cgps->debug = opts->debug;
-		opts->cgps->verbose = opts->verbose;
+		popt->cgps->debug = popt->debug;
+		popt->cgps->verbose = popt->verbose;
 	}
-	opts->cgps->syslog = opts->syslog;
-	opts->cgps->batch  = 1;
+	popt->cgps->syslog = popt->syslog;
+	popt->cgps->batch  = 1;
 	
-	if(cgps_project_load(&proj, opts->proj, opts->cgps) == 0) {
-                debug("successful loaded project %s", opts->proj);
+	if(cgps_project_load(&proj, popt->proj, popt->cgps) == 0) {
+                debug("successful loaded project %s", popt->proj);
 		debug("project got %d models", proj.models);
 	} else {
-		die("failed load project %s", opts->proj);
+		die("failed load project %s", popt->proj);
 	}
 	
-	if(!opts->quiet) {
-		if(opts->ipaddr) {
-			loginfo("listening on TCP socket %s port %d", opts->ipaddr, opts->port);
+	if(!popt->quiet) {
+		if(popt->ipaddr) {
+			loginfo("listening on TCP socket %s port %d", popt->ipaddr, popt->port);
 		}
-		if(opts->unaddr) {
-			loginfo("listening on UNIX socket %s", opts->unaddr);
+		if(popt->unaddr) {
+			loginfo("listening on UNIX socket %s", popt->unaddr);
 		}
 	}
 	
 	FD_ZERO(&sockfds);
-	if(opts->ipsock) {
-		debug("adding TCP server socket to read ready set (fd = %d)", opts->ipsock);
-		FD_SET(opts->ipsock, &sockfds);
-		maxsock = opts->ipsock > maxsock ? opts->ipsock : maxsock;
+	if(popt->ipsock) {
+		debug("adding TCP server socket to read ready set (fd = %d)", popt->ipsock);
+		FD_SET(popt->ipsock, &sockfds);
+		maxsock = popt->ipsock > maxsock ? popt->ipsock : maxsock;
 	}
-	if(opts->unsock) {
-		debug("adding UNIX server socket to read ready set (fd = %d)", opts->unsock);
-		FD_SET(opts->unsock, &sockfds);
-		maxsock = opts->unsock > maxsock ? opts->unsock : maxsock;
+	if(popt->unsock) {
+		debug("adding UNIX server socket to read ready set (fd = %d)", popt->unsock);
+		FD_SET(popt->unsock, &sockfds);
+		maxsock = popt->unsock > maxsock ? popt->unsock : maxsock;
 	}
 
 	debug("initilizing worker threads...");
@@ -161,14 +161,14 @@ void service(struct options *opts)
         setup_signals(opts);
 	
 	debug("enter running state");
-        opts->state |= CGPSD_STATE_RUNNING;
+        popt->state |= CGPSD_STATE_RUNNING;
 	
-	if(opts->ipsock && opts->unsock) {
-		loginfo("daemon ready (tcp: %s:%d, unix: %s)", opts->ipaddr, opts->port, opts->unaddr);
-	} else if(opts->ipsock) {
-		loginfo("daemon ready (tcp: %s:%d)", opts->ipaddr, opts->port);
-	} else if(opts->unsock) {
-		loginfo("daemon ready (unix: %s)", opts->unaddr);
+	if(popt->ipsock && popt->unsock) {
+		loginfo("daemon ready (tcp: %s:%d, unix: %s)", popt->ipaddr, popt->port, popt->unaddr);
+	} else if(popt->ipsock) {
+		loginfo("daemon ready (tcp: %s:%d)", popt->ipaddr, popt->port);
+	} else if(popt->unsock) {
+		loginfo("daemon ready (unix: %s)", popt->unaddr);
 	}
 	
 	while(1) {
@@ -178,7 +178,7 @@ void service(struct options *opts)
 		debug("waiting for client connections...");
 		result = select(maxsock + 1, &readfds, NULL, NULL, NULL);
 		
-		if(cgpsd_done(opts->state)) {
+		if(cgpsd_done(popt->state)) {
 			break;
 		}
 		
@@ -189,10 +189,10 @@ void service(struct options *opts)
 			}
 		} else {
 			debug("select returned with result = %d", result);
-			if(FD_ISSET(opts->ipsock, &readfds)) {
+			if(FD_ISSET(popt->ipsock, &readfds)) {
 				struct sockaddr_in sockaddr;
 				socklen_t socklen = sizeof(struct sockaddr_in);
-				client = accept(opts->ipsock,
+				client = accept(popt->ipsock,
 						(struct sockaddr *)&sockaddr,
 						&socklen);
 				if(client < 0) {
@@ -200,21 +200,21 @@ void service(struct options *opts)
 					if(errno == EMFILE || errno == ENFILE) {
 						sleep_wait_queue(&workers);
 					}
-				} else if(!opts->quiet) {
+				} else if(!popt->quiet) {
 #ifdef HAVE_INET_NTOA
 					loginfo("accepted TCP client connection from %s on port %d", 
 						inet_ntoa(sockaddr.sin_addr), 
 						ntohs(sockaddr.sin_port));
 #else
 					loginfo("accepted TCP client connection on interface %s and port %d", 
-						opts->ipaddr, opts->port);
+						popt->ipaddr, popt->port);
 #endif /* ! HAVE_INET_NTOA */
 				}
 			}
-			if(FD_ISSET(opts->unsock, &readfds)) {
+			if(FD_ISSET(popt->unsock, &readfds)) {
 				struct sockaddr_un sockaddr;
 				socklen_t socklen = sizeof(struct sockaddr_un);
-				client = accept(opts->unsock,
+				client = accept(popt->unsock,
 						(struct sockaddr *)&sockaddr,
 						&socklen);
 				if(client < 0) {
