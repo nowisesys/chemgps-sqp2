@@ -150,7 +150,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
-	int finished = 0, thrmax = 0, thrnow = 0, thrrep = CGPSDDOS_THREAD_SPAWN_MAX;
+	unsigned int finished = 0, thrmax = 0, thrnow = 0, thrrep = CGPSDDOS_THREAD_SPAWN_MAX;
 	size_t stacksize;
 	struct rlimit rlim;
 	
