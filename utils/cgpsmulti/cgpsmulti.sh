@@ -18,6 +18,7 @@ sock="/var/run/cgpsd.sock"
 unix="0"
 background="0"
 args=""
+verbose="0"
 
 chemgpsdir="../../../libchemgps/src/.libs"
 cgpscltdir="../../cgpsclt"
@@ -106,6 +107,9 @@ while [ "$1" != "" ]; do
       usage
       exit 0
       ;;
+    -v|--verbose)
+      verbose="1"
+      ;;
     *) 
       args="$args $1"
       ;;
@@ -118,21 +122,23 @@ if [ "$max" -lt "1" ]; then
   exit 1
 fi
 
-echo "Using options:"
-echo "-----------------------"
-if [ "$unix" == "1" ]; then
-  echo "    sock = $sock"
-else
-  echo "    host = $host"
-  echo "    port = $port"
+if [ "$verbose" == "1" ]; then
+  echo "Using options:"
+  echo "-----------------------"
+  if [ "$unix" == "1" ]; then
+    echo "    sock = $sock"
+  else
+    echo "    host = $host"
+    echo "    port = $port"
+  fi
+  echo "     max = $max"
+  echo "   input = $input"
+  echo "  result = $result"
+  echo
+  echo "Result:"
+  echo "----------------------"
 fi
-echo "     max = $max"
-echo "   input = $input"
-echo "  result = $result"
-echo
 
-echo "Result:"
-echo "----------------------"
 num=0
 while [ "$num" -lt "$max" ]; do
   if [ "$unix" == "1" ]; then
