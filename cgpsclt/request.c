@@ -240,8 +240,9 @@ int request(struct options *popt, struct client *peer)
 
 		debug("received: '%s'", buff);
 	        if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
+			logerr("protocol error (%s unexpected)", req.option);
 			cleanup_request(peer, buff);
-			die("protocol error (%s unexpected)", req.option);
+			exit(1);
 		}
 		
 		switch(req.symbol) {
@@ -267,13 +268,13 @@ int request(struct options *popt, struct client *peer)
 			done = 1;
 			break;
 		case CGPSP_PROTO_ERROR:
+			logerr("server response: %s", req.value);
 			cleanup_request(peer, buff);
-			die("server responded: %s", req.value);
-			break;
+			exit(1);
 		default:
-			cleanup_request(peer, buff);
 			die("protocol error (%s unexpected)", req.option);
-			break;
+			cleanup_request(peer, buff);
+			exit(1);
 		}
 	}
 	debug("done with request");
