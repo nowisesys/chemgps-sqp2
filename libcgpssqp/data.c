@@ -48,6 +48,9 @@
 #endif
 #include <ctype.h>
 
+#define CGPS_CHECK_FLOAT_MATRIX 0
+#define CGPS_CHECK_STRING_MATRIX 1
+
 #include "cgpssqp.h"
 
 extern const char * cgps_simcaq_error(void);
@@ -423,20 +426,32 @@ static int cgps_predict_get_observations(struct client *loader)
 /*
  * Check parameters to cgps_predict_load_xxx()
  */
-static int cgps_predict_load_check_params(struct cgps_project *proj, struct client *loader, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names)
+static int cgps_predict_load_check_params(struct cgps_project *proj, struct client *loader, SQX_FloatMatrix *fmx, SQX_StringMatrix *smx, SQX_StringVector *names, int checktype)
 {
 	int error = 0;
 	
+	if(checktype == CGPS_CHECK_FLOAT_MATRIX) {
+		if(!fmx) {
+			logerr("Float matrix not initilized");
+			error = 1;
+		}
+		if(smx) {
+			logerr("String matrix already initilized");
+			error = 1;
+		}
+	}
+	if(checktype == CGPS_CHECK_STRING_MATRIX) {
+		if(fmx) {
+			logerr("Float matrix already initilized");
+			error = 1;
+		}
+		if(!smx) {
+			logerr("String matrix not initilized");
+			error = 1;
+		}
+	}
 	if(!proj->handle) {
 		logerr("Invalid project handle");
-		error = 1;
-	}
-	if(!smx && fmx) {
-		logerr("Float matrix already initilized");
-		error = 1;
-	}
-	if(!fmx && smx) {
-		logerr("String matrix already initilized");
 		error = 1;
 	}
 	if(!names) {
@@ -458,7 +473,7 @@ static int cgps_predict_load_quant_data(struct cgps_project *proj, struct client
 {
 	int num = SQX_GetNumStringsInVector(names);
 
-	if(cgps_predict_load_check_params(proj, loader, matrix, NULL, names) < 0) {
+	if(cgps_predict_load_check_params(proj, loader, matrix, NULL, names, CGPS_CHECK_FLOAT_MATRIX) < 0) {
 		logerr("invalid parameters to cgps_predict_load_quant_data().");
 		return -1;
 	}
@@ -523,7 +538,7 @@ static int cgps_predict_load_quant_data(struct cgps_project *proj, struct client
  */
 static int cgps_predict_load_qual_data(struct cgps_project *proj, struct client *loader, SQX_StringMatrix *matrix, SQX_StringVector *names)
 {
-	if(cgps_predict_load_check_params(proj, loader, NULL, matrix, names) < 0) {
+	if(cgps_predict_load_check_params(proj, loader, NULL, matrix, names, CGPS_CHECK_STRING_MATRIX) < 0) {
 		logerr("invalid parameters to cgps_predict_load_qual_data().");
 		return -1;
 	}
@@ -540,7 +555,7 @@ static int cgps_predict_load_qual_data(struct cgps_project *proj, struct client 
  */
 static int cgps_predict_load_qual_data_lagged(struct cgps_project *proj, struct client *loader, SQX_StringMatrix *matrix, SQX_StringVector *names)
 {
-	if(cgps_predict_load_check_params(proj, loader, NULL, matrix, names) < 0) {
+	if(cgps_predict_load_check_params(proj, loader, NULL, matrix, names, CGPS_CHECK_STRING_MATRIX) < 0) {
 		logerr("invalid parameters to cgps_predict_load_qual_data_lagged().");
 		return -1;
 	}
@@ -557,7 +572,7 @@ static int cgps_predict_load_qual_data_lagged(struct cgps_project *proj, struct 
  */
 static int cgps_predict_load_lag_parents_data(struct cgps_project *proj, struct client *loader, SQX_FloatMatrix *matrix, SQX_StringVector *names)
 {
-	if(cgps_predict_load_check_params(proj, loader, matrix, NULL, names) < 0) {
+	if(cgps_predict_load_check_params(proj, loader, matrix, NULL, names, CGPS_CHECK_FLOAT_MATRIX) < 0) {
 		logerr("invalid parameters to cgps_predict_load_quant_data().");
 		return -1;
 	}
