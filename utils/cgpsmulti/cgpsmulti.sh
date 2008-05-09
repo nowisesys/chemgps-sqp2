@@ -19,6 +19,8 @@ unix="0"
 background="0"
 args=""
 verbose="0"
+logdir=""
+outfmt="out.%.07d"
 
 chemgpsdir="../../../libchemgps/src/.libs"
 cgpscltdir="../../cgpsclt"
@@ -59,6 +61,7 @@ function usage()
   echo "  -s,--sock <path>:   Set UNIX socket path [$sock]"
   echo "  -l,--local:         Connect to UNIX socket [$unix]"
   echo "  -b,--background:    Run each client in background [$background]"
+  echo "  -o,--logdir=path:   Save per process log (i.e. path/`printf $outfmt 465`)"
   echo 
   echo "All other options are passed direct to cgpsclt."
   echo 
@@ -103,6 +106,10 @@ while [ "$1" != "" ]; do
     -b|--background)
       background="1"
       ;;
+    -o|--logdir)
+      shift
+      logdir="$1"
+      ;;
     -h|--help)
       usage
       exit 0
@@ -122,6 +129,11 @@ if [ "$max" -lt "1" ]; then
   exit 1
 fi
 
+if ! [ -d "$logdir" ]; then
+  echo "$prog: log directory $logdir don't exist"
+  exit 1
+fi
+
 if [ "$verbose" == "1" ]; then
   echo "Using options:"
   echo "-----------------------"
@@ -134,25 +146,40 @@ if [ "$verbose" == "1" ]; then
   echo "     max = $max"
   echo "   input = $input"
   echo "  result = $result"
+  echo "  logdir = $logdir"
   echo
   echo "Result:"
   echo "----------------------"
 fi
 
+function run_command()
+{
+  local backgr="$1"
+  local logdir="$2"
+  local args="$3"
+  local file="`printf $outfmt $4`"
+  
+  if [ "$backgr" == 1 ]; then
+    if [ -z "$logdir" ]; then
+      $cgpscltdir/cgpsclt $args &
+    else
+      $cgpscltdir/cgpsclt $args > $logdir/$file &
+    fi
+  else
+    if [ -z "$logdir" ]; then
+      $cgpscltdir/cgpsclt $args
+    else
+      $cgpscltdir/cgpsclt $args > $logdir/$file
+    fi
+  fi    
+}
+
 num=0
 while [ "$num" -lt "$max" ]; do
   if [ "$unix" == "1" ]; then
-    if [ "$background" == "1" ]; then    
-      $cgpscltdir/cgpsclt $args -s $sock -i $input -r $result &
-    else 
-      $cgpscltdir/cgpsclt $args -s $sock -i $input -r $result
-    fi 
+    run_command "$background" "$logdir" "$args -s $sock -i $input -r $result" "$num"
   else
-    if [ "$background" == "1" ]; then    
-      $cgpscltdir/cgpsclt $args -H $host -i $input -r $result &
-    else 
-      $cgpscltdir/cgpsclt $args -H $host -i $input -r $result
-    fi
+    run_command "$background" "$logdir" "$args -H $host -i $input -r $result" "$num"
   fi
   let num=$num+1
 done
