@@ -3,7 +3,7 @@
 ## the libsimcaq library installed.
 
 bin_PROGRAMS = cgpsclt
-cgpsclt_SOURCES = main.c options.c socket.c cgpsclt.h request.c  
+cgpsclt_SOURCES = main.c options.c socket.c cgpsclt.h request.c connect.c
 
 cgpsclt_CFLAGS = -I../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(SIMCAQ_INCDIR)
 cgpsclt_LDADD = ../libcgpssqp/libcgpssqp.a

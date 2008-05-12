@@ -73,7 +73,6 @@ static void exit_handler(void)
 
 int main(int argc, char **argv)
 {
-	struct client peer;
 	int retry;
 	
 	opts = malloc(sizeof(struct options));
@@ -101,65 +100,18 @@ int main(int argc, char **argv)
 	if(signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
 		die("failed ignoring broken pipe signal (SIGPIPE)");
 	}
-	for(retry = 1; retry <= CGPSCLT_RETRY_LIMIT; ++retry) {
-		if(retry != 0) {
-			logwarn("retry attempt %d/%d (connect)", retry, CGPSCLT_RETRY_LIMIT);
-		}
-		switch(init_socket(opts)) {
-		case CGPSCLT_CONN_FAILED:
-			exit(1);
-			break;
-		case CGPSCLT_CONN_RETRY:
-			logwarn("server busy, waiting %d seconds before retrying (connect)", CGPSCLT_RETRY_SLEEP);
-			sleep(CGPSCLT_RETRY_SLEEP);
-			continue;
-		case CGPSCLT_CONN_SUCCESS:
-			if(retry != 0) {
-				loginfo("success after %d attempts (connect)", retry);
-			}
-			retry = 0;
-			break;
-		}
-		if(retry == 0) {
-			break;
-		}
-	}
-	if(retry == CGPSCLT_RETRY_LIMIT) {
-		die("failed connect after %d seconds (%d retires)",
-		    CGPSCLT_RETRY_SLEEP * CGPSCLT_RETRY_LIMIT, CGPSCLT_RETRY_LIMIT);
-	}
-	
-	peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
-	peer.opts = opts;
-	
-	for(retry = 1; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
-		if(retry != 0) {
-			logwarn("retry attempt %d/%d (request)", retry, CGPSCLT_RETRY_LIMIT);
-		}
-		switch(request(opts, &peer)) {
-		case CGPSCLT_CONN_FAILED:
-			exit(1);
-			break;
-		case CGPSCLT_CONN_RETRY:
-			logwarn("server busy, waiting %d seconds before retrying (request)", CGPSCLT_RETRY_SLEEP);
-			sleep(CGPSCLT_RETRY_SLEEP);
-			continue;
-		case CGPSCLT_CONN_SUCCESS:
-			if(retry != 0) {
-				loginfo("successful after %d attempts (request)", retry);
-			}
-			retry = 0;
-			break;
-		}
-		if(retry == 0) {
-			break;
-		}
-	}
-	if(retry == CGPSCLT_RETRY_LIMIT) {
-		die("failed request after %d seconds (%d retires)",
-		    CGPSCLT_RETRY_SLEEP * CGPSCLT_RETRY_LIMIT, CGPSCLT_RETRY_LIMIT);
-	}
 
+	for(retry = 1; retry <= CGPSCLT_LOOP_COUNT; ++retry) {
+		if(client_connect(opts) == 0) {
+			break;
+		}
+		sleep(CGPSCLT_LOOP_SLEEP);
+	}
+	if(retry == CGPSCLT_LOOP_COUNT) {
+		die("failed connect/request, giving up after %d seconds...",
+		    CGPSCLT_LOOP_COUNT * (CGPSCLT_RETRY_TOTAL + CGPSCLT_LOOP_SLEEP));
+	}
+	
 #ifndef HAVE_ATEXIT
 	exit_handler();
 #endif

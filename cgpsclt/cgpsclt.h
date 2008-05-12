@@ -29,6 +29,7 @@
 
 int init_socket(struct options *popt);
 int request(struct options *popt, struct client *peer);
+int client_connect(struct options *popt);
 
 #define CGPSCLT_CONN_FAILED -1    /* permanent connection error */
 #define CGPSCLT_CONN_SUCCESS 0    /* successful connected */
@@ -36,8 +37,13 @@ int request(struct options *popt, struct client *peer);
 
 #if ! defined(CGPSCLT_EXTERN)
 
-# define CGPSCLT_RETRY_LIMIT 12   /* number of connect retries */
+# define CGPSCLT_RETRY_LIMIT 12   /* number of connect/request retries */
 # define CGPSCLT_RETRY_SLEEP 5    /* timeout between retries */
+
+# define CGPSCLT_LOOP_COUNT  3    /* number of retry loops */
+# define CGPSCLT_LOOP_SLEEP  60   /* sleep between retry loop iterations */
+
+# define CGPSCLT_RETRY_TOTAL CGPSCLT_RETRY_LIMIT * CGPSCLT_RETRY_SLEEP
 
 #endif
 

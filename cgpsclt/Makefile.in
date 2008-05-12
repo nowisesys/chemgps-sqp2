@@ -53,11 +53,11 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am__cgpsclt_SOURCES_DIST = main.c options.c socket.c cgpsclt.h \
-	request.c result.c
+	request.c connect.c result.c
 @FOREIGN_CLIENT_TRUE@am__objects_1 = cgpsclt-result.$(OBJEXT)
 am_cgpsclt_OBJECTS = cgpsclt-main.$(OBJEXT) cgpsclt-options.$(OBJEXT) \
 	cgpsclt-socket.$(OBJEXT) cgpsclt-request.$(OBJEXT) \
-	$(am__objects_1)
+	cgpsclt-connect.$(OBJEXT) $(am__objects_1)
 cgpsclt_OBJECTS = $(am_cgpsclt_OBJECTS)
 am__DEPENDENCIES_1 =
 cgpsclt_DEPENDENCIES = ../libcgpssqp/libcgpssqp.a \
@@ -171,7 +171,7 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 cgpsclt_SOURCES = main.c options.c socket.c cgpsclt.h request.c \
-	$(am__append_1)
+	connect.c $(am__append_1)
 cgpsclt_CFLAGS = -I../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(SIMCAQ_INCDIR)
 cgpsclt_LDADD = ../libcgpssqp/libcgpssqp.a $(am__append_2)
 @FOREIGN_CLIENT_FALSE@cgpsclt_LDFLAGS = -L$(top_srcdir)/$(LIBCHEMGPS_LIBDIR) -L$(SIMCAQ_LIBDIR)
@@ -241,6 +241,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-connect.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-options.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgpsclt-request.Po@am__quote@
@@ -316,6 +317,20 @@ cgpsclt-request.obj: request.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='request.c' object='cgpsclt-request.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-request.obj `if test -f 'request.c'; then $(CYGPATH_W) 'request.c'; else $(CYGPATH_W) '$(srcdir)/request.c'; fi`
+
+cgpsclt-connect.o: connect.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-connect.o -MD -MP -MF "$(DEPDIR)/cgpsclt-connect.Tpo" -c -o cgpsclt-connect.o `test -f 'connect.c' || echo '$(srcdir)/'`connect.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsclt-connect.Tpo" "$(DEPDIR)/cgpsclt-connect.Po"; else rm -f "$(DEPDIR)/cgpsclt-connect.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='connect.c' object='cgpsclt-connect.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-connect.o `test -f 'connect.c' || echo '$(srcdir)/'`connect.c
+
+cgpsclt-connect.obj: connect.c
+@am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-connect.obj -MD -MP -MF "$(DEPDIR)/cgpsclt-connect.Tpo" -c -o cgpsclt-connect.obj `if test -f 'connect.c'; then $(CYGPATH_W) 'connect.c'; else $(CYGPATH_W) '$(srcdir)/connect.c'; fi`; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/cgpsclt-connect.Tpo" "$(DEPDIR)/cgpsclt-connect.Po"; else rm -f "$(DEPDIR)/cgpsclt-connect.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='connect.c' object='cgpsclt-connect.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -c -o cgpsclt-connect.obj `if test -f 'connect.c'; then $(CYGPATH_W) 'connect.c'; else $(CYGPATH_W) '$(srcdir)/connect.c'; fi`
 
 cgpsclt-result.o: result.c
 @am__fastdepCC_TRUE@	if $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(cgpsclt_CFLAGS) $(CFLAGS) -MT cgpsclt-result.o -MD -MP -MF "$(DEPDIR)/cgpsclt-result.Tpo" -c -o cgpsclt-result.o `test -f 'result.c' || echo '$(srcdir)/'`result.c; \
