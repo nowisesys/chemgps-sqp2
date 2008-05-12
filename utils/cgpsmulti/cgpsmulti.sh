@@ -165,13 +165,13 @@ function run_command()
     if [ -z "$logdir" ]; then
       $cgpscltdir/cgpsclt $args &
     else
-      $cgpscltdir/cgpsclt $args > $logdir/$file &
+      $cgpscltdir/cgpsclt $args >& $logdir/$file &
     fi
   else
     if [ -z "$logdir" ]; then
       $cgpscltdir/cgpsclt $args
     else
-      $cgpscltdir/cgpsclt $args > $logdir/$file
+      $cgpscltdir/cgpsclt $args >& $logdir/$file
     fi
   fi    
 }
