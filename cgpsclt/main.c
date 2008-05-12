@@ -76,7 +76,7 @@ static void exit_handler(void)
 int main(int argc, char **argv)
 {
 	struct client peer;
-	int retry = 0;
+	int retry;
 	
 	opts = malloc(sizeof(struct options));
 	if(!opts) {
@@ -101,34 +101,48 @@ int main(int argc, char **argv)
 
 	parse_options(argc, argv, opts);
 	if(signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
-		die("failed ignore broken pipe siganl (SIGPIPE)");
+		die("failed ignoring broken pipe signal (SIGPIPE)");
 	}
-	while(retry < CGPSCLT_RETRY_LIMIT) {
+	for(retry = 0; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
 		if(retry != 0) {
-			loginfo("retry attempt %d/%d", retry, CGPSCLT_RETRY_LIMIT);
+			logwarn("retry attempt %d/%d (connect)", retry, CGPSCLT_RETRY_LIMIT);
 		}
-		retry++;
-		
 		switch(init_socket(opts)) {
 		case CGPSCLT_CONN_FAILED:
 			exit(1);
 			break;
-		case CGPSCLT_CONN_RETRY:
+		case CGPSCLT_CONN_RETRY:			
+			logwarn("server busy, waiting %d seconds before retrying (connect)", CGPSCLT_RETRY_LIMIT);
 			sleep(CGPSCLT_RETRY_SLEEP);
 			continue;
+		case CGPSCLT_CONN_SUCCESS:
+			if(retry != 0) {
+				loginfo("success after %d attempts (connect)", retry);
+			}
+			retry = CGPSCLT_RETRY_LIMIT;
+			break;
 		}
+	}
 		
-		peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
-		peer.opts = opts;
+	peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
+	peer.opts = opts;
 	
+	for(retry = 0; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
+		if(retry != 0) {
+			logwarn("retry attempt %d/%d (request)", retry, CGPSCLT_RETRY_LIMIT);
+		}
 		switch(request(opts, &peer)) {
 		case CGPSCLT_CONN_FAILED:
 			exit(1);
 			break;
 		case CGPSCLT_CONN_RETRY:
+			logwarn("server busy, waiting %d seconds before retrying (request)", CGPSCLT_RETRY_LIMIT);
 			sleep(CGPSCLT_RETRY_SLEEP);
 			continue;
 		case CGPSCLT_CONN_SUCCESS:
+			if(retry != 0) {
+				loginfo("successful after %d attempts (request)", retry);
+			}
 			retry = CGPSCLT_RETRY_LIMIT;
 			break;
 		}

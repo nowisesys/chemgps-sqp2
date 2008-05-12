@@ -36,8 +36,8 @@ int request(struct options *popt, struct client *peer);
 
 #if ! defined(CGPSCLT_EXTERN)
 
-# define CGPSCLT_RETRY_LIMIT 5    /* number of connect retries */
-# define CGPSCLT_RETRY_SLEEP 6    /* timeout between retries */
+# define CGPSCLT_RETRY_LIMIT 12   /* number of connect retries */
+# define CGPSCLT_RETRY_SLEEP 5    /* timeout between retries */
 
 #endif
 
