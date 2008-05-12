@@ -129,9 +129,11 @@ if [ "$max" -lt "1" ]; then
   exit 1
 fi
 
-if ! [ -d "$logdir" ]; then
-  echo "$prog: log directory $logdir don't exist"
-  exit 1
+if ! [ -z "$logdir" ]; then
+  if ! [ -d "$logdir" ]; then
+    echo "$prog: log directory $logdir don't exist"
+    exit 1
+  fi
 fi
 
 if [ "$verbose" == "1" ]; then
