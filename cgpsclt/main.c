@@ -109,8 +109,8 @@ int main(int argc, char **argv)
 		case CGPSCLT_CONN_FAILED:
 			exit(1);
 			break;
-		case CGPSCLT_CONN_RETRY:			
-			logwarn("server busy, waiting %d seconds before retrying (connect)", CGPSCLT_RETRY_LIMIT);
+		case CGPSCLT_CONN_RETRY:
+			logwarn("server busy, waiting %d seconds before retrying (connect)", CGPSCLT_RETRY_SLEEP);
 			sleep(CGPSCLT_RETRY_SLEEP);
 			continue;
 		case CGPSCLT_CONN_SUCCESS:
@@ -121,7 +121,11 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-		
+	if(retry == CGPSCLT_RETRY_LIMIT) {
+		die("failed connect after %d seconds (%d retires)",
+		    CGPSCLT_RETRY_SLEEP * CGPSCLT_RETRY_LIMIT, CGPSCLT_RETRY_LIMIT);
+	}
+	
 	peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
 	peer.opts = opts;
 	
@@ -134,7 +138,7 @@ int main(int argc, char **argv)
 			exit(1);
 			break;
 		case CGPSCLT_CONN_RETRY:
-			logwarn("server busy, waiting %d seconds before retrying (request)", CGPSCLT_RETRY_LIMIT);
+			logwarn("server busy, waiting %d seconds before retrying (request)", CGPSCLT_RETRY_SLEEP);
 			sleep(CGPSCLT_RETRY_SLEEP);
 			continue;
 		case CGPSCLT_CONN_SUCCESS:
@@ -145,6 +149,10 @@ int main(int argc, char **argv)
 			break;
 		}
 		break;
+	}
+	if(retry == CGPSCLT_RETRY_LIMIT) {
+		die("failed request after %d seconds (%d retires)",
+		    CGPSCLT_RETRY_SLEEP * CGPSCLT_RETRY_LIMIT, CGPSCLT_RETRY_LIMIT);
 	}
 
 #ifndef HAVE_ATEXIT
