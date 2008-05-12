@@ -43,7 +43,6 @@
 
 struct options *opts;
 
-#ifdef HAVE_ATEXIT
 static void exit_handler(void)
 {
 	if(opts) {
@@ -71,7 +70,6 @@ static void exit_handler(void)
 		opts = NULL;
 	}
 }
-#endif /* HAVE_ATEXIT */
 
 int main(int argc, char **argv)
 {
@@ -148,6 +146,10 @@ int main(int argc, char **argv)
 		}
 		break;
 	}
+
+#ifndef HAVE_ATEXIT
+	exit_handler();
+#endif
 	
 	return 0;
 }
