@@ -43,19 +43,25 @@ int client_connect(struct options *popt)
 	
 	for(retry = 0; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
 		if(retry != 0) {
-			logwarn("retry attempt %d/%d (connect)", retry, CGPSCLT_RETRY_LIMIT);
+			if(popt->verbose && !popt->quiet) {
+				logwarn("retry attempt %d/%d (connect)", retry, CGPSCLT_RETRY_LIMIT);
+			}
 		}
 		switch(init_socket(popt)) {
 		case CGPSCLT_CONN_FAILED:
 			return -1;
 			break;
 		case CGPSCLT_CONN_RETRY:
-			logwarn("server busy, waiting %d seconds before retrying (connect)", CGPSCLT_RETRY_SLEEP);
+			if(popt->verbose && !popt->quiet) {
+				logwarn("server busy, waiting %d seconds before retrying (connect)", CGPSCLT_RETRY_SLEEP);
+			}
 			sleep(CGPSCLT_RETRY_SLEEP);
 			continue;
 		case CGPSCLT_CONN_SUCCESS:
-			if(popt->debug && retry != 0) {
-				loginfo("success after %d attempts (connect)", retry);
+			if(retry != 0) {
+				if(popt->verbose && !popt->quiet) {
+					loginfo("success after %d attempts (connect)", retry);
+				}
 			}
 			retry = 0;
 			break;
@@ -65,8 +71,10 @@ int client_connect(struct options *popt)
 		}
 	}
 	if(retry == CGPSCLT_RETRY_LIMIT) {
-		logerr("failed connect after %d seconds (%d retires)",
-		       CGPSCLT_RETRY_SLEEP * CGPSCLT_RETRY_LIMIT, CGPSCLT_RETRY_LIMIT);
+		if(popt->verbose && !popt->quiet) {
+			logerr("failed connect after %d seconds (%d retries)",
+			       CGPSCLT_RETRY_SLEEP * CGPSCLT_RETRY_LIMIT, CGPSCLT_RETRY_LIMIT);
+		}
 		return -1;
 	}
 	
@@ -75,19 +83,25 @@ int client_connect(struct options *popt)
 	
 	for(retry = 0; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
 		if(retry != 0) {
-			logwarn("retry attempt %d/%d (request)", retry, CGPSCLT_RETRY_LIMIT);
+			if(popt->verbose && !popt->quiet) {
+				logwarn("retry attempt %d/%d (request)", retry, CGPSCLT_RETRY_LIMIT);
+			}
 		}
 		switch(request(popt, &peer)) {
 		case CGPSCLT_CONN_FAILED:
 			return -1;
 			break;
 		case CGPSCLT_CONN_RETRY:
-			logwarn("server busy, waiting %d seconds before retrying (request)", CGPSCLT_RETRY_SLEEP);
+			if(popt->verbose && !popt->quiet) {
+				logwarn("server busy, waiting %d seconds before retrying (request)", CGPSCLT_RETRY_SLEEP);
+			}
 			sleep(CGPSCLT_RETRY_SLEEP);
 			continue;
 		case CGPSCLT_CONN_SUCCESS:
-			if(popt->debug && retry != 0) {
-				loginfo("successful after %d attempts (request)", retry);
+			if(retry != 0) {
+				if(popt->verbose && !popt->quiet) {
+					loginfo("successful after %d attempts (request)", retry);
+				}
 			}
 			retry = 0;
 			break;
@@ -97,8 +111,10 @@ int client_connect(struct options *popt)
 		}
 	}
 	if(retry == CGPSCLT_RETRY_LIMIT) {
-		logerr("failed request after %d seconds (%d retires)",
-		       CGPSCLT_RETRY_SLEEP * CGPSCLT_RETRY_LIMIT, CGPSCLT_RETRY_LIMIT);
+		if(popt->verbose && !popt->quiet) {
+			logerr("failed request after %d seconds (%d retries)",
+			       CGPSCLT_RETRY_SLEEP * CGPSCLT_RETRY_LIMIT, CGPSCLT_RETRY_LIMIT);
+		}
 		return -1;
 	}
 	
