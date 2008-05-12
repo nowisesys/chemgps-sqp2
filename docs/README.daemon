@@ -1,17 +1,35 @@
-The use of Simca-Q as a standalone application is suboptimal. This document
-makes some note for future modification of the code to address this problem.
+** REASON:
 
-In the future the code may be separated in a client/server model where the
-server initilize and wait for client connection. The client send the data for 
-prediction and the server makes the prediction and send the result to the 
-client. 
+   The use of Simca-QP together with a standalone application is suboptimal,
+   due to the extra 2-3 seconds it takes just to load the project.
 
-Possible communication channel between the client and server is UNIX socket, 
-named pipes and TCP/IP. The server should handle the client request in its 
-own child process or thread to take advantage of SMP architectures. 
+** SOLUTION:
 
-The whole idea behind the client/server solution is to keep the project loaded 
-to reduce the upstart time (it takes about 2-3 seconds to load the project on 
-an 2 x Quad Core Xeon L5310 1.60GHz server).
+   The chemgps-sqp2 package offers a solution to this by letting a daemon load
+   the project and then answer to predict requests from clients. Both local
+   connections (UNIX-domain sockets) and remote TCP connections (IPv4/IPv6) are 
+   supported.
 
+   The daemon is multithreaded and implements a variant of the boss/worker
+   model where client requests gets accepted, but is put on hold until a worker
+   thread becomes available to process the request.
+      
+** PERFORMANCE:
+
+   Initial performance tests shows that the client/server solution (cgpsclt/cgpsd)
+   is able to process around 150000 requests / hour on an AMD athlon X2 3800+ 
+   without any errors. The test was done running utils/cgpsmulti.
+
+** REQUIREMENTS:
+
+   The daemon relies on library libchemgps for making the predictions. You
+   need Simca-QP and a valid license to compile and use this software. The
+   exception is cgpsclt that can be built without dependencies on Simca-QP
+   (use --enable-foreign when configure).
+
+** PROTOCOL:
+
+   See README.protocol for a description of the protocol used for communication
+   with the daemon.
+   
 // Anders Lövgren, 2008-01-24
