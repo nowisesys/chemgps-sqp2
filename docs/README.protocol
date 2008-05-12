@@ -1,7 +1,8 @@
-** ABOUT:
+** ABOUT CGPSP:
 
    This is a brief orientation of the protocol used for communication
-   between the client (cgpsclt) and the daemon (cgpsd).
+   between the client (cgpsclt) and the daemon (cgpsd). The name of the protocol
+   is CGPSP.
 
 ** CONVENTIONS:
 
@@ -24,6 +25,9 @@
       (S -> C)  CGPSP 1.0 (cgpsd: server ready)
       (C -> S)  CGPSP 1.0 (cgpsclt: client ready)
 
+      S = server
+      C = client
+      
    2. PARAMETER EXCHANGE:
    
       After the initial handshake, the server becomes passive and wait for
@@ -63,5 +67,18 @@
       a) Protocol errors
       b) Failed load data
       c) Out of memory
-      
+
+** EXTENSIONS:
+
+   The DDOS (distributed denial of service) utility found in utils/cgpsddos
+   uses the core CGPSP protocol and some extensions. The extensions are:
+   
+      (M -> S)  target: address:port
+      (M -> S)  start:
+      (M -> S)  quit:
+      (M -> S)  count: num
+   
+   M = master
+   S = slave
+   
 Anders Lövgren, 2008-05-13
