@@ -41,7 +41,7 @@ int client_connect(struct options *popt)
 	struct client peer;
 	int retry;
 	
-	for(retry = 1; retry <= CGPSCLT_RETRY_LIMIT; ++retry) {
+	for(retry = 0; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
 		if(retry != 0) {
 			logwarn("retry attempt %d/%d (connect)", retry, CGPSCLT_RETRY_LIMIT);
 		}
@@ -73,7 +73,7 @@ int client_connect(struct options *popt)
 	peer.sock = popt->unsock ? popt->unsock : popt->ipsock;
 	peer.opts = popt;
 	
-	for(retry = 1; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
+	for(retry = 0; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
 		if(retry != 0) {
 			logwarn("retry attempt %d/%d (request)", retry, CGPSCLT_RETRY_LIMIT);
 		}
