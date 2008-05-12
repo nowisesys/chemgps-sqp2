@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 	if(signal(SIGPIPE, SIG_IGN) == SIG_ERR) {
 		die("failed ignoring broken pipe signal (SIGPIPE)");
 	}
-	for(retry = 0; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
+	for(retry = 1; retry <= CGPSCLT_RETRY_LIMIT; ++retry) {
 		if(retry != 0) {
 			logwarn("retry attempt %d/%d (connect)", retry, CGPSCLT_RETRY_LIMIT);
 		}
@@ -117,7 +117,10 @@ int main(int argc, char **argv)
 			if(retry != 0) {
 				loginfo("success after %d attempts (connect)", retry);
 			}
-			retry = CGPSCLT_RETRY_LIMIT;
+			retry = 0;
+			break;
+		}
+		if(retry == 0) {
 			break;
 		}
 	}
@@ -129,7 +132,7 @@ int main(int argc, char **argv)
 	peer.sock = opts->unsock ? opts->unsock : opts->ipsock;
 	peer.opts = opts;
 	
-	for(retry = 0; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
+	for(retry = 1; retry < CGPSCLT_RETRY_LIMIT; ++retry) {
 		if(retry != 0) {
 			logwarn("retry attempt %d/%d (request)", retry, CGPSCLT_RETRY_LIMIT);
 		}
@@ -145,10 +148,12 @@ int main(int argc, char **argv)
 			if(retry != 0) {
 				loginfo("successful after %d attempts (request)", retry);
 			}
-			retry = CGPSCLT_RETRY_LIMIT;
+			retry = 0;
 			break;
 		}
-		break;
+		if(retry == 0) {
+			break;
+		}
 	}
 	if(retry == CGPSCLT_RETRY_LIMIT) {
 		die("failed request after %d seconds (%d retires)",
