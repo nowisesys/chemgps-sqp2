@@ -214,9 +214,11 @@ ssize_t read_request(char **buff, size_t *size, FILE *sock)
 	if((bytes = getline(buff, size, sock)) != -1) {
 		char *ptr = *buff + bytes - 1;
 		*ptr = '\0';
-	} else {
-		logerr("failed read peer request");
+	} 
+	if(opts->debug > 1) {
+		debug("got %d bytes from peer", bytes != -1 ? bytes : 0);
 	}
+	
 	return bytes;
 }
 
