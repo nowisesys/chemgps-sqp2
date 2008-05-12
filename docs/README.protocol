@@ -1,0 +1,67 @@
+** ABOUT:
+
+   This is a brief orientation of the protocol used for communication
+   between the client (cgpsclt) and the daemon (cgpsd).
+
+** CONVENTIONS:
+
+   The protocol is entierly text-oriented and each request is one line
+   consisting of a keyword and an optional value. The keyword is separated
+   from the value by a colon (':').
+
+   If a keyword has a value that (might) span more than a single row, then
+   the keyword is followed by a ':', a newline and one or more lines
+   terminated by an empty line. Example: 'result:\nline1\nline2\n...\nlineN\n\n'
+   
+** PROTOCOL:
+
+   1. HANDSHAKE:
+   
+      The first stage after the client has connected to the server is the
+      handshake phase where the server and the client exchange information
+      about their protocol level (currently 1.0) and their name:
+   
+      (S -> C)  CGPSP 1.0 (cgpsd: server ready)
+      (C -> S)  CGPSP 1.0 (cgpsclt: client ready)
+
+   2. PARAMETER EXCHANGE:
+   
+      After the initial handshake, the server becomes passive and wait for
+      client to send required parameters (in order):
+      
+      (C -> S)  predict: predict-list    (*)
+      (C -> S)  format: {xml|plain}
+
+      (*):  The predict-list value is a colon (':') separated list of results from
+            the prediction. See cgpsclt/result.c for names (second field).
+	   
+   3. PREDICT STAGE:
+   
+      After parameters are exchanged, the client becomes passive and wait
+      for server response. In this phase, the server may request data for
+      prediction (load keyword) or tell the client to fetch the result.
+      
+      (S -> C)  load: {quant-data|*}     (*)
+      (S -> C)  result:                  (**)
+      
+      (*):  Currently only quant-data is handled because I never come across
+            a project using anything else than "Quantitative Variables".
+	    
+      (**): Following result: is a multiline value. See the CONVENTIONS
+            section.
+      
+   4. ERRORS:
+   
+      The client or the server can at any stage send an error message that
+      the peer should handle gracefully. The peer receiving an error message
+      should flush buffers, close the socket and release resources allocated
+      for this connection. An error message is a fatal message that should 
+      end the conversation.
+      
+      Typical resons for error messages are: 
+      
+      a) Protocol errors
+      b) Failed load data
+      c) Out of memory
+      
+Anders Lövgren, 2008-05-13
