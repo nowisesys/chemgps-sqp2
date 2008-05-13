@@ -54,12 +54,16 @@
 #include "cgpsclt.h"
 
 pthread_mutex_t countlock;
-pthread_cond_t  countcond;
-static int count = 0;          /* currently number of running threads */
-static int failed = 0;         /* counter for failed threads */
+pthread_mutex_t finishlock;
+pthread_mutex_t failedlock;
 
-static int maxthr = 0;         /* maximum number of running threads */
-static int minthr = 0;         /* minimum number of running threads */
+pthread_cond_t  countcond;
+
+static unsigned int count = 0;          /* currently number of running threads */
+static unsigned int failed = 0;         /* counter for failed predictions */
+static unsigned int maxthr = 0;         /* maximum number of running threads */
+static unsigned int minthr = 0;         /* minimum number of running threads */
+static unsigned int finish = 0;         /* total finished predictions */
 
 int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struct options *args);
 
@@ -71,76 +75,49 @@ static __inline__ void cgpsddos_print_stat(struct options *popt, int cnt, int mi
 	}
 }
 
-static int cgpsddos_init_socket(struct options *topt)
-{
-	int res, retry = 0;
-	
-	while((res = init_socket(topt)) != CGPSCLT_CONN_SUCCESS) {
-		if(res == CGPSCLT_CONN_RETRY) {
-			usleep(CGPSDDOS_THREAD_WRSLEEP * ++retry);
-			if(retry > CGPSDDOS_THREAD_WRLIMIT) break;
-		} else {
-			pthread_mutex_lock(&countlock);
-			++failed;
-			--count;
-			pthread_mutex_unlock(&countlock);			
-			pthread_exit(NULL);
-		}
-	}
-	
-	if(res == CGPSCLT_CONN_SUCCESS) {
-		if(!opts->quiet) {
-			debug("connected to %s:%d", topt->ipaddr, topt->port);
-		}
-		return 0;
-	} 
-	
-	return -1;
-}
-
-static int cgpsddos_request(struct options *topt, struct client *peer)
-{
-	int res, retry = 0;
-	
-	while((res = request(topt, peer)) == CGPSCLT_CONN_RETRY) {
-		usleep(CGPSDDOS_THREAD_WRSLEEP * ++retry);
-		if(retry > CGPSDDOS_THREAD_WRLIMIT) break;
-	}
-	
-	if(res == CGPSCLT_CONN_SUCCESS) {
-		return 0;
-	}
-
-	pthread_mutex_lock(&countlock);
-	++failed;
-	pthread_mutex_unlock(&countlock);
-	
-	return -1;
-}
-
 static void * cgpsddos_connect(void *args)
 {	
 	struct client peer;
-	struct options topt = *(struct options *)args;
+	struct options mopt = *(struct options *)args;
+	int res;
 
-	if(!opts->quiet) {
-		debug("connecting to %s:%d", topt.ipaddr, topt.port);
+	if(!mopt.quiet) {
+		debug("connecting to %s:%d", mopt.ipaddr, mopt.port);
 	}
+
+	while(1) {
+		if((res = init_socket(&mopt)) == 0) {
+			
+			peer.type = CGPS_DDOS;
+			peer.sock = mopt.unsock ? mopt.unsock : mopt.ipsock;
+			peer.opts = &mopt;
 	
-	if(cgpsddos_init_socket(&topt) == 0) {
-		peer.type = CGPS_DDOS;
-		peer.sock = topt.unsock ? topt.unsock : topt.ipsock;
-		peer.opts = &topt;
-	
-		cgpsddos_request(&topt, &peer);
-		close(peer.sock);
+			res = request(&mopt, &peer);
+			close(peer.sock);
+		} 
+		if(res == 0) {
+			pthread_mutex_lock(&finishlock);
+			++finish;
+			pthread_mutex_unlock(&finishlock);
+		} else {
+			pthread_mutex_lock(&failedlock);
+			++failed;
+			pthread_mutex_unlock(&failedlock);
+			
+			usleep(CGPSDDOS_THREAD_WRSLEEP);
+		} 
+		pthread_mutex_lock(&finishlock);
+		if(finish >= mopt.count) {
+			pthread_mutex_unlock(&finishlock);
+			break;
+		}
+		pthread_mutex_unlock(&finishlock);
 	}
-	
+
 	pthread_mutex_lock(&countlock);
-	if(--count < minthr) {
-		pthread_cond_signal(&countcond);
-	}
+	--count;
 	pthread_mutex_unlock(&countlock);
+	pthread_cond_signal(&countcond);
 	
 	pthread_exit(NULL);
 }
@@ -152,9 +129,10 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
-	unsigned int finished = 0, thrmax = 0, thrnow = 0, thrrep = CGPSDDOS_THREAD_SPAWN_MAX;
+	/* unsigned int thrmax = 0, thrnow = 0, thrrep = CGPSDDOS_THREAD_SPAWN_MAX; */
 	size_t stacksize;
 	struct rlimit rlim;
+	unsigned int i;
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
@@ -203,23 +181,18 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	
 	maxthr = sysconf(_SC_OPEN_MAX) - 1;
 	minthr = CGPSDDOS_THREAD_SPAWN_MIN;	
+	if(maxthr > args->count) {
+		maxthr = args->count;
+	}
 	if(minthr > maxthr) {
 		minthr = maxthr / 2;
-	}
+	}	
 	debug("running threads: %d (max), %d (min)", maxthr, minthr);
-	
-	if(args->count < thrrep) {
-		thrrep = args->count / 4;
-	} else {
-		if(args->count / thrrep > 1000) {
-			thrrep = args->count / 1000;
-			while(thrrep % 10000 != 0) --thrrep;
-		}
-	}
-	debug("report thread stats every %d thread started", thrrep);
 	
  	pthread_cond_init(&countcond, NULL);
 	pthread_mutex_init(&countlock, NULL);
+	pthread_mutex_init(&finishlock, NULL);
+	pthread_mutex_init(&failedlock, NULL);
 	
 	if(gettimeofday(&ts, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
@@ -227,42 +200,17 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	}
 	
 	loginfo("start running %d predictions", args->count);
-	cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
-	
-	while(finished < args->count) {
-		debug("%d predictions of %d total left to run", args->count - finished, args->count);
-		debug("starting prediction threads");
-		thrnow = 0;
-		for(; finished < args->count; ++thrnow, ++finished) {
-			pthread_mutex_lock(&countlock);
-			if((finished % thrrep == 0 && finished != 0) || opts->debug) {
-				cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
-			}
-			if(++count >= maxthr) {
-				pthread_mutex_unlock(&countlock);
-				break;
-			}
-			pthread_mutex_unlock(&countlock);
-			if(pthread_create(&threads[finished], &attr, cgpsddos_connect, args) != 0) {
-				break;
-			}
-			debug("thread 0x%lu: started", threads[finished]);
+	cgpsddos_print_stat(opts, count, minthr, maxthr, finish, args->count);
+
+	pthread_mutex_lock(&countlock);
+	for(i = 0; i < maxthr; ++i) {
+		if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) == 0) {
+			++count;
 		}
-		
-		if(thrnow > thrmax) {
-			thrmax = thrnow;
-		}
-		
-		pthread_mutex_lock(&countlock);
-		while(count > minthr) {
-			if(pthread_cond_wait(&countcond, &countlock) != 0) {
-				pthread_mutex_unlock(&countlock);
-				continue;
-			}
-			break;
-		}
-		pthread_mutex_unlock(&countlock);
+		debug("thread 0x%lu: started", threads[i]);
 	}
+	pthread_mutex_unlock(&countlock);
+	
         for(;;) {
 		pthread_mutex_lock(&countlock);
 		debug("waiting for threads to finish (%d running)...", count);
@@ -277,7 +225,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		break;
 	}
 	
-	cgpsddos_print_stat(opts, count, minthr, maxthr, finished, args->count);
+	cgpsddos_print_stat(opts, count, minthr, maxthr, finish, args->count);
 	loginfo("finished running predictions");
 	
 	if(gettimeofday(&te, NULL) < 0) {
@@ -285,6 +233,8 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		return -1;
 	}
 
+	pthread_mutex_destroy(&failedlock);
+	pthread_mutex_destroy(&finishlock);
 	pthread_mutex_destroy(&countlock);
  	pthread_cond_destroy(&countcond);
 	
@@ -293,7 +243,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	debug("sending predict result to peer");
 	snprintf(msg, sizeof(msg), "predict: start=%lu.%lu finish=%lu.%lu thrmax=%d finished=%d failed=%d\n", 
 		 ts.tv_sec, ts.tv_usec,
-		 te.tv_sec, te.tv_usec, thrmax, finished, failed);
+		 te.tv_sec, te.tv_usec, maxthr, finish, failed);
 	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
 		logerr("failed send to %s", "<fix me: unknown peer>");
 	}
