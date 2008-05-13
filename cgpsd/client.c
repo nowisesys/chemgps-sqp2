@@ -93,6 +93,8 @@ static void cleanup_request(struct workers *threads, struct client **peer, char 
 				if(read((*peer)->sock, &ch, 1) < 0) {
 					logerr("failed discard available bytes from socket");
 					avail = 0;
+				} else {
+					--avail;
 				}
 			}
 		}
