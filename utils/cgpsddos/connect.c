@@ -87,6 +87,12 @@ static void * cgpsddos_connect(void *args)
 	}
 
 	while(1) {
+		pthread_mutex_lock(&finishlock);
+		if(finish >= mopt.count) {
+			pthread_mutex_unlock(&finishlock);
+			break;
+		}
+		pthread_mutex_unlock(&finishlock);
 		if((res = init_socket(&mopt)) == 0) {
 			
 			peer.type = CGPS_DDOS;
@@ -107,12 +113,6 @@ static void * cgpsddos_connect(void *args)
 			++failed;
 			pthread_mutex_unlock(&failedlock);
 		}
-		pthread_mutex_lock(&finishlock);
-		if(finish >= mopt.count) {
-			pthread_mutex_unlock(&finishlock);
-			break;
-		}
-		pthread_mutex_unlock(&finishlock);
 		if(res < 0) {
 			pthread_mutex_lock(&finishlock);
 			while(finish < mopt.count) {
