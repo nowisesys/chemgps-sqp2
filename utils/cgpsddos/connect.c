@@ -58,6 +58,7 @@ pthread_mutex_t finishlock;
 pthread_mutex_t failedlock;
 
 pthread_cond_t  countcond;
+pthread_cond_t  failedcond;
 
 static unsigned int count = 0;          /* currently number of running threads */
 static unsigned int failed = 0;         /* counter for failed predictions */
@@ -99,19 +100,38 @@ static void * cgpsddos_connect(void *args)
 			pthread_mutex_lock(&finishlock);
 			++finish;
 			pthread_mutex_unlock(&finishlock);
-		} else {
+			pthread_cond_signal(&failedcond);
+		} 
+		else {
 			pthread_mutex_lock(&failedlock);
 			++failed;
 			pthread_mutex_unlock(&failedlock);
-			
-			usleep(CGPSDDOS_THREAD_WRSLEEP);
-		} 
+		}
 		pthread_mutex_lock(&finishlock);
 		if(finish >= mopt.count) {
 			pthread_mutex_unlock(&finishlock);
 			break;
 		}
 		pthread_mutex_unlock(&finishlock);
+		if(res < 0) {
+			pthread_mutex_lock(&finishlock);
+			while(finish < mopt.count) {
+				pthread_mutex_unlock(&finishlock);
+				pthread_mutex_lock(&failedlock);
+				if(pthread_cond_wait(&failedcond, &failedlock) != 0) {
+					pthread_mutex_unlock(&failedlock);
+					continue;
+				}
+				pthread_mutex_unlock(&failedlock);
+			}
+			pthread_mutex_unlock(&finishlock);
+			pthread_mutex_lock(&finishlock);
+			if(finish >= mopt.count) {
+				pthread_mutex_unlock(&finishlock);
+				break;
+			}			
+			pthread_mutex_unlock(&finishlock);
+		}
 	}
 
 	pthread_mutex_lock(&countlock);
@@ -190,6 +210,8 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	debug("running threads: %d (max), %d (min)", maxthr, minthr);
 	
  	pthread_cond_init(&countcond, NULL);
+	pthread_cond_init(&failedcond, NULL);
+	
 	pthread_mutex_init(&countlock, NULL);
 	pthread_mutex_init(&finishlock, NULL);
 	pthread_mutex_init(&failedlock, NULL);
@@ -202,16 +224,17 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	loginfo("start running %d predictions", args->count);
 	cgpsddos_print_stat(opts, count, minthr, maxthr, finish, args->count);
 
-	pthread_mutex_lock(&countlock);
 	for(i = 0; i < maxthr; ++i) {
 		if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) == 0) {
+			pthread_mutex_lock(&countlock);
 			++count;
+			pthread_mutex_unlock(&countlock);
 		}
 		debug("thread 0x%lu: started", threads[i]);
 	}
-	pthread_mutex_unlock(&countlock);
 	
         for(;;) {
+		pthread_cond_broadcast(&failedcond);
 		pthread_mutex_lock(&countlock);
 		debug("waiting for threads to finish (%d running)...", count);
 		while(count > 0) {
@@ -236,7 +259,9 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_mutex_destroy(&failedlock);
 	pthread_mutex_destroy(&finishlock);
 	pthread_mutex_destroy(&countlock);
+	
  	pthread_cond_destroy(&countcond);
+ 	pthread_cond_destroy(&failedcond);
 	
 	free(threads);
 	
