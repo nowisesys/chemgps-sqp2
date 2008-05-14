@@ -120,6 +120,7 @@ static void * cgpsddos_connect(void *args)
 				pthread_mutex_lock(&failedlock);
 				if(pthread_cond_wait(&failedcond, &failedlock) != 0) {
 					pthread_mutex_unlock(&failedlock);
+					pthread_mutex_lock(&finishlock);
 					continue;
 				}
 				pthread_mutex_unlock(&failedlock);
