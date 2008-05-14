@@ -73,11 +73,19 @@ int init_socket(struct options *popt)
 		while(retries < CGPS_RESOLVE_RETRIES) {
 			if((res = getaddrinfo(popt->ipaddr, port, &hints, &addr)) != 0) {
 				if(res == EAI_AGAIN) {
-					logwarn("temporary failure resolving hostname %s (%s)", 
-						popt->ipaddr, gai_strerror(res)); 
+					if(!popt->quiet) {
+						logwarn("temporary failure resolving hostname %s (%s)", 
+							popt->ipaddr, gai_strerror(res)); 
+					}
 				} else {
-					logerr("failed resolve %s:%d (%s)", 
-					       popt->ipaddr, popt->port, gai_strerror(res));
+					if(!popt->quiet) {
+						logerr("failed resolve %s:%d (%s)", 
+						       popt->ipaddr, popt->port, gai_strerror(res));
+					}
+					return CGPSCLT_CONN_FAILED;
+				}
+				if(popt->noretry) {
+					freeaddrinfo(addr);
 					return CGPSCLT_CONN_FAILED;
 				}
 				++retries;
@@ -102,14 +110,18 @@ int init_socket(struct options *popt)
 		if(!next) {
 			freeaddrinfo(addr);
 			if(popt->ipsock < 0) {
-				logerr("failed create TCP socket");
+				if(!popt->quiet) {
+					logerr("failed create TCP socket");
+				}
 				return CGPSCLT_CONN_FAILED;
 			} else {
 				if(errval == ETIMEDOUT) {
 					debug("timeout connecting to server %s (retrying)", popt->ipaddr);
 					return CGPSCLT_CONN_RETRY;
 				} else {
-					logerr("failed connect to %s:%d", popt->ipaddr, popt->port);
+					if(!popt->quiet) {
+						logerr("failed connect to %s:%d", popt->ipaddr, popt->port);
+					}
 					return CGPSCLT_CONN_FAILED;
 				}
 			}
@@ -137,7 +149,9 @@ int init_socket(struct options *popt)
 		
 		popt->unsock = socket(PF_UNIX, SOCK_STREAM, 0);
 		if(popt->unsock < 0) {
-			logerr("failed create UNIX socket");
+			if(!popt->quiet) {
+				logerr("failed create UNIX socket");
+			}
 			return CGPSCLT_CONN_FAILED;
 		}
 		debug("created UNIX socket");
@@ -152,8 +166,10 @@ int init_socket(struct options *popt)
 				close(popt->unsock);
 				return CGPSCLT_CONN_RETRY;
 			} else {
+				if(!popt->quiet) {
+					logerr("failed connect to %s", popt->unaddr);
+				}
 				close(popt->unsock);
-				logerr("failed connect to %s", popt->unaddr);
 				return CGPSCLT_CONN_FAILED;
 			}
 		}

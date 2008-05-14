@@ -89,13 +89,14 @@ struct options
 	int verbose;          /* be more verbose */
 	int batch;            /* enable batch job mode */
 	int quiet;            /* be more quiet */
-	unsigned int count;   /* repeate prediction count times */
 	/*
 	 * Common members:
 	 */
 	char *proj;           /* the project file (model) */	
 	pid_t parent;         /* our prosess ID */	
 	struct cgps_options *cgps;
+	unsigned int count;   /* repeate prediction count times */
+	unsigned int noretry; /* immediate return on failure */
 	/*
 	 * Client and server options:
 	 */
