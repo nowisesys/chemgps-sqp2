@@ -132,6 +132,8 @@ static void * cgpsddos_connect(void *args)
 {	
 	struct client peer;
 	struct options mopt = *(struct options *)args;
+	struct linger solinger;
+	
 	int res;
 
 	if(!mopt.quiet) {
@@ -140,6 +142,9 @@ static void * cgpsddos_connect(void *args)
 
 	mopt.noretry = 1;
 	mopt.quiet = 1;
+
+	solinger.l_onoff = 1;
+	solinger.l_linger = CGPSDDOS_PEER_TIMEOUT;
 	
 	while(1) {		
 		pthread_mutex_lock(&finishlock);
@@ -157,12 +162,15 @@ static void * cgpsddos_connect(void *args)
 		errno = 0;
 		
 		if((res = init_socket(&mopt)) == CGPSCLT_CONN_SUCCESS) {
-			
 			peer.type = CGPS_DDOS;
 			peer.sock = mopt.unsock ? mopt.unsock : mopt.ipsock;
 			peer.opts = &mopt;
-	
-			res = request(&mopt, &peer);
+			
+			if(setsockopt(peer.sock, SOL_SOCKET, SO_LINGER, &solinger, sizeof(struct linger)) < 0) {
+				logerr("failed set socket option SO_LINGER");
+			} else {
+				res = request(&mopt, &peer);
+			}
 			close(peer.sock);
 		} 
 		pthread_mutex_lock(&runninglock);
