@@ -225,23 +225,8 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	struct rlimit rlim;
 	unsigned int i;
 	
-	debug("allocating %d threads pool", args->count);
-	threads = malloc(sizeof(pthread_t) * args->count);
-	if(!threads) {	
-		die("failed alloc memory");
-	}
-	memset(threads, 0, args->count * sizeof(pthread_t));
-	
-	pthread_attr_init(&attr);
-	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
-	pthread_attr_getstacksize(&attr, &stacksize);
-	debug("default stack size: %d kB", stacksize / 1024);	
-	stacksize = CGPSDDOS_THREAD_STACKSIZE;
-	debug("wanted stack size: %d kB", stacksize / 1024);	
-	pthread_attr_setstacksize(&attr, stacksize);
-	pthread_attr_getstacksize(&attr, &stacksize);
-	debug("actual stack size: %d kB", stacksize / 1024);
+	count = blocked = failed = finish = running = maxthr = minthr = 0;
+	memset(errors, 0, sizeof(errors));
 	
 	if(getrlimit(RLIMIT_NOFILE, &rlim) == 0) {
 		debug("default maximum file descriptor number: %d (soft), %d (hard)", 
@@ -278,7 +263,25 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	if(minthr > maxthr) {
 		minthr = maxthr / 2;
 	}	
-	debug("running threads: %d (max), %d (min)", maxthr, minthr);
+	debug("thread pool: %d (max), %d (min)", maxthr, minthr);
+
+	debug("allocating %d threads pool", maxthr);
+	threads = malloc(sizeof(pthread_t) * maxthr);
+	if(!threads) {	
+		die("failed alloc memory");
+	}
+	memset(threads, 0, maxthr * sizeof(pthread_t));
+	
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+	pthread_attr_getstacksize(&attr, &stacksize);
+	debug("default stack size: %d kB", stacksize / 1024);	
+	stacksize = CGPSDDOS_THREAD_STACKSIZE;
+	debug("wanted stack size: %d kB", stacksize / 1024);	
+	pthread_attr_setstacksize(&attr, stacksize);
+	pthread_attr_getstacksize(&attr, &stacksize);
+	debug("actual stack size: %d kB", stacksize / 1024);
 	
  	pthread_cond_init(&countcond, NULL);
 	pthread_cond_init(&blockcond, NULL);
@@ -289,8 +292,6 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_mutex_init(&finishlock, NULL);
 	pthread_mutex_init(&runninglock, NULL);
 	pthread_mutex_init(&failedlock, NULL);
-
-	memset(errors, 0, sizeof(errors));
 	
 	if(gettimeofday(&ts, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
