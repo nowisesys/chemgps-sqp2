@@ -55,6 +55,7 @@
 
 pthread_mutex_t countlock;
 pthread_mutex_t blocklock;
+pthread_mutex_t droplock;
 
 pthread_mutex_t finishlock;
 pthread_mutex_t failedlock;
@@ -65,6 +66,7 @@ pthread_cond_t  blockcond;
 
 static unsigned int count = 0;          /* currently number of running threads */
 static unsigned int blocked = 0;        /* currently number of blocked threads */
+static unsigned int dropped = 0;        /* currently number of dropped threads */
 
 static unsigned int failed = 0;         /* counter for failed predictions */
 static unsigned int finish = 0;         /* total finished predictions */
@@ -104,8 +106,8 @@ static char * cgpsddos_errors(void)
 
 static __inline__ void cgpsddos_print_stats(struct options *popt)
 {
-	debug("threads: { count=%d, running=%d, blocked=%d }, requests: { finished=%d, failed=%d, total=%d }",
-	      count, running, blocked, finish, failed, popt->count);
+	debug("threads: { count=%d, running=%d, blocked=%d, dropped=%d }, requests: { finished=%d, failed=%d, total=%d }",
+	      count, running, blocked, dropped, finish, failed, popt->count);
 }
 
 static void cgpsddos_send_result(int sock, const struct sockaddr *addr, socklen_t addrlen,
@@ -115,9 +117,9 @@ static void cgpsddos_send_result(int sock, const struct sockaddr *addr, socklen_
 	char *errmsg;
 	
 	errmsg = cgpsddos_errors();	
-	snprintf(msg, sizeof(msg), "predict: time: { start=%lu.%lu, finish=%lu.%lu }, threads: { max=%d, min=%d }, requests: { finished=%d, failed=%d, total=%d }, errors: { %s }\n", 
+	snprintf(msg, sizeof(msg), "predict: time: { start=%lu.%lu, finish=%lu.%lu }, threads: { max=%d, min=%d, dropped=%d }, requests: { finished=%d, failed=%d, total=%d }, errors: { %s }\n", 
 		 ts->tv_sec, ts->tv_usec,
-		 te->tv_sec, te->tv_usec, maxthr, minthr, finish, failed, args->count, errmsg ? errmsg : "" );
+		 te->tv_sec, te->tv_usec, maxthr, minthr, dropped, finish, failed, args->count, errmsg ? errmsg : "" );
 	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
 		logerr("failed send to %s", "<fix me: unknown peer>");
 	}
@@ -179,6 +181,9 @@ static void * cgpsddos_connect(void *args)
 			++errors[errno];
 			pthread_mutex_unlock(&failedlock);
 			if(errno == EMFILE) {
+				pthread_mutex_lock(&droplock);
+				++dropped;
+				pthread_mutex_unlock(&droplock);
 				break;
 			}
 		}
@@ -288,6 +293,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	
 	pthread_mutex_init(&countlock, NULL);
 	pthread_mutex_init(&blocklock, NULL);
+	pthread_mutex_init(&droplock, NULL);
 	
 	pthread_mutex_init(&finishlock, NULL);
 	pthread_mutex_init(&runninglock, NULL);
@@ -331,6 +337,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_mutex_destroy(&runninglock);
 	pthread_mutex_destroy(&finishlock);
 	
+	pthread_mutex_destroy(&droplock);
 	pthread_mutex_destroy(&blocklock);
 	pthread_mutex_destroy(&countlock);
 	
