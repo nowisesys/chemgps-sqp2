@@ -77,12 +77,6 @@ static unsigned int errors[CGPSDDOS_ERRNO_MAX];
 
 int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struct options *args);
 
-static __inline__ void cgpsddos_print_stats(struct options *popt)
-{
-	debug("threads: { count=%d, running=%d, blocked=%d }, requests: { finished=%d, failed=%d, total=%d }",
-	      count, running, blocked, finish, failed, popt->count);
-}
-
 static char * cgpsddos_errors(void)
 {
 	FILE *fs;
@@ -97,7 +91,7 @@ static char * cgpsddos_errors(void)
 				if(del++) {
 					fprintf(fs, ", ");
 				}
-				fprintf(fs, "%s (%d): %d", strerror(i), i, errors[i]);
+				fprintf(fs, "'%s (%d)'=%d", strerror(i), i, errors[i]);
 			}
 		}
 		fclose(fs);
@@ -106,6 +100,30 @@ static char * cgpsddos_errors(void)
 	}
 	
 	return buff;
+}
+
+static __inline__ void cgpsddos_print_stats(struct options *popt)
+{
+	debug("threads: { count=%d, running=%d, blocked=%d }, requests: { finished=%d, failed=%d, total=%d }",
+	      count, running, blocked, finish, failed, popt->count);
+}
+
+static void cgpsddos_send_result(int sock, const struct sockaddr *addr, socklen_t addrlen,
+				 struct timeval *ts, struct timeval *te, struct options *args)
+{
+	char msg[CGPSDDOS_BUFF_LEN];	
+	char *errmsg;
+	
+	errmsg = cgpsddos_errors();	
+	snprintf(msg, sizeof(msg), "predict: time: { start=%lu.%lu, finish=%lu.%lu }, threads: { max=%d, min=%d }, requests: { finished=%d, failed=%d, total=%d }, errors: { %s }\n", 
+		 ts->tv_sec, ts->tv_usec,
+		 te->tv_sec, te->tv_usec, maxthr, minthr, finish, failed, args->count, errmsg ? errmsg : "" );
+	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
+		logerr("failed send to %s", "<fix me: unknown peer>");
+	}
+	if(errmsg) {
+		free(errmsg);
+	}
 }
 
 static void * cgpsddos_connect(void *args)
@@ -121,9 +139,7 @@ static void * cgpsddos_connect(void *args)
 	mopt.noretry = 1;
 	mopt.quiet = 1;
 	
-	while(1) {
-		cgpsddos_print_stats(&mopt);
-		
+	while(1) {		
 		pthread_mutex_lock(&finishlock);
 		pthread_mutex_lock(&runninglock);
 		if(finish + running >= mopt.count) {
@@ -135,7 +151,9 @@ static void * cgpsddos_connect(void *args)
 		pthread_mutex_unlock(&runninglock);
 		pthread_mutex_unlock(&finishlock);
 		
+		cgpsddos_print_stats(&mopt);
 		errno = 0;
+		
 		if((res = init_socket(&mopt)) == CGPSCLT_CONN_SUCCESS) {
 			
 			peer.type = CGPS_DDOS;
@@ -160,6 +178,9 @@ static void * cgpsddos_connect(void *args)
 			++failed;
 			++errors[errno];
 			pthread_mutex_unlock(&failedlock);
+			if(errno == EMFILE) {
+				break;
+			}
 		}
 		if(res != CGPSCLT_CONN_SUCCESS) {
 			pthread_mutex_lock(&blocklock);
@@ -198,13 +219,11 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 {
 	struct timeval ts;      /* predict start */
 	struct timeval te;      /* predict finished */
-	char msg[CGPSDDOS_BUFF_LEN];	
 	pthread_t *threads;
 	pthread_attr_t attr;
 	size_t stacksize;
 	struct rlimit rlim;
 	unsigned int i;
-	char *errmsg;
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
@@ -251,7 +270,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	}
 	debug("maximum number of open files: %d (from sysconf)", sysconf(_SC_OPEN_MAX));
 	
-	maxthr = sysconf(_SC_OPEN_MAX) - 1;
+	maxthr = sysconf(_SC_OPEN_MAX);
 	minthr = CGPSDDOS_THREAD_SPAWN_MIN;	
 	if(maxthr > args->count) {
 		maxthr = args->count;
@@ -320,16 +339,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	free(threads);
 	
 	debug("sending predict result to peer");
-	errmsg = cgpsddos_errors();
-	snprintf(msg, sizeof(msg), "predict: start=%lu.%lu, finish=%lu.%lu, thrmax=%d, finished=%d, failed=%d, errors={ %s }\n", 
-		 ts.tv_sec, ts.tv_usec,
-		 te.tv_sec, te.tv_usec, maxthr, finish, failed, errmsg ? errmsg : "" );
-	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
-		logerr("failed send to %s", "<fix me: unknown peer>");
-	}
-	if(errmsg) {
-		free(errmsg);
-	}
+	cgpsddos_send_result(sock, addr, addrlen, &ts, &te, args);
 	
 	return 0;
 }
