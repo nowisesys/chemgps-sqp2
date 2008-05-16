@@ -54,14 +54,18 @@
 #include "cgpsclt.h"
 
 pthread_mutex_t countlock;
+pthread_mutex_t blocklock;
+
 pthread_mutex_t finishlock;
 pthread_mutex_t failedlock;
 pthread_mutex_t runninglock;
 
 pthread_cond_t  countcond;
-pthread_cond_t  failedcond;
+pthread_cond_t  blockcond;
 
 static unsigned int count = 0;          /* currently number of running threads */
+static unsigned int blocked = 0;        /* currently number of blocked threads */
+
 static unsigned int failed = 0;         /* counter for failed predictions */
 static unsigned int finish = 0;         /* total finished predictions */
 static unsigned int running = 0;        /* currently number of running predictions */
@@ -70,6 +74,12 @@ static unsigned int maxthr = 0;         /* maximum number of running threads */
 static unsigned int minthr = 0;         /* minimum number of running threads */
 
 int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struct options *args);
+
+static __inline__ void cgpsddos_print_stats(struct options *popt)
+{
+	debug("threads: { count=%d, running=%d, blocked=%d }, requests: { finished=%d, failed=%d, total=%d }",
+	      count, running, blocked, finish, failed, popt->count);
+}
 
 static void * cgpsddos_connect(void *args)
 {	
@@ -85,9 +95,10 @@ static void * cgpsddos_connect(void *args)
 	mopt.quiet = 1;
 	
 	while(1) {
+		cgpsddos_print_stats(&mopt);
+		
 		pthread_mutex_lock(&finishlock);
 		pthread_mutex_lock(&runninglock);
-		debug("running: %d, finish: %d, count: %d", running, finish, mopt.count);
 		if(finish + running >= mopt.count) {
 			pthread_mutex_unlock(&runninglock);
 			pthread_mutex_unlock(&finishlock);
@@ -113,10 +124,9 @@ static void * cgpsddos_connect(void *args)
 		
 		if(res == CGPSCLT_CONN_SUCCESS) {
 			pthread_mutex_lock(&finishlock);
-			debug("increment finish (%d)", finish);
 			++finish;
 			pthread_mutex_unlock(&finishlock);
-			pthread_cond_signal(&failedcond);
+			pthread_cond_signal(&blockcond);
 		} 
 		else {
 			if(errno != EMFILE && errno != ENFILE) {
@@ -126,13 +136,17 @@ static void * cgpsddos_connect(void *args)
 			}
 		}
 		if(res != CGPSCLT_CONN_SUCCESS) {
+			pthread_mutex_lock(&blocklock);
+			++blocked;
+			pthread_mutex_unlock(&blocklock);
 			while(1) {
-				pthread_mutex_lock(&failedlock);
-				if(pthread_cond_wait(&failedcond, &failedlock) != 0) {
-					pthread_mutex_unlock(&failedlock);
+				pthread_mutex_lock(&blocklock);
+				if(pthread_cond_wait(&blockcond, &blocklock) != 0) {
+					pthread_mutex_unlock(&blocklock);
 					continue;
 				}
-				pthread_mutex_unlock(&failedlock);
+				--blocked;
+				pthread_mutex_unlock(&blocklock);
 				break;
 			}
 		}
@@ -143,6 +157,13 @@ static void * cgpsddos_connect(void *args)
 	--count;
 	pthread_mutex_unlock(&countlock);
 	pthread_cond_signal(&countcond);
+	
+	pthread_mutex_lock(&blocklock);
+	while(blocked > 0) {
+		pthread_mutex_unlock(&blocklock);
+		pthread_cond_signal(&blockcond);
+	}
+	pthread_mutex_unlock(&blocklock);
 	
 	pthread_exit(NULL);
 }
@@ -214,9 +235,11 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	debug("running threads: %d (max), %d (min)", maxthr, minthr);
 	
  	pthread_cond_init(&countcond, NULL);
-	pthread_cond_init(&failedcond, NULL);
+	pthread_cond_init(&blockcond, NULL);
 	
 	pthread_mutex_init(&countlock, NULL);
+	pthread_mutex_init(&blocklock, NULL);
+	
 	pthread_mutex_init(&finishlock, NULL);
 	pthread_mutex_init(&runninglock, NULL);
 	pthread_mutex_init(&failedlock, NULL);
@@ -258,10 +281,12 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_mutex_destroy(&failedlock);
 	pthread_mutex_destroy(&runninglock);
 	pthread_mutex_destroy(&finishlock);
+	
+	pthread_mutex_destroy(&blocklock);
 	pthread_mutex_destroy(&countlock);
 	
  	pthread_cond_destroy(&countcond);
- 	pthread_cond_destroy(&failedcond);
+ 	pthread_cond_destroy(&blockcond);
 	
 	free(threads);
 	
