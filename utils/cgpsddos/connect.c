@@ -73,12 +73,39 @@ static unsigned int running = 0;        /* currently number of running predictio
 static unsigned int maxthr = 0;         /* maximum number of running threads */
 static unsigned int minthr = 0;         /* minimum number of running threads */
 
+static unsigned int errors[CGPSDDOS_ERRNO_MAX];
+
 int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struct options *args);
 
 static __inline__ void cgpsddos_print_stats(struct options *popt)
 {
 	debug("threads: { count=%d, running=%d, blocked=%d }, requests: { finished=%d, failed=%d, total=%d }",
 	      count, running, blocked, finish, failed, popt->count);
+}
+
+static char * cgpsddos_errors(void)
+{
+	FILE *fs;
+	char *buff = NULL;
+	size_t size = 0;
+	int i, del = 0;
+	
+	fs = open_memstream(&buff, &size);
+	if(fs) {
+		for(i = 0; i < CGPSDDOS_ERRNO_MAX; ++i) {
+			if(errors[i]) {
+				if(del++) {
+					fprintf(fs, ", ");
+				}
+				fprintf(fs, "%s (%d): %d", strerror(i), i, errors[i]);
+			}
+		}
+		fclose(fs);
+	} else {
+		logerr("failed open memory stream");
+	}
+	
+	return buff;
 }
 
 static void * cgpsddos_connect(void *args)
@@ -129,11 +156,10 @@ static void * cgpsddos_connect(void *args)
 			pthread_cond_signal(&blockcond);
 		} 
 		else {
-			if(errno != EMFILE && errno != ENFILE) {
-				pthread_mutex_lock(&failedlock);
-				++failed;
-				pthread_mutex_unlock(&failedlock);
-			}
+			pthread_mutex_lock(&failedlock);
+			++failed;
+			++errors[errno];
+			pthread_mutex_unlock(&failedlock);
 		}
 		if(res != CGPSCLT_CONN_SUCCESS) {
 			pthread_mutex_lock(&blocklock);
@@ -178,6 +204,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	size_t stacksize;
 	struct rlimit rlim;
 	unsigned int i;
+	char *errmsg;
 	
 	debug("allocating %d threads pool", args->count);
 	threads = malloc(sizeof(pthread_t) * args->count);
@@ -243,6 +270,8 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	pthread_mutex_init(&finishlock, NULL);
 	pthread_mutex_init(&runninglock, NULL);
 	pthread_mutex_init(&failedlock, NULL);
+
+	memset(errors, 0, sizeof(errors));
 	
 	if(gettimeofday(&ts, NULL) < 0) {
 		logerr("failed calling gettimeofday()");
@@ -291,11 +320,15 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	free(threads);
 	
 	debug("sending predict result to peer");
-	snprintf(msg, sizeof(msg), "predict: start=%lu.%lu finish=%lu.%lu thrmax=%d finished=%d failed=%d\n", 
+	errmsg = cgpsddos_errors();
+	snprintf(msg, sizeof(msg), "predict: start=%lu.%lu, finish=%lu.%lu, thrmax=%d, finished=%d, failed=%d, errors={ %s }\n", 
 		 ts.tv_sec, ts.tv_usec,
-		 te.tv_sec, te.tv_usec, maxthr, finish, failed);
+		 te.tv_sec, te.tv_usec, maxthr, finish, failed, errmsg ? errmsg : "" );
 	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
 		logerr("failed send to %s", "<fix me: unknown peer>");
+	}
+	if(errmsg) {
+		free(errmsg);
 	}
 	
 	return 0;

@@ -72,6 +72,8 @@
 #define CGPSDDOS_THREAD_SPAWN_MIN  200           /* minimum number of running threads */
 #define CGPSDDOS_THREAD_SPAWN_MAX  10000         /* maximum number of started threads (report) */
 
+#define CGPSDDOS_ERRNO_MAX 256   /* guessing largest errno */
+
 #define cgpsddos_quit(state) ((state) & CGPSDDOS_STATE_QUIT)
 
 struct cgpsddos
