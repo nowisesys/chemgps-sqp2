@@ -346,6 +346,10 @@ AC_DEFUN([CGPS_CHECK_THREADING],
   if test "x${ac_cv_lib_pthread_pthread_create}" == "xyes"; then
     CFLAGS="$CFLAGS -pthread"
     CPPFLAGS="$CPPFLAGS -D_REENTRANT -D_THREAD_SAFE"
+    if test "$CC" == "gcc"; then
+      AC_CHECK_LIB([gcc_s], [main])
+      # LDFLAGS="$LDFLAGS -lgcc_s"
+    fi
     AC_CHECK_LIB([pthread], [pthread_yield], 
     [
       AC_DEFINE([HAVE_PTHREAD_YIELD], [1], [Define to 1 if libpthread has function pthread_yield])
