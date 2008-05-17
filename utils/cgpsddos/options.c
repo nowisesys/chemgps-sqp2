@@ -200,13 +200,6 @@ void parse_options(int argc, char **argv, struct cgpsddos *ddos)
 		case 'h':
 			usage(ddos->opts->prog, optarg);
 			exit(0);
-		case 't':
-			ddos->opts->ipaddr = malloc(strlen(optarg) + 1);
-			if(!ddos->opts->ipaddr) {
-				die("failed alloc memory");
-			}
-			strcpy(ddos->opts->ipaddr, optarg);
-			break;
 		case 'i':
 			ddos->opts->data = malloc(strlen(optarg) + 1);
 			if(!ddos->opts->data) {
@@ -239,6 +232,13 @@ void parse_options(int argc, char **argv, struct cgpsddos *ddos)
 		case 's':
 			ddos->mode = CGPSDDOS_SLAVE;
 			break;
+		case 't':
+			ddos->opts->ipaddr = malloc(strlen(optarg) + 1);
+			if(!ddos->opts->ipaddr) {
+				die("failed alloc memory");
+			}
+			strcpy(ddos->opts->ipaddr, optarg);
+			break;
 		case 'u':
 			if(*optarg != '-') {
 				ddos->opts->unaddr = malloc(strlen(optarg) + 1);
@@ -251,15 +251,15 @@ void parse_options(int argc, char **argv, struct cgpsddos *ddos)
 				ddos->opts->unaddr = (char *)CGPSD_DEFAULT_SOCK;
 			}
 			break;
-		case 'w':
-			ddos->timeout = strtoul(optarg, NULL, 10);
-			break;
 		case 'v':
 			ddos->opts->verbose++;
 			break;
 		case 'V':
 			version(ddos->opts->prog);
 			exit(0);
+		case 'w':
+			ddos->timeout = strtoul(optarg, NULL, 10);
+			break;
 		case '?':
 			exit(1);
 		}
