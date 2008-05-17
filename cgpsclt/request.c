@@ -172,7 +172,8 @@ int request(struct options *popt, struct client *peer)
 			return CGPSCLT_CONN_RETRY;
 		} 
 		cleanup_request(peer, buff);
-		die("failed open socket stream");
+		logerr("failed open socket stream");
+		return CGPSCLT_CONN_FAILED;
 	}
 	errno = 0;
 	debug("opened socket stream");
@@ -242,7 +243,7 @@ int request(struct options *popt, struct client *peer)
 	        if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 			logerr("protocol error (%s unexpected)", req.option);
 			cleanup_request(peer, buff);
-			exit(1);
+			return CGPSCLT_CONN_FAILED;
 		}
 		
 		switch(req.symbol) {
@@ -270,11 +271,11 @@ int request(struct options *popt, struct client *peer)
 		case CGPSP_PROTO_ERROR:
 			logerr("server response: %s", req.value);
 			cleanup_request(peer, buff);
-			exit(1);
+			return CGPSCLT_CONN_FAILED;
 		default:
-			die("protocol error (%s unexpected)", req.option);
+			logerr("protocol error (%s unexpected)", req.option);
 			cleanup_request(peer, buff);
-			exit(1);
+			return CGPSCLT_CONN_FAILED;
 		}
 	}
 	debug("done with request");
