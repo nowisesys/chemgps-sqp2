@@ -268,7 +268,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 	}
 	debug("maximum number of open files: %d (from sysconf)", sysconf(_SC_OPEN_MAX));
 	
-	maxthr = sysconf(_SC_OPEN_MAX);
+	maxthr = sysconf(_SC_OPEN_MAX) / 2 - 3;   /* account for socket dup() + stdin, stderr and stdout */
 	minthr = CGPSDDOS_THREAD_SPAWN_MIN;	
 	if(maxthr > args->count) {
 		maxthr = args->count;
