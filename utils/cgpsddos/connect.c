@@ -167,10 +167,9 @@ static void * cgpsddos_connect(void *args)
 			peer.opts = &mopt;
 			
 			if(setsockopt(peer.sock, SOL_SOCKET, SO_LINGER, &solinger, sizeof(struct linger)) < 0) {
-				logerr("failed set socket option SO_LINGER");
-			} else {
-				res = request(&mopt, &peer);
-			}
+				logwarn("failed set socket option SO_LINGER");
+			} 
+			res = request(&mopt, &peer);
 			close(peer.sock);
 		} 
 		pthread_mutex_lock(&runninglock);
