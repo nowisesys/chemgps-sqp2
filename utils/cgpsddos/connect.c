@@ -38,6 +38,9 @@
 #ifdef HAVE_SYS_SOCKET_H
 # include <sys/socket.h>
 #endif
+#ifdef HAVE_NETDB_H
+# include <netdb.h>
+#endif
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif
@@ -110,18 +113,25 @@ static __inline__ void cgpsddos_print_stats(struct options *popt)
 	      count, running, blocked, dropped, finish, failed, popt->count);
 }
 
-static void cgpsddos_send_result(int sock, const struct sockaddr *addr, socklen_t addrlen,
+static void cgpsddos_send_result(int sock, const struct sockaddr *sockaddr, socklen_t addrlen,
 				 struct timeval *ts, struct timeval *te, struct options *args)
 {
 	char msg[CGPSDDOS_BUFF_LEN];	
 	char *errmsg;
+	char host[NI_MAXHOST];
+	int res;
 	
 	errmsg = cgpsddos_errors();	
 	snprintf(msg, sizeof(msg), "predict: time: { start=%lu.%lu, finish=%lu.%lu }, threads: { max=%d, min=%d, dropped=%d }, requests: { finished=%d, failed=%d, total=%d }, errors: { %s }\n", 
 		 ts->tv_sec, ts->tv_usec,
 		 te->tv_sec, te->tv_usec, maxthr, minthr, dropped, finish, failed, args->count, errmsg ? errmsg : "" );
-	if(send_dgram(sock, msg, strlen(msg), addr, addrlen) < 0) {
-		logerr("failed send to %s", "<fix me: unknown peer>");
+	if(send_dgram(sock, msg, strlen(msg), sockaddr, addrlen) < 0) {
+		if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+				      host, sizeof(host), NULL, 0, NI_NUMERICHOST)) != 0) {
+			logerr("failed resolve peer address (%s)", gai_strerror(res));
+			snprintf(host, sizeof(host), "peer");
+		}
+		logerr("failed send to %s", host);
 	}
 	if(errmsg) {
 		free(errmsg);

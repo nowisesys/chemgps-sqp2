@@ -201,8 +201,9 @@ void run_master(struct cgpsddos *ddos)
 
 	ddos->opts->state = CGPSDDOS_STATE_LOOP;
 	while(!cgpsddos_quit(ddos->opts->state)) {
+		char host[NI_MAXHOST];
 		struct sockaddr_storage sockaddr;
-		socklen_t sockaddr_len;
+		socklen_t addrlen;
 		struct request_option req;
 		struct stat st;
 		struct pollfd fds;
@@ -226,12 +227,10 @@ void run_master(struct cgpsddos *ddos)
 			ddos->opts->state = CGPSDDOS_STATE_QUIT;
 			break;
 		default:
-			sockaddr_len = sizeof(struct sockaddr_storage);
-			if(receive_dgram(ddos->opts->ipsock, 
-					 msg, 
-					 sizeof(msg), 
+			addrlen = sizeof(sockaddr);
+			if(receive_dgram(ddos->opts->ipsock, msg, sizeof(msg), 
 					 (struct sockaddr *)&sockaddr, 
-					 &sockaddr_len) < 0) { 
+					 &addrlen) < 0) { 
 				logerr("failed receive from slave");
 				continue;
 			}
@@ -248,8 +247,14 @@ void run_master(struct cgpsddos *ddos)
 				snprintf(msg, sizeof(msg), "target: %s\n", ddos->opts->ipaddr);
 				if(send_dgram(ddos->opts->ipsock, msg, strlen(msg), 
 					      (const struct sockaddr *)&sockaddr, 
-					      sizeof(struct sockaddr_storage)) < 0) {
-					logerr("failed send to %s", "<fix me: unknown peer>");
+					      addrlen) < 0) {
+					if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+							      host, sizeof(host), 
+							      NULL, 0, NI_NUMERICHOST)) != 0) {
+						logerr("failed resolve peer address (%s)", gai_strerror(res));
+						snprintf(host, sizeof(host), "peer");
+					}
+					logerr("failed send to %s", host);
 				}
 				break;
 			case CGPSP_PROTO_TARGET:
@@ -259,8 +264,14 @@ void run_master(struct cgpsddos *ddos)
 				snprintf(msg, sizeof(msg), "result: %d\n", ddos->opts->cgps->result);
 				if(send_dgram(ddos->opts->ipsock, msg, strlen(msg), 
 					      (const struct sockaddr *)&sockaddr, 
-					      sizeof(struct sockaddr_storage)) < 0) {
-					logerr("failed send to %s", "<fix me: unknown peer>");
+					      addrlen) < 0) {
+					if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+							      host, sizeof(host), 
+							      NULL, 0, NI_NUMERICHOST)) != 0) {
+						logerr("failed resolve peer address (%s)", gai_strerror(res));
+						snprintf(host, sizeof(host), "peer");
+					} 
+					logerr("failed send to %s", host);
 				}
 				break;
 			case CGPSP_PROTO_RESULT:
@@ -270,8 +281,14 @@ void run_master(struct cgpsddos *ddos)
 				snprintf(msg, sizeof(msg), "count: %d\n", ddos->opts->count);
 				if(send_dgram(ddos->opts->ipsock, msg, strlen(msg), 
 					      (const struct sockaddr *)&sockaddr, 
-					      sizeof(struct sockaddr_storage)) < 0) {
-					logerr("failed send to %s", "<fix me: unknown peer>");
+					      addrlen) < 0) {
+					if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+							      host, sizeof(host), 
+							      NULL, 0, NI_NUMERICHOST)) != 0) {
+						logerr("failed resolve peer address (%s)", gai_strerror(res));
+						snprintf(host, sizeof(host), "peer");
+					}
+					logerr("failed send to %s", host);
 				}
 				break;
 			case CGPSP_PROTO_COUNT:
@@ -281,8 +298,14 @@ void run_master(struct cgpsddos *ddos)
 				snprintf(msg, sizeof(msg), "format: %d\n", ddos->opts->cgps->format);
 				if(send_dgram(ddos->opts->ipsock, msg, strlen(msg), 
 					      (const struct sockaddr *)&sockaddr, 
-					      sizeof(struct sockaddr_storage)) < 0) {
-					logerr("failed send to %s", "<fix me: unknown peer>");
+					      addrlen) < 0) {
+					if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+							      host, sizeof(host), 
+							      NULL, 0, NI_NUMERICHOST)) != 0) {
+						logerr("failed resolve peer address (%s)", gai_strerror(res));
+						snprintf(host, sizeof(host), "peer");
+					}
+					logerr("failed send to %s", host);
 				}
 				break;
 			case CGPSP_PROTO_FORMAT:
@@ -297,16 +320,28 @@ void run_master(struct cgpsddos *ddos)
 				snprintf(msg, sizeof(msg), "data: %lu\n", st.st_size);
 				if(send_dgram(ddos->opts->ipsock, msg, strlen(msg), 
 					      (const struct sockaddr *)&sockaddr, 
-					      sizeof(struct sockaddr_storage)) < 0) {
-					logerr("failed send to %s", "<fix me: unknown peer>");
+					      addrlen) < 0) {
+					if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+							      host, sizeof(host), 
+							      NULL, 0, NI_NUMERICHOST)) != 0) {
+						logerr("failed resolve peer address (%s)", gai_strerror(res));
+						snprintf(host, sizeof(host), "peer");
+					}
+					logerr("failed send to %s", host);
 				}
 				
 				if(send_file(ddos->opts->ipsock, 
 					     (const struct sockaddr *)&sockaddr,
-					     sizeof(struct sockaddr_storage),
+					     addrlen,
 					     ddos->opts->data, 
 					     st.st_size) < 0) {
-					logerr("failed send data file to %s", "<fix me: unknown peer>");
+					if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+							      host, sizeof(host), 
+							      NULL, 0, NI_NUMERICHOST)) != 0) {
+						logerr("failed resolve peer address (%s)", gai_strerror(res));
+						snprintf(host, sizeof(host), "peer");
+					}
+					logerr("failed send data file to %s", host);
 				}
 				break;
 			case CGPSP_PROTO_LOAD:
@@ -316,13 +351,26 @@ void run_master(struct cgpsddos *ddos)
 				snprintf(msg, sizeof(msg), "start:\n");
 				if(send_dgram(ddos->opts->ipsock, msg, strlen(msg), 
 					      (const struct sockaddr *)&sockaddr, 
-					      sizeof(struct sockaddr_storage)) < 0) {
-					logerr("failed send to %s", "<fix me: unknown peer>");
+					      addrlen) < 0) {
+					if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+							      host, sizeof(host), 
+							      NULL, 0, NI_NUMERICHOST)) != 0) {
+						logerr("failed resolve peer address (%s)", gai_strerror(res));
+						snprintf(host, sizeof(host), "peer");
+					} 
+					logerr("failed send to %s", host);
 				}
 				break;
 			case CGPSP_PROTO_START:
 				debug("received start command ack");
-				loginfo("slave %s has started (waiting for result)", "<fix me: unknown peer>");
+				if((res = getnameinfo((const struct sockaddr *)&sockaddr, addrlen,
+						      host, sizeof(host), 
+						      NULL, 0, NI_NUMERICHOST)) != 0) {
+					logerr("failed resolve peer address (%s)", gai_strerror(res));
+					snprintf(host, sizeof(host), "peer");
+				} 
+				loginfo("slave %s has started (waiting for result)", host);
+				
 				break;
 			case CGPSP_PROTO_PREDICT:
 				debug("recived predict result");
