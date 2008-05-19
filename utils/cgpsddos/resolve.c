@@ -80,8 +80,11 @@ static void resolve_cleanup(void *args)
 }
 
 /*
- * Resolve hostname. The function returns a addrinfo structure pointing
- * filled with info about resolved hostname.
+ * Resolve hostname. This function returns a void pointer to an addrinfo 
+ * structure filled with info about resolved hostname. The args argument 
+ * should point to struct resolve_data data that is filled with reverse 
+ * lookup hostname and service. Call freeaddrinfo() on return value
+ * to free its allocated memory.
  */
 void * resolve_host(void *args)
 {

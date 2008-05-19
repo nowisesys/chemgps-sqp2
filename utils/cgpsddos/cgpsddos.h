@@ -151,7 +151,8 @@ char * split_hostaddr(char *addr, char **host, char **port);
  * Resolve hostname. This function returns a void pointer to an addrinfo 
  * structure filled with info about resolved hostname. The args argument 
  * should point to struct resolve_data data that is filled with reverse 
- * lookup hostname and service.
+ * lookup hostname and service. Call freeaddrinfo() on return value
+ * to free its allocated memory.
  */
 void * resolve_host(void *args);
 
