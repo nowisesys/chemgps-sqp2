@@ -336,7 +336,7 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		debug("thread 0x%lu: started", threads[i]);
 	}
 	
-        for(;;) {
+        while(1) {
 		pthread_mutex_lock(&countlock);
 		while(count > 0) {
 			debug("waiting for threads to finish (%d running)...", count);
