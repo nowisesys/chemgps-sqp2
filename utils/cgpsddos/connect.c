@@ -326,7 +326,9 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		return -1;
 	}
 	
-	loginfo("start running %d predictions", args->count);
+	if(args->verbose && !args->quiet) {
+		loginfo("start running %d predictions", args->count);
+	}
 	for(i = 0; i < maxthr; ++i) {
 		if(pthread_create(&threads[i], &attr, cgpsddos_connect, args) == 0) {
 			pthread_mutex_lock(&countlock);
@@ -348,7 +350,9 @@ int cgpsddos_run(int sock, const struct sockaddr *addr, socklen_t addrlen, struc
 		break;
 	}
 	debug("all threads has finished");	
-	loginfo("finished running predictions");
+	if(args->verbose && !args->quiet) {
+		loginfo("finished running predictions");
+	}
 	
 	if(gettimeofday(&te, NULL) < 0) {
 		logerr("failed calling gettimeofday()");

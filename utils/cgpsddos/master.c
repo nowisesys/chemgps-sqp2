@@ -160,7 +160,9 @@ void run_master(struct cgpsddos *ddos)
 	struct dllist slaves;
 	char msg[CGPSDDOS_BUFF_LEN];
 	
-	loginfo("running in master mode");
+	if(ddos->opts->verbose) {
+		loginfo("running in master mode");
+	}
 	create_master_socket(ddos);
 	
 	if(ddos->slaves) {
@@ -369,8 +371,9 @@ void run_master(struct cgpsddos *ddos)
 					logerr("failed resolve peer address (%s)", gai_strerror(res));
 					snprintf(host, sizeof(host), "peer");
 				} 
-				loginfo("slave %s has started (waiting for result)", host);
-				
+				if(!ddos->opts->quiet) {
+					loginfo("slave %s has started (waiting for result)", host);
+				}
 				break;
 			case CGPSP_PROTO_PREDICT:
 				debug("recived predict result");

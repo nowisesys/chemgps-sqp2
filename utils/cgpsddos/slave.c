@@ -176,7 +176,9 @@ void run_slave(struct cgpsddos *ddos)
 	struct options *args = NULL;
 	off_t size;
 	
-	loginfo("running in slave mode");
+	if(ddos->opts->verbose) {
+		loginfo("running in slave mode");
+	}
 	create_slave_socket(ddos);
 
 	ddos->opts->state = CGPSDDOS_STATE_LOOP;
@@ -383,7 +385,9 @@ void run_slave(struct cgpsddos *ddos)
 			}
 			break;
 		case CGPSP_PROTO_START:
-			debug("received start command");						
+			if(!ddos->opts->quiet) {
+				loginfo("starting run of %d predictions from %s", args->count, host);
+			}
 			debug("sending start ack");
 			snprintf(msg, sizeof(msg), "start: ok");
 			if(send_dgram(ddos->opts->ipsock, msg, strlen(msg), 
@@ -398,6 +402,9 @@ void run_slave(struct cgpsddos *ddos)
 				logerr("the cgpsd session failed");
 			} else {
 				debug("finished cgpsd session");
+			}
+			if(!ddos->opts->quiet) {
+				loginfo("finished run of %d predictions from %s", args->count, host);
 			}
 			cleanup_args(args);
 			args = NULL;
