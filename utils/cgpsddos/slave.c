@@ -401,7 +401,9 @@ void run_slave(struct cgpsddos *ddos)
 			}
 			cleanup_args(args);
 			args = NULL;
-			ddos->opts->state = CGPSDDOS_STATE_FREE;			
+			if(!cgpsddos_quit(opts->state)) {
+				ddos->opts->state = CGPSDDOS_STATE_FREE;
+			}
 			break;
 		case CGPSP_PROTO_QUIT:
 			debug("received quit command");

@@ -156,7 +156,12 @@ static void * cgpsddos_connect(void *args)
 	solinger.l_onoff = 1;
 	solinger.l_linger = CGPSDDOS_PEER_TIMEOUT;
 	
-	while(1) {		
+	while(1) {
+		if(cgpsddos_quit(opts->state)) {
+			debug("stopping thread execution (exit flag set)");
+			break;
+		}
+		
 		pthread_mutex_lock(&finishlock);
 		pthread_mutex_lock(&runninglock);
 		if(finish + running >= mopt.count) {
