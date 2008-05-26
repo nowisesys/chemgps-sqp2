@@ -139,6 +139,7 @@ int main(int argc, char **argv)
 		else {
 			opts->state |= CGPSD_STATE_DAEMONIZED;
 			openlog(opts->prog, LOG_PID, LOG_DAEMON);
+			opts->syslog = 1;
 		}
 	}
 	
