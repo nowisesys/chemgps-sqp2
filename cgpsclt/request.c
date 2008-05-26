@@ -49,6 +49,7 @@
 #ifdef HAVE_NETINET_IN_H
 # include <netinet/in.h>
 #endif
+#include <ctype.h>
 
 #include "cgpssqp.h"
 #include "cgpsclt.h"
@@ -72,12 +73,20 @@ static void cleanup_request(struct client *peer, char *buff)
 static int request_send_file(const char *file, struct client *peer)
 {	
 	FILE *fs;
-	int c, lines = 0;
+	int c, lines = 0, header = 0;
 	
 	fs = fopen(file, "r");
 	if(!fs) {
 		return -1;
 	}
+	
+	c = getc(fs);
+	if(!isdigit(c) && c != '-') {
+		debug("header detected in data file");
+		header = 1;
+	}
+	ungetc(c, fs);
+	
 	while((c = getc(fs)) != EOF) {
 		if(c == '\n') {
 			++lines;
@@ -85,9 +94,9 @@ static int request_send_file(const char *file, struct client *peer)
 	}
 	rewind(fs);
 	
-	debug("sending data from file %s (lines=%d)", file, lines);	
+	debug("sending data from file %s (lines=%d)", file, lines - header);	
 	
-	fprintf(peer->ss, "Load: %d\n", lines);
+	fprintf(peer->ss, "Load: %d\n", lines - header);
 	while((c = getc(fs)) != EOF) {
 		fprintf(peer->ss, "%c", c);
 	}
