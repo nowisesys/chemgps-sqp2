@@ -137,7 +137,7 @@ void service(struct options *popt)
 		die("failed load project %s", popt->proj);
 	}
 	
-	if(!popt->quiet) {
+	if(!popt->quiet && popt->verbose) {
 		if(popt->ipaddr) {
 			loginfo("listening on TCP socket %s port %d", popt->ipaddr, popt->port);
 		}
