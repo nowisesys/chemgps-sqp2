@@ -44,7 +44,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_STRTOD
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([atexit gettimeofday gethostbyname inet_ntoa memset select socket strcasecmp strchr strcspn strdup strerror strncasecmp strrchr strspn strtol strtoul])
+AC_CHECK_FUNCS([atexit gettimeofday gethostbyname inet_ntoa memset pathconf realpath select socket strcasecmp strchr strcspn strdup strerror strncasecmp strrchr strspn strtol strtoul])
 CFLAGS="$FLAGSC"
 
 CGPS_ENABLE_UTILS
