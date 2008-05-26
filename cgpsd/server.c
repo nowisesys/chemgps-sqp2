@@ -28,6 +28,8 @@
 # include "config.h"
 #endif
 
+#define _GNU_SOURCE 1
+
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
