@@ -96,8 +96,6 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
-LIBCHEMGPS_INCDIR = @LIBCHEMGPS_INCDIR@
-LIBCHEMGPS_LIBDIR = @LIBCHEMGPS_LIBDIR@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -162,8 +160,8 @@ sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 cgpsstd_SOURCES = main.c options.c
-cgpsstd_CFLAGS = -I../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(SIMCAQ_INCDIR)
-cgpsstd_LDFLAGS = -L$(top_srcdir)/$(LIBCHEMGPS_LIBDIR) -L$(SIMCAQ_LIBDIR)
+cgpsstd_CFLAGS = -I../libcgpssqp -I$(SIMCAQ_INCDIR)
+cgpsstd_LDFLAGS = -L$(SIMCAQ_LIBDIR)
 cgpsstd_LDADD = -lchemgps -lsimcaq ../libcgpssqp/libcgpssqp.a
 all: all-am
 

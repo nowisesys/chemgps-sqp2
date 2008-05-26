@@ -99,8 +99,6 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
-LIBCHEMGPS_INCDIR = @LIBCHEMGPS_INCDIR@
-LIBCHEMGPS_LIBDIR = @LIBCHEMGPS_LIBDIR@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -167,8 +165,8 @@ target_alias = @target_alias@
 cgpsd_SOURCES = main.c options.c server.c socket.c cgpsd.h client.c signal.c \
 	        worker.c worker.h
 
-cgpsd_CFLAGS = -I../libcgpssqp -I$(top_srcdir)/$(LIBCHEMGPS_INCDIR) -I$(SIMCAQ_INCDIR)
-cgpsd_LDFLAGS = -L$(top_srcdir)/$(LIBCHEMGPS_LIBDIR) -L$(SIMCAQ_LIBDIR)
+cgpsd_CFLAGS = -I../libcgpssqp -I$(SIMCAQ_INCDIR)
+cgpsd_LDFLAGS = -L$(SIMCAQ_LIBDIR)
 cgpsd_LDADD = ../libcgpssqp/libcgpssqp.a -lchemgps -lsimcaq
 all: all-am
 

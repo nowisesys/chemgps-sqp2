@@ -701,8 +701,6 @@ CPP
 RANLIB
 SIMCAQ_LIBDIR
 SIMCAQ_INCDIR
-LIBCHEMGPS_LIBDIR
-LIBCHEMGPS_INCDIR
 GREP
 EGREP
 LIBOBJS
@@ -4851,13 +4849,22 @@ fi
     fi
   fi
 
-  # Append some standard locations:
-  chemgps_lib_test="${chemgps_lib_test} /usr/local/lib /usr/local/chemgps /usr/lib/chemgps ../libchemgps/src/.libs ../../libchemgps/src/.libs"
-  chemgps_inc_test="${chemgps_inc_test} /usr/local/include /usr/local/chemgps /usr/lib/chemgps ../libchemgps/src ../../libchemgps/src"
+  chemgps_stdinc=true
+  chemgps_develop=false
+
+  # Test some standard locations:
+  chemgps_lib_test="${chemgps_lib_test} /usr/lib /usr/local/lib /usr/local/chemgps /usr/local/libchemgps \
+                    /usr/lib/chemgps /usr/lib/libchemgps"
+  chemgps_inc_test="${chemgps_inc_test} /usr/include /usr/local/include /usr/local/chemgps /usr/local/libchemgps \
+                    /usr/lib/chemgps /usr/lib/libchemgps"
 
   for inc in ${chemgps_inc_test}; do
     if test -e "$inc/chemgps.h"; then
       chemgps_inc_found=$inc
+      break
+    fi
+    if test -e "$inc/include/chemgps.h"; then
+      chemgps_inc_found=$inc/include
       break
     fi
   done
@@ -4866,9 +4873,51 @@ fi
       chemgps_lib_found=$lib
       break
     fi
+    if test -e "$lib/lib/libchemgps.la"; then
+      chemgps_lib_found=$lib/lib
+      break
+    fi
   done
 
+  # Test for development versions (if libchemgps is not yet found):
+  if test "x$chemgps_lib_found" == "x" -o "x$chemgps_inc_found" == "x"; then
+    chemgps_lib_test="../libchemgps/src/.libs ../../libchemgps/src/.libs"
+    chemgps_inc_test="../libchemgps/src ../../libchemgps/src"
+
+    if test "x$chemgps_inc_found" == "x"; then
+      for inc in ${chemgps_inc_test}; do
+        if test -e "$inc/chemgps.h"; then
+          chemgps_inc_found=$inc
+          chemgps_develop=true
+          break
+        fi
+      done
+    fi
+    if test "x$chemgps_lib_found" == "x"; then
+      for lib in ${chemgps_lib_test}; do
+        if test -e "$lib/libchemgps.la"; then
+          chemgps_lib_found=$lib
+          chemgps_develop=true
+          break
+        fi
+      done
+    fi
+  fi
+
   if test "x$chemgps_lib_found" != "x" -a "x$chemgps_inc_found" != "x"; then
+    if test "${chemgps_inc_found}" != "/usr/include" -a \
+            "${chemgps_inc_found}" != "/usr/local/include"; then
+      chemgps_stdinc=false
+    fi
+    if test "x${chemgps_stdinc}" == "xfalse"; then
+      if test "x${chemgps_develop}" == "xtrue"; then
+        CFLAGS="$CFLAGS -I../${chemgps_inc_found} -I../../${chemgps_inc_found}"
+        LDFLAGS="$LDFLAGS -L../${chemgps_lib_found} -L../../${chemgps_lib_found}"
+      else
+        CFLAGS="$CFLAGS -I${chemgps_inc_found}"
+        LDFLAGS="$LDFLAGS -L${chemgps_lib_found}"
+      fi
+    fi
     { echo "$as_me:$LINENO: result: found, libs=${chemgps_lib_found}, include=${chemgps_inc_found}" >&5
 echo "${ECHO_T}found, libs=${chemgps_lib_found}, include=${chemgps_inc_found}" >&6; }
   else
@@ -4876,10 +4925,6 @@ echo "${ECHO_T}found, libs=${chemgps_lib_found}, include=${chemgps_inc_found}" >
 echo "$as_me: error: libchemgps not found" >&2;}
    { (exit 1); exit 1; }; }
   fi
-  LIBCHEMGPS_LIBDIR=${chemgps_lib_found}
-
-  LIBCHEMGPS_INCDIR=${chemgps_inc_found}
-
 
 
 # Checks for header files.
@@ -8808,8 +8853,6 @@ CPP!$CPP$ac_delim
 RANLIB!$RANLIB$ac_delim
 SIMCAQ_LIBDIR!$SIMCAQ_LIBDIR$ac_delim
 SIMCAQ_INCDIR!$SIMCAQ_INCDIR$ac_delim
-LIBCHEMGPS_LIBDIR!$LIBCHEMGPS_LIBDIR$ac_delim
-LIBCHEMGPS_INCDIR!$LIBCHEMGPS_INCDIR$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
@@ -8821,7 +8864,7 @@ FOREIGN_CLIENT_FALSE!$FOREIGN_CLIENT_FALSE$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 95; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -8840,7 +8883,7 @@ fi
 
 cat >>$CONFIG_STATUS <<_ACEOF
 cat >"\$tmp/subs-1.sed" <<\CEOF$ac_eof
-/@[a-zA-Z_][a-zA-Z_0-9]*@/!b
+/@[a-zA-Z_][a-zA-Z_0-9]*@/!b end
 _ACEOF
 sed '
 s/[,\\&]/\\&/g; s/@/@|#_!!_#|/g
@@ -8853,6 +8896,8 @@ N; s/^.*\n//; s/[,\\&]/\\&/g; s/@/@|#_!!_#|/g; b n
 ' >>$CONFIG_STATUS <conf$$subs.sed
 rm -f conf$$subs.sed
 cat >>$CONFIG_STATUS <<_ACEOF
+:end
+s/|#_!!_#|//g
 CEOF$ac_eof
 _ACEOF
 
@@ -9100,7 +9145,7 @@ s&@abs_builddir@&$ac_abs_builddir&;t t
 s&@abs_top_builddir@&$ac_abs_top_builddir&;t t
 s&@INSTALL@&$ac_INSTALL&;t t
 $ac_datarootdir_hack
-" $ac_file_inputs | sed -f "$tmp/subs-1.sed" | sed 's/|#_!!_#|//g' >$tmp/out
+" $ac_file_inputs | sed -f "$tmp/subs-1.sed" >$tmp/out
 
 test -z "$ac_datarootdir_hack$ac_datarootdir_seen" &&
   { ac_out=`sed -n '/\${datarootdir}/p' "$tmp/out"`; test -n "$ac_out"; } &&

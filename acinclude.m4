@@ -238,14 +238,23 @@ AC_DEFUN([CGPS_CHECK_LIBCHEMGPS],
       chemgps_inc_test="${chemgps_inc_test} $($pkgconfig --variable=includedir libchemgps)"
     fi
   fi
-  
-  # Append some standard locations:
-  chemgps_lib_test="${chemgps_lib_test} /usr/local/lib /usr/local/chemgps /usr/lib/chemgps ../libchemgps/src/.libs ../../libchemgps/src/.libs"
-  chemgps_inc_test="${chemgps_inc_test} /usr/local/include /usr/local/chemgps /usr/lib/chemgps ../libchemgps/src ../../libchemgps/src"
+
+  chemgps_stdinc=true
+  chemgps_develop=false
+
+  # Test some standard locations:
+  chemgps_lib_test="${chemgps_lib_test} /usr/lib /usr/local/lib /usr/local/chemgps /usr/local/libchemgps \
+                    /usr/lib/chemgps /usr/lib/libchemgps"
+  chemgps_inc_test="${chemgps_inc_test} /usr/include /usr/local/include /usr/local/chemgps /usr/local/libchemgps \
+                    /usr/lib/chemgps /usr/lib/libchemgps"
   
   for inc in ${chemgps_inc_test}; do
     if test -e "$inc/chemgps.h"; then
       chemgps_inc_found=$inc
+      break
+    fi
+    if test -e "$inc/include/chemgps.h"; then
+      chemgps_inc_found=$inc/include
       break
     fi
   done
@@ -254,15 +263,55 @@ AC_DEFUN([CGPS_CHECK_LIBCHEMGPS],
       chemgps_lib_found=$lib
       break
     fi
+    if test -e "$lib/lib/libchemgps.la"; then
+      chemgps_lib_found=$lib/lib
+      break
+    fi
   done
+
+  # Test for development versions (if libchemgps is not yet found):
+  if test "x$chemgps_lib_found" == "x" -o "x$chemgps_inc_found" == "x"; then
+    chemgps_lib_test="../libchemgps/src/.libs ../../libchemgps/src/.libs"
+    chemgps_inc_test="../libchemgps/src ../../libchemgps/src"
+
+    if test "x$chemgps_inc_found" == "x"; then
+      for inc in ${chemgps_inc_test}; do
+        if test -e "$inc/chemgps.h"; then
+          chemgps_inc_found=$inc
+          chemgps_develop=true
+          break
+        fi
+      done
+    fi
+    if test "x$chemgps_lib_found" == "x"; then
+      for lib in ${chemgps_lib_test}; do
+        if test -e "$lib/libchemgps.la"; then
+          chemgps_lib_found=$lib
+          chemgps_develop=true
+          break
+        fi
+      done
+    fi
+  fi
   
   if test "x$chemgps_lib_found" != "x" -a "x$chemgps_inc_found" != "x"; then
+    if test "${chemgps_inc_found}" != "/usr/include" -a \
+            "${chemgps_inc_found}" != "/usr/local/include"; then
+      chemgps_stdinc=false
+    fi
+    if test "x${chemgps_stdinc}" == "xfalse"; then
+      if test "x${chemgps_develop}" == "xtrue"; then
+        CFLAGS="$CFLAGS -I../${chemgps_inc_found} -I../../${chemgps_inc_found}"
+        LDFLAGS="$LDFLAGS -L../${chemgps_lib_found} -L../../${chemgps_lib_found}"
+      else 
+        CFLAGS="$CFLAGS -I${chemgps_inc_found}"
+        LDFLAGS="$LDFLAGS -L${chemgps_lib_found}"
+      fi
+    fi      
     AC_MSG_RESULT([found, libs=${chemgps_lib_found}, include=${chemgps_inc_found}])
   else
     AC_MSG_ERROR([libchemgps not found])
   fi
-  AC_SUBST(LIBCHEMGPS_LIBDIR, ${chemgps_lib_found})
-  AC_SUBST(LIBCHEMGPS_INCDIR, ${chemgps_inc_found})  
 ])
 
 dnl
