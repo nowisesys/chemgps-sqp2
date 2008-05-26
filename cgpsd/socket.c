@@ -43,6 +43,9 @@
 #ifdef HAVE_NETDB_H
 # include <netdb.h>
 #endif
+#ifdef HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 #include <sys/un.h>
 
 #include "cgpssqp.h"
@@ -146,6 +149,11 @@ int init_socket(struct options *popt)
 			die("failed listen on UNIX socket");
 		}
 		debug("successful listen on UNIX socket (backlog: %d)", popt->backlog);
+		
+		if(chmod(popt->unaddr, CGPSD_UNIX_SOCKET_PERM) < 0) {
+			die("failed change permission on UNIX socket");
+		}
+		debug("successful set permission %o on UNIX socket", CGPSD_UNIX_SOCKET_PERM);
 	}
 	return 0;
 }

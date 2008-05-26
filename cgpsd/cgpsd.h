@@ -35,6 +35,8 @@
 #define CGPSD_STATE_CLOSING      4
 #define CGPSD_STATE_RELOAD       8
 
+#define CGPSD_UNIX_SOCKET_PERM (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)
+
 #define cgpsd_done(state) (((state) & CGPSD_STATE_CLOSING))
 
 void service(struct options *popt);
