@@ -126,6 +126,10 @@ void parse_options(int argc, char **argv, struct options *popt)
 	int indexopt, c;
 	struct stat st;
 
+#ifdef HAVE_REALPATH
+int path_max;
+#endif
+	
 	while((c = getopt_long(argc, argv, "46b:df:hil:p:qt:u:vV", options, &indexopt)) != -1) {
 		switch(c) {
                 case '4':
@@ -143,11 +147,35 @@ void parse_options(int argc, char **argv, struct options *popt)
 			break;
 #endif
 		case 'f':
+#ifdef HAVE_REALPATH
+# if ! defined(HAVE_PATHCONF)
+#  if defined(PATH_MAX)
+			path_max = PATH_MAX;
+#  else
+#   error "No pathconf() and PATH_MAX is undefined"
+#  endif
+# else
+			path_max = pathconf(optarg, _PC_PATH_MAX);
+			if(path_max <= 0)
+				path_max = 4096;
+# endif	/* HAVE_PATHCONF */
+			popt->proj = malloc(path_max + 1);
+			if(!popt->proj) {
+				die("failed alloc memory");
+			}
+			if(!realpath(optarg, popt->proj)) {
+				die("failed get real path of project file %s", optarg);
+			}
+#else /* ! HAVE_REALPATH */
+			if(*optarg != '/') {
+				die("project path must be an absolute path");
+			}
 			popt->proj = malloc(strlen(optarg) + 1);
 			if(!popt->proj) {
 				die("failed alloc memory");
 			}
 			strcpy(popt->proj, optarg);
+#endif
 			break;
 		case 'h':
 			usage(popt->prog);
