@@ -28,11 +28,6 @@
 # include "config.h"
 #endif
 
-#ifdef _GNU_SOURCE
-# undef _GNU_SOURCE
-#endif
-#define _GNU_SOURCE 1
-
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>

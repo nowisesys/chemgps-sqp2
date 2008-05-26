@@ -32,8 +32,6 @@
 # include "config.h"
 #endif
 
-#define _GNU_SOURCE
-
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
