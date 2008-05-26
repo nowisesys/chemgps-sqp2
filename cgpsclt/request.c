@@ -116,7 +116,7 @@ static int request_send_stdin(struct client *peer)
 	FILE *out;
 	char *inb = NULL, *outb = NULL;
 	size_t insize = 0, outsize = 0;
-	int lines = 0;
+	int lines = 0, header = 0;
 	
 	loginfo("waiting for raw data input on stdin (ctrl+d to send)");
 	
@@ -126,14 +126,18 @@ static int request_send_stdin(struct client *peer)
 	}
 	while((getline(&inb, &insize, stdin)) != -1) {
 		fprintf(out, "%s", inb);
+		if(!header && !isdigit(inb[0]) && inb[0] != '-') {
+			debug("header detected in data file");
+			header = 1;
+		}
 		++lines;
 	}
 	fclose(out);
 	
-	debug("sending data from stdin (lines=%d)", lines);	
+	debug("sending data from stdin (lines=%d)", lines - header);	
 	
-	fprintf(peer->ss, "Load: %d\n", lines);
-	fprintf(peer->ss, "%s", outb);
+	fprintf(peer->ss, "Load: %d\n", lines - header);
+	fprintf(peer->ss, "%s\n", outb);
 	fflush(peer->ss);
 	
 	free(outb);
@@ -147,17 +151,19 @@ static int request_send_stdin(struct client *peer)
  */
 static int request_send_buffer(const char *buffer, struct client *peer)
 {
-	int lines = 0;
+	int lines = 0, header = 0;
 	const char *curr = buffer;
 	
 	while(*curr) {
+		if(!header && !isdigit(*curr) && *curr != '-') {
+			debug("header detected in data file");
+			header = 1;
+		}		
 		if(*curr++ == '\n') ++lines;
 	}
-	debug("lines: %d", lines);
-
-	debug("sending data from memory buffer (lines=%d)", lines);	
+	debug("sending data from memory buffer (lines=%d)", lines - header);	
 	
-	fprintf(peer->ss, "Load: %d\n", lines);
+	fprintf(peer->ss, "Load: %d\n", lines - header);
 	fprintf(peer->ss, "%s\n", buffer);
 	fflush(peer->ss);
 	
