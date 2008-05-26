@@ -88,6 +88,12 @@ static void make_prediction(struct options *popt)
 	popt->cgps->logger = cgps_syslog;
 	popt->cgps->indata = cgps_predict_data;
 	
+	if(popt->output) {
+		res.out = fopen(popt->output, "w");
+		if(!res.out) {
+			die("failed open output file %s", popt->output);
+		}
+	}
 	if(popt->debug > 1) {
 		debug("enable library debug");
 		popt->cgps->debug = popt->debug;
@@ -105,7 +111,7 @@ static void make_prediction(struct options *popt)
 				debug("predict called (index=%d, model=%d)", i, model);
 				if(cgps_result_init(&proj, &res) == 0) {
 					debug("intilized prediction result");
-					if(cgps_result(&proj, model, &pred, &res, stdout) == 0) {
+					if(cgps_result(&proj, model, &pred, &res, res.out) == 0) {
 						debug("successful got result");
 					}
 					debug("cleaning up the result");
@@ -123,6 +129,11 @@ static void make_prediction(struct options *popt)
 	}
 	else {
 		die("failed load project %s", popt->proj);
+	}
+	
+	if(popt->output) {
+		fclose(res.out);
+		res.out = NULL;
 	}
 }
 

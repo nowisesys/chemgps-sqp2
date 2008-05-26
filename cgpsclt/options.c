@@ -270,6 +270,9 @@ void parse_options(int argc, char **argv, struct options *popt)
 		if(popt->ipaddr) {
 			debug("  connect to %s on port %d", popt->ipaddr, popt->port);
 		}
+		if(popt->output) {
+			debug("  saving result to %s", popt->output);
+		}
 		debug("  flags: debug = %s, verbose = %s", 
 		      (popt->debug   ? "yes" : "no"), 
 		      (popt->verbose ? "yes" : "no"));

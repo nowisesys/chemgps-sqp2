@@ -54,7 +54,7 @@
 #include "cgpssqp.h"
 #include "cgpsclt.h"
 
-static void cleanup_request(struct client *peer, char *buff)
+static void cleanup_request(struct client *peer, char *buff, FILE *outs)
 {
 	if(peer) {
 		if(peer->ss) {
@@ -64,6 +64,9 @@ static void cleanup_request(struct client *peer, char *buff)
 	}
 	if(buff) {
 		free(buff);
+	}
+	if(outs != stdout) {
+		fclose(outs);
 	}
 }
 
@@ -175,6 +178,7 @@ int request(struct options *popt, struct client *peer)
 	const struct cgps_result_entry *entry;
         struct request_option req;
 	struct stat st;
+	FILE *fsout = stdout;
 	char *buff = NULL;
 	size_t size = 0;
 	int delim = 0, done = 0;
@@ -183,10 +187,10 @@ int request(struct options *popt, struct client *peer)
 	peer->ss = fdopen(dup(peer->sock), "r+");
 	if(!peer->ss) {
 		if(errno == EBADF) {
-			cleanup_request(peer, buff);
+			cleanup_request(peer, buff, fsout);
 			return CGPSCLT_CONN_RETRY;
 		} 
-		cleanup_request(peer, buff);
+		cleanup_request(peer, buff, fsout);
 		logerr("failed open socket stream");
 		return CGPSCLT_CONN_FAILED;
 	}
@@ -195,7 +199,7 @@ int request(struct options *popt, struct client *peer)
 	
 	debug("reading greeting");
 	if(read_request(&buff, &size, peer->ss) < 0) {
-		cleanup_request(peer, buff);
+		cleanup_request(peer, buff, fsout);
 		return CGPSCLT_CONN_RETRY;
 	}
 	debug("received: '%s'", buff);
@@ -205,14 +209,14 @@ int request(struct options *popt, struct client *peer)
 		fflush(peer->ss);
 	}
 	if(errno == EPIPE) {
-		cleanup_request(peer, buff);
+		cleanup_request(peer, buff, fsout);
 		return CGPSCLT_CONN_RETRY;
 	}
 	
 	debug("sending prediction request");
 	fprintf(peer->ss, "Predict: ");
 	if(errno == EPIPE) {
-		cleanup_request(peer, buff);
+		cleanup_request(peer, buff, fsout);
 		return CGPSCLT_CONN_RETRY;
 	}
 	for(entry = cgps_result_entry_list; entry->name; ++entry) {	
@@ -223,7 +227,7 @@ int request(struct options *popt, struct client *peer)
 			fprintf(peer->ss, "%s", entry->name);
 		}
 		if(errno == EPIPE) {
-			cleanup_request(peer, buff);
+			cleanup_request(peer, buff, fsout);
 			return CGPSCLT_CONN_RETRY;
 		}
 	}
@@ -231,7 +235,7 @@ int request(struct options *popt, struct client *peer)
 		fflush(peer->ss);
 	}
 	if(errno == EPIPE) {
-		cleanup_request(peer, buff);
+		cleanup_request(peer, buff, fsout);
 		return CGPSCLT_CONN_RETRY;
 	}
 
@@ -243,21 +247,30 @@ int request(struct options *popt, struct client *peer)
 	}
 	fflush(peer->ss);
 	if(errno == EPIPE) {
-		cleanup_request(peer, buff);
+		cleanup_request(peer, buff, fsout);
 		return CGPSCLT_CONN_RETRY;
+	}
+
+	if(popt->output) {
+		fsout = fopen(popt->output, "w");
+		if(!fsout) {
+			cleanup_request(peer, buff, fsout);
+			logerr("failed open output file %s", popt->output);
+			return CGPSCLT_CONN_FAILED;
+		}
 	}
 	
 	while(!done) {
 		debug("waiting for server request");
 		if(read_request(&buff, &size, peer->ss) < 0) {
-			cleanup_request(peer, buff);
+			cleanup_request(peer, buff, fsout);
 			return CGPSCLT_CONN_RETRY;
 		}
 
 		debug("received: '%s'", buff);
 	        if(split_request_option(buff, &req) == CGPSP_PROTO_LAST) {
 			logerr("protocol error (%s unexpected)", req.option);
-			cleanup_request(peer, buff);
+			cleanup_request(peer, buff, fsout);
 			return CGPSCLT_CONN_FAILED;
 		}
 		
@@ -278,23 +291,23 @@ int request(struct options *popt, struct client *peer)
 			debug("received result request");
 			while((c = getc(peer->ss)) != EOF) {
 				if(!popt->quiet) {
-					printf("%c", c);
+					fprintf(fsout, "%c", c);
 				}
 			}
 			done = 1;
 			break;
 		case CGPSP_PROTO_ERROR:
 			logerr("server response: %s", req.value);
-			cleanup_request(peer, buff);
+			cleanup_request(peer, buff, fsout);
 			return CGPSCLT_CONN_FAILED;
 		default:
 			logerr("protocol error (%s unexpected)", req.option);
-			cleanup_request(peer, buff);
+			cleanup_request(peer, buff, fsout);
 			return CGPSCLT_CONN_FAILED;
 		}
 	}
 	debug("done with request");
 	
-	cleanup_request(peer, buff);
+	cleanup_request(peer, buff, fsout);
 	return CGPSCLT_CONN_SUCCESS;
 }
