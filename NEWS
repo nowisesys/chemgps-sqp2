@@ -1,3 +1,14 @@
+Version 0.7.3 (2008-05-27):
+	
+	* Fixed UNIX socket permissions. Anyone should be allowed to connect locally.
+	
+	* Only define some macros if building on and for GNU/Linux. This
+	  should choose GNU specific variants on Linux and falling back on
+	  POSIX or BSD.
+	  
+	* The code for the output to file option where lost in some early
+	  release, but is now restored.
+	
 Version 0.7.2 (2008-05-26):
 
 	* Maintenace release that fixes small bugs and adds updates of the
