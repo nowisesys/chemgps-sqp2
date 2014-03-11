@@ -1,3 +1,8 @@
+Version 0.7.4 (2014-03-11):
+
+        * Maintenance release: Updated to configure and compile using
+	  autoconf 2.69 and GCC 4.6.3
+
 Version 0.7.3 (2008-05-27):
 	
 	* Fixed UNIX socket permissions. Anyone should be allowed to connect locally.
