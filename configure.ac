@@ -1,16 +1,20 @@
 # -*- sh -*-  -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.59)
-AC_INIT([chemgps-sqp2], 0.7.3, anders.lovgren@bmc.uu.se)
-AM_INIT_AUTOMAKE([chemgps-sqp2], 0.7.3)
+AC_PREREQ([2.69])
+AC_INIT([chemgps-sqp2], 0.7.4, anders.lovgren@bmc.uu.se)
+AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([config.h.in])
 AC_CONFIG_HEADER([config.h])
 AC_CANONICAL_HOST
 
 # Checks for programs.
+AC_PROG_CC
 CGPS_CHECK_COMPILER
 AC_PROG_RANLIB
+
+# Compiling '*.c' with per-target:
+AM_PROG_CC_C_O
 
 # Checks for libraries.
 CGPS_CHECK_SIMCAQ
