@@ -389,6 +389,7 @@ dnl Detect pthread library functions and process scheduling.
 dnl 
 AC_DEFUN([CGPS_CHECK_THREADING],
 [
+  AC_LANG([C])
   AC_CHECK_LIB([pthread], [pthread_create])
   AC_CHECK_FUNCS([pthread_yield sched_yield])
   AC_CHECK_HEADERS([sched.h])
@@ -404,16 +405,17 @@ AC_DEFUN([CGPS_CHECK_THREADING],
       AC_DEFINE([HAVE_PTHREAD_YIELD], [1], [Define to 1 if libpthread has function pthread_yield])
     ])
     AC_MSG_CHECKING([if pthread_yield needs _GNU_SOURCE defined])
-    AC_COMPILE_IFELSE(
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE(
     [
       #include <pthread.h>
       int main(void) { pthread_yield(); return 0; }
-      ], [AC_MSG_RESULT(no)], [
+      ])], [AC_MSG_RESULT(no)], [
       AC_MSG_RESULT(yes)
       CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
     ])
     AC_MSG_CHECKING([if pthread_yield needs to be declared])
-    AC_COMPILE_IFELSE([
+    AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+    [
       #ifdef _GNU_SOURCE
       # undef _GNU_SOURCE
       #endif
@@ -421,7 +423,7 @@ AC_DEFUN([CGPS_CHECK_THREADING],
       #include <features.h>
       #include <pthread.h>
       int main(void) { pthread_yield(); return 0; }
-      ], [AC_MSG_RESULT(no)], 
+      ])], [AC_MSG_RESULT(no)], 
       [
         AC_MSG_RESULT(yes)
         AC_DEFINE([NEED_PTHREAD_YIELD_DECL], [1], [Define to 1 if pthread_yield() needs to be declared])
