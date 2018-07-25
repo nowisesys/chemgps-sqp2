@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="cgpsclt">
+        <in>connect.c</in>
+        <in>main.c</in>
+        <in>options.c</in>
+        <in>request.c</in>
+        <in>result.c</in>
+        <in>socket.c</in>
+      </df>
+      <df name="cgpsd">
+        <in>client.c</in>
+        <in>main.c</in>
+        <in>options.c</in>
+        <in>server.c</in>
+        <in>signal.c</in>
+        <in>socket.c</in>
+        <in>worker.c</in>
+      </df>
+      <df name="cgpsstd">
+        <in>main.c</in>
+        <in>options.c</in>
+      </df>
+      <df name="libcgpssqp">
+        <df name="test">
+          <in>dllist.c</in>
+        </df>
+        <in>data.c</in>
+        <in>dllist.c</in>
+        <in>libcgpssqp.c</in>
+      </df>
+      <df name="utils">
+        <df name="cgpsddos">
+          <in>bind.c</in>
+          <in>connect.c</in>
+          <in>dgram.c</in>
+          <in>local.c</in>
+          <in>main.c</in>
+          <in>master.c</in>
+          <in>options.c</in>
+          <in>resolve.c</in>
+          <in>signal.c</in>
+          <in>slave.c</in>
+        </df>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>configure</itemPath>
+      <itemPath>nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand>./configure CC=${IDE_CC} CXX=${IDE_CXX} CFLAGS="-g3 -gdwarf-2" CXXFLAGS="-g3 -gdwarf-2"</preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="cgpsclt/connect.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsclt/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsclt/options.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsclt/request.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsclt/result.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsclt/socket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsd/client.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsd/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsd/options.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsd/server.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsd/signal.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsd/socket.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsd/worker.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsstd/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="cgpsstd/options.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libcgpssqp/data.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libcgpssqp/dllist.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libcgpssqp/libcgpssqp.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="libcgpssqp/test/dllist.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/bind.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/connect.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/dgram.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/local.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/master.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/options.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/resolve.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/signal.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="utils/cgpsddos/slave.c" ex="false" tool="0" flavor2="0">
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>
