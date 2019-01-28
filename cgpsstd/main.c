@@ -1,4 +1,4 @@
-/* Simca-QP predictions for the ChemGPS project.
+/* SIMCA-QP predictions for the ChemGPS project.
  * 
  * Copyright (C) 2007-2018 Anders Lövgren and the Computing Department,
  * Uppsala Biomedical Centre, Uppsala University.

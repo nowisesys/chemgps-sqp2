@@ -1,6 +1,6 @@
 ** REASON:
 
-   The use of Simca-QP together with a standalone application is suboptimal,
+   The use of SIMCA-QP together with a standalone application is suboptimal,
    due to the extra 2-3 seconds it takes just to load the project.
 
 ** SOLUTION:
@@ -23,8 +23,8 @@
 ** REQUIREMENTS:
 
    The daemon relies on library libchemgps for making the predictions. You
-   need Simca-QP and a valid license to compile and use this software. The
-   exception is cgpsclt that can be built without dependencies on Simca-QP
+   need SIMCA-QP and a valid license to compile and use this software. The
+   exception is cgpsclt that can be built without dependencies on SIMCA-QP
    (use --enable-foreign when configure).
 
 ** PROTOCOL:

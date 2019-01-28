@@ -73,7 +73,7 @@ Version 0.5.2 (2008-03-03):
 	  header. This also filters unused varibles from input data.
 	  
 	* Adding batch job mode. This mode suppress info messages from
-	  Simca-QP and warnings messages caused by batch queue command pipe.
+	  SIMCA-QP and warnings messages caused by batch queue command pipe.
 
 Version 0.5.1 (2008-02-19):
 

@@ -1,4 +1,4 @@
-/* Simca-QP predictions for the ChemGPS project.
+/* SIMCA-QP predictions for the ChemGPS project.
  *
  * Copyright (C) 2007-2018 Anders Lövgren and the Computing Department,
  * Uppsala Biomedical Centre, Uppsala University.
@@ -53,7 +53,7 @@
 static void usage(const char *prog, const char *section)
 {
 	if(!section) {
-		printf("%s - client for making prediction using libchemgps and Umetrics Simca-QP.\n", prog);
+		printf("%s - client for making prediction using libchemgps and Umetrics SIMCA-QP.\n", prog);
 		printf("\n");
 		printf("Usage: %s -f proj [options...]\n", prog);
 		printf("Options:\n");
@@ -102,7 +102,7 @@ static void version(const char *prog)
 {
         printf("%s - part of package %s version %s\n", prog, PACKAGE_NAME, PACKAGE_VERSION);
 	printf("\n");
-	printf("A prediction client for cgpsd(8) using (at option) libchemgps and Umetrics Simca-QP\n");
+	printf("A prediction client for cgpsd(8) using (at option) libchemgps and Umetrics SIMCA-QP\n");
 	printf("This application is part of the ChemGPS project.\n");
 	printf("\n");
 	printf(" * This program is distributed in the hope that it will be useful,\n");
