@@ -1,3 +1,8 @@
+Version 0.7.5 (2019-01-28):
+
+        * Maintenance release: Code to UTF-8 and fixed compiler warnings
+          using GCC 7.3.0
+
 Version 0.7.4 (2014-03-11):
 
         * Maintenance release: Updated to configure and compile using
