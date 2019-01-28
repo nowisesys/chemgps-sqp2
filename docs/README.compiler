@@ -5,4 +5,4 @@ gcc32 -Wall -O -g -m32   -c -o main.o main.c
 gcc32 -Wall -O -g -m32   -c -o syslog.o syslog.c
 gcc32 -lsimcaq -m32 main.o syslog.o -o chemgps-sqp
 
-// Anders Lövgren, 2008-01-22
+// Anders LÃ¶vgren, 2008-01-22

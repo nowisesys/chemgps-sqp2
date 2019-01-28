@@ -3,7 +3,7 @@
 ** GENERAL:
 
    The chemgps-sqp2 package contains a daemon, client and standalone program
-   for making predictions using Umetrics Simca-QP. The programs is based on
+   for making predictions using Umetrics SIMCA-QP. The programs is based on
    the libchemgps library (should be installed before trying to build this
    package).
    

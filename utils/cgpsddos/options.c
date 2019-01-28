@@ -125,8 +125,8 @@ static void version(const char *prog)
 	printf(" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n");
 	printf(" * GNU General Public License for more details.\n");
 	printf("\n");
-	printf("The %s software is copyright (C) 2007-2008 by Anders L�vgren and\n", PACKAGE_NAME);
-	printf("the Computing Department at Uppsala Biomedical Centre (BMC), Uppsala University.\n");
+	printf("The %s software is copyright (C) 2007-2018 by Anders Lövgren and BMC-IT, Uppsala University\n", PACKAGE_NAME);
+	printf("The %s software is copyright (C) 2018-2019 by Anders Lövgren, Nowise Systems\n", PACKAGE_NAME);
 	printf("This application is part of the ChemGPS project.\n");
 }
 

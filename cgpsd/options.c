@@ -95,8 +95,8 @@ static void version(const char *prog)
 	printf(" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n");
 	printf(" * GNU General Public License for more details.\n");
 	printf("\n");
-	printf("Copyright (C) 2007-2008 by Anders L�vgren and the Computing Department at\n");
-	printf("Uppsala Biomedical Centre (BMC), Uppsala University.\n");
+	printf("Copyright (C) 2007-2018 by Anders Lövgren and BMC-IT, Uppsala University.\n");
+	printf("Copyright (C) 2018-2019 by Anders Lövgren, Nowise Systems.\n");
 }
 
 void parse_options(int argc, char **argv, struct options *popt)

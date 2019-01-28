@@ -6,4 +6,4 @@ process to its individual log:
 
 bash $> ./cgpsmulti.sh -m 10000 -i ../../admin/data.txt -r tps -s /tmp/cgpsd.sock -l -b -o logs -ddddd
 
-Anders Lövgren, 2008-04-30
+Anders LÃ¶vgren, 2008-04-30

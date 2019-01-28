@@ -2,7 +2,7 @@
 ##
 ## Autoconf extensions for project ChemGPS.
 ##
-## Author: Anders Lövgren <lespaul@algonet.se>
+## Author: Anders LÃ¶vgren <andlov@nowise.se>
 ## Date:   2008-05-07
 
 dnl
