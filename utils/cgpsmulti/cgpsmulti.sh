@@ -2,7 +2,7 @@
 #
 # Issue multiple client (cgpsclt) connections against the daemon (cgpsd).
 #
-# Author: Anders Lövgren
+# Author: Anders LÃ¶vgren
 # Date:   2008-04-29
 
 #

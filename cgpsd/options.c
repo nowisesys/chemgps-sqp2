@@ -1,8 +1,9 @@
 /* Simca-QP predictions for the ChemGPS project.
  *
- * Copyright (C) 2007-2008 Anders Lövgren and the Computing Department,
+ * Copyright (C) 2007-2018 Anders LÃ¶vgren and the Computing Department,
  * Uppsala Biomedical Centre, Uppsala University.
  * 
+ * Copyright (C) 2018-2019 Anders LÃ¶vgren, Nowise Systems
  * ----------------------------------------------------------------------
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 
  * ----------------------------------------------------------------------
- *  Contact: Anders Lövgren <anders.lovgren@bmc.uu.se>
+ *  Contact: Anders LÃ¶vgren <andlov@nowise.se>
  * ----------------------------------------------------------------------
  */
 
@@ -94,7 +95,7 @@ static void version(const char *prog)
 	printf(" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n");
 	printf(" * GNU General Public License for more details.\n");
 	printf("\n");
-	printf("Copyright (C) 2007-2008 by Anders Lövgren and the Computing Department at\n");
+	printf("Copyright (C) 2007-2008 by Anders Lï¿½vgren and the Computing Department at\n");
 	printf("Uppsala Biomedical Centre (BMC), Uppsala University.\n");
 }
 
