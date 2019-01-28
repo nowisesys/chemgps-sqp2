@@ -57,7 +57,7 @@ int init_socket(struct options *popt)
 	if(popt->ipaddr) {
 		struct addrinfo hints, *addr, *next = NULL;
 		int retries = 0, res;
-		char port[6];
+		char port[7];
 		char host[NI_MAXHOST], serv[NI_MAXSERV];
 		int errval = 0;
 		
